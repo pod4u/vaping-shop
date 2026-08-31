@@ -1,0 +1,264 @@
+{
+  "lastUpdated": "2026-08-30T12:39:03.729Z",
+  "brands": [
+    {
+      "id": "alfa",
+      "name": "ALFA DUO MESH 20K",
+      "nameTh": "อัลฟา 20K",
+      "color": "#3B82F6",
+      "products": [
+        {
+          "id": "alfa-1",
+          "name": "ALFA DUO MESH 20K",
+          "nameTh": "อัลฟา 20K",
+          "price": 450,
+          "salePrice": null,
+          "puffCount": 20000,
+          "flavors": [
+            {
+              "id": "blueberry",
+              "name": "Blueberry",
+              "nameTh": "บลูเบอร์รี่",
+              "stock": 3,
+              "color": "#4F46E5"
+            },
+            {
+              "id": "grape-ice",
+              "name": "Grape Ice",
+              "nameTh": "องุ่นไอซ์",
+              "stock": 5,
+              "color": "#9333EA"
+            },
+            {
+              "id": "watermelon-ice",
+              "name": "Watermelon Ice",
+              "nameTh": "แตงโมไอซ์",
+              "stock": 2,
+              "color": "#EF4444"
+            },
+            {
+              "id": "mineral",
+              "name": "Mineral",
+              "nameTh": "มิเนรัล",
+              "stock": 4,
+              "color": "#94A3B8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "marbo",
+      "name": "MARBO BAR 9K",
+      "nameTh": "มาร์โบ 9K",
+      "color": "#EF4444",
+      "products": [
+        {
+          "id": "marbo-1",
+          "name": "MARBO BAR 9K",
+          "nameTh": "มาร์โบ 9K",
+          "price": 280,
+          "salePrice": 250,
+          "puffCount": 9000,
+          "flavors": [
+            {
+              "id": "watermelon-bubble",
+              "name": "Watermelon Bubblegum",
+              "nameTh": "แตงโมบับเบิ้ลกัม",
+              "stock": 6,
+              "color": "#EF4444"
+            },
+            {
+              "id": "grape-lychee",
+              "name": "Grape Lychee",
+              "nameTh": "องุ่นลิ้นจี่",
+              "stock": 3,
+              "color": "#A855F7"
+            },
+            {
+              "id": "rainbow-candy",
+              "name": "Rainbow Candy",
+              "nameTh": "เรนโบว์แคนดี้",
+              "stock": 2,
+              "color": "#EC4899"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mood",
+      "name": "MOOD 14K",
+      "nameTh": "มูด 14K",
+      "color": "#EC4899",
+      "products": [
+        {
+          "id": "mood-1",
+          "name": "MOOD 14K",
+          "nameTh": "มูด 14K",
+          "price": 320,
+          "salePrice": 290,
+          "puffCount": 14000,
+          "flavors": [
+            {
+              "id": "grape",
+              "name": "Grape",
+              "nameTh": "องุ่น",
+              "stock": 4,
+              "color": "#9333EA"
+            },
+            {
+              "id": "watermelon",
+              "name": "Watermelon",
+              "nameTh": "แตงโม",
+              "stock": 5,
+              "color": "#EF4444"
+            },
+            {
+              "id": "mint",
+              "name": "Mint",
+              "nameTh": "มิ้นท์",
+              "stock": 3,
+              "color": "#22D3EE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vplus",
+      "name": "V-PLUS 16K",
+      "nameTh": "วีพลัส 16K",
+      "color": "#10B981",
+      "products": [
+        {
+          "id": "vplus-1",
+          "name": "V-PLUS 16K",
+          "nameTh": "วีพลัส 16K",
+          "price": 380,
+          "salePrice": null,
+          "puffCount": 16000,
+          "flavors": [
+            {
+              "id": "mint",
+              "name": "Mint",
+              "nameTh": "มิ้นท์",
+              "stock": 5,
+              "color": "#22D3EE"
+            },
+            {
+              "id": "blueberry",
+              "name": "Blueberry",
+              "nameTh": "บลูเบอร์รี่",
+              "stock": 4,
+              "color": "#4F46E5"
+            },
+            {
+              "id": "watermelon",
+              "name": "Watermelon",
+              "nameTh": "แตงโม",
+              "stock": 3,
+              "color": "#EF4444"
+            },
+            {
+              "id": "grape",
+              "name": "Grape",
+              "nameTh": "องุ่น",
+              "stock": 2,
+              "color": "#9333EA"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eskobar",
+      "name": "ESKO BAR SWITCH 20K",
+      "nameTh": "เอสโกบาร์ 20K",
+      "color": "#F59E0B",
+      "products": [
+        {
+          "id": "eskobar-1",
+          "name": "ESKO BAR SWITCH 20K",
+          "nameTh": "เอสโกบาร์ 20K",
+          "price": 480,
+          "salePrice": null,
+          "puffCount": 20000,
+          "flavors": [
+            {
+              "id": "pink-guava",
+              "name": "Pink Guava",
+              "nameTh": "พิงค์กัววา",
+              "stock": 3,
+              "color": "#F472B6"
+            },
+            {
+              "id": "watermelon-ice",
+              "name": "Watermelon Ice",
+              "nameTh": "แตงโมไอซ์",
+              "stock": 4,
+              "color": "#EF4444"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mbar",
+      "name": "M BAR 10K",
+      "nameTh": "เอ็มบาร์ 10K",
+      "color": "#8B5CF6",
+      "products": [
+        {
+          "id": "mbar-1",
+          "name": "M BAR 10K",
+          "nameTh": "เอ็มบาร์ 10K",
+          "price": 350,
+          "salePrice": null,
+          "puffCount": 10000,
+          "flavors": [
+            {
+              "id": "watermelon-mint",
+              "name": "Watermelon Mint",
+              "nameTh": "แตงโมมิ้นท์",
+              "stock": 5,
+              "color": "#EF4444"
+            },
+            {
+              "id": "grape",
+              "name": "Grape",
+              "nameTh": "องุ่น",
+              "stock": 3,
+              "color": "#9333EA"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "relx",
+      "name": "RELX PRO 2",
+      "nameTh": "เรลแซกโปร 2",
+      "color": "#06B6D4",
+      "products": [
+        {
+          "id": "relx-1",
+          "name": "RELX PRO 2",
+          "nameTh": "เรลแซกโปร 2",
+          "price": 450,
+          "salePrice": null,
+          "puffCount": 0,
+          "flavors": [
+            {
+              "id": "mint-freeze",
+              "name": "Mint Freeze",
+              "nameTh": "มิ้นท์ฟรีซ",
+              "stock": 2,
+              "color": "#22D3EE"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
