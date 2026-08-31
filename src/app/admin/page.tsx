@@ -220,7 +220,7 @@ export default function AdminDashboard() {
                     contentStyle={{ backgroundColor: '#120d20', border: '1px solid #281d45', borderRadius: '8px' }}
                     labelStyle={{ color: '#fff' }}
                     itemStyle={{ color: '#d4ff14' }}
-                    formatter={(value: number) => [`฿${value.toLocaleString()}`, 'ยอดขาย']}
+                    formatter={(value) => [`฿${Number(value).toLocaleString()}`, 'ยอดขาย']}
                   />
                   <Line 
                     type="monotone" 
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
                   </Pie>
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#120d20', border: '1px solid #281d45', borderRadius: '8px' }}
-                    formatter={(value: number) => [`${value}%`, '']}
+                    formatter={(value) => [`${Number(value)}%`, '']}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -298,7 +298,7 @@ export default function AdminDashboard() {
                   <YAxis type="category" dataKey="name" stroke="#ffffff80" fontSize={11} width={120} tickFormatter={(v) => v.split(' - ')[1]} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#120d20', border: '1px solid #281d45', borderRadius: '8px' }}
-                    formatter={(value: number) => [`${value} ชิ้น`, 'ขายได้']}
+                    formatter={(value) => [`${Number(value)} ชิ้น`, 'ขายได้']}
                   />
                   <Bar dataKey="sales" fill="#5b13ec" radius={[0, 4, 4, 0]} />
                 </BarChart>
