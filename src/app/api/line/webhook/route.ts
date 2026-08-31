@@ -3,10 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { fuzzySearchProducts, parseQuantity } from '@/lib/fuzzy-search';
-
-// LINE API Configuration
-const CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || '';
-const CHANNEL_SECRET = process.env.LINE_CHANNEL_SECRET || '';
+import { sendReply } from '@/lib/line-client';
 
 // Webhook Handler
 export async function POST(req: NextRequest) {
@@ -176,71 +173,4 @@ async function replyMessage(replyToken: string, text: string) {
   };
 
   await sendReply(replyToken, message);
-}
-
-// Send reply to LINE
-async function sendReply(replyToken: string, message: any) {
-  try {
-    const response = await fetch('https://api.line.me/v2/bot/message/reply', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${CHANNEL_ACCESS_TOKEN}`
-      },
-      body: JSON.stringify({
-        replyToken,
-        messages: [message]
-      })
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('LINE API error:', error);
-    }
-  } catch (error) {
-    console.error('Failed to send reply:', error);
-  }
-}
-
-// Push message to user
-export async function pushMessage(userId: string, message: any) {
-  try {
-    const response = await fetch('https://api.line.me/v2/bot/message/push', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${CHANNEL_ACCESS_TOKEN}`
-      },
-      body: JSON.stringify({
-        to: userId,
-        messages: [message]
-      })
-    });
-
-    return response.ok;
-  } catch (error) {
-    console.error('Failed to push message:', error);
-    return false;
-  }
-}
-
-// Broadcast to all users
-export async function broadcastMessage(message: any) {
-  try {
-    const response = await fetch('https://api.line.me/v2/bot/message/broadcast', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${CHANNEL_ACCESS_TOKEN}`
-      },
-      body: JSON.stringify({
-        messages: [message]
-      })
-    });
-
-    return response.ok;
-  } catch (error) {
-    console.error('Failed to broadcast:', error);
-    return false;
-  }
 }
