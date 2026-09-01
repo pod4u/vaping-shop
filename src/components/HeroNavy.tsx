@@ -69,9 +69,9 @@ export default function HeroNavy() {
         <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight mb-6 leading-[1.08] text-white animate-slide-up" style={{ animationDelay: '0.1s' }}>
           ELEVATE YOUR <br className="hidden sm:block" />
           <span className="relative inline-block">
-            <span className="text-navy-glow text-glow-blue">VAPING</span>
+            <span className="text-white-neon">VAPING</span>
             {/* Text reflection/glow effect */}
-            <span className="absolute -bottom-2 left-0 right-0 text-navy-glow/20 blur-sm select-none">VAPING</span>
+            <span className="absolute -bottom-2 left-0 right-0 text-white/20 blur-sm select-none">VAPING</span>
           </span> EXPERIENCE
         </h1>
 
@@ -86,7 +86,7 @@ export default function HeroNavy() {
             href={storeConfig.lineLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto btn-blue-glow px-8 py-4 rounded-full text-base font-extrabold flex items-center justify-center gap-3 tracking-wide btn-press"
+            className="w-full sm:w-auto btn-white-cta px-8 py-4 rounded-full text-base font-extrabold flex items-center justify-center gap-3 tracking-wide btn-press"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C6.48 2 2 5.58 2 10c0 2.12.92 4.04 2.42 5.44L3 22l6.4-3.2c.84.13 1.71.2 2.6.2 5.52 0 10-3.58 10-8s-4.48-8-10-8z"/>

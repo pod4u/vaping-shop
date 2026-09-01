@@ -117,7 +117,7 @@ export default function ReadyToShipProductsNavy() {
             <span className="text-navy-glow text-sm font-bold">พร้อมส่งทันที</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
-            สินค้า<span className="text-navy-glow">พร้อมส่ง</span>
+            สินค้า<span className="text-white-neon">พร้อมส่ง</span>
           </h2>
           <p className="text-white/60 text-lg max-w-2xl mx-auto">
             สินค้าที่มีในสต็อก สั่งวันนี้จัดส่งทันที 🚚
@@ -169,7 +169,7 @@ export default function ReadyToShipProductsNavy() {
 
                 {/* Price */}
                 <div className="mt-3 flex items-center justify-between">
-                  <div className="text-navy-glow font-black">
+                  <div className="text-white-neon font-black">
                     ฿{product.price}
                   </div>
                   <div className="text-white/40 text-xs">
@@ -185,7 +185,7 @@ export default function ReadyToShipProductsNavy() {
         <div className="mt-12 text-center">
           <Link
             href="/stock"
-            className="inline-flex items-center gap-2 btn-acid px-8 py-4 rounded-full font-bold text-lg hover:shadow-acid transition-all"
+            className="inline-flex items-center gap-2 btn-white-cta px-8 py-4 rounded-full font-bold text-lg transition-all"
           >
             <span>ดูสินค้าพร้อมส่งทั้งหมด</span>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -121,7 +121,7 @@ export default function BenefitsHybrid() {
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-black text-white mb-1">
-                  จัดส่งฟรีทันที เมื่อสั่งซื้อครบ <span className="text-hybrid-blue">{storeConfig.freeShippingMin}฿</span>
+                  จัดส่งฟรีทันที เมื่อสั่งซื้อครบ <span className="text-white-neon">{storeConfig.freeShippingMin}฿</span>
                 </h3>
                 <p className="text-white/60 text-sm">พร้อมบริการแพ็กห่อกันกระแทกอย่างดี ส่งด่วนถึงมือปลอดภัย</p>
               </div>
@@ -131,7 +131,7 @@ export default function BenefitsHybrid() {
               href={storeConfig.lineLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-blue-glow px-8 py-4 rounded-full text-base font-extrabold whitespace-nowrap shrink-0 btn-press"
+              className="btn-white-cta px-8 py-4 rounded-full text-base font-extrabold whitespace-nowrap shrink-0 btn-press"
             >
               สั่งซื้อสินค้าเลย
             </a>

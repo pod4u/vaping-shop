@@ -70,7 +70,7 @@ export default function ProductCardNavy({ product }: ProductCardNavyProps) {
             <div>
               <div className="text-xs text-white/40 font-mono mb-0.5">ราคา</div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-black text-navy-glow tracking-tight counter-glow">{product.price}฿</span>
+                <span className="text-2xl font-black text-white-neon tracking-tight">{product.price}฿</span>
                 {product.originalPrice && (
                   <span className="text-white/30 text-xs line-through">{product.originalPrice}฿</span>
                 )}

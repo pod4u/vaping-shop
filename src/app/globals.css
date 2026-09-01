@@ -280,6 +280,30 @@ body::before {
   box-shadow: 0 0 12px -2px rgba(59, 130, 246, 0.3);
 }
 
+/* White CTA Button - High contrast for Navy theme */
+.btn-white-cta {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: #1e3a8a;
+  font-weight: 700;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 30px -5px rgba(255, 255, 255, 0.4);
+}
+
+.btn-white-cta:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 0 50px 0px rgba(255, 255, 255, 0.6);
+}
+
+/* White Neon Text Glow */
+.text-white-neon {
+  color: #ffffff;
+  text-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.5),
+    0 0 20px rgba(255, 255, 255, 0.3),
+    0 0 40px rgba(255, 255, 255, 0.2);
+}
+
 /* Neon Glow utilities */
 .text-acid {
   color: #d4ff14;

@@ -112,7 +112,7 @@ export default function ReadyToShipProductsHybrid() {
             <span className="text-hybrid-blue text-sm font-bold">พร้อมส่งทันที</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
-            สินค้า<span className="text-hybrid-blue">พร้อมส่ง</span>
+            สินค้า<span className="text-white-neon">พร้อมส่ง</span>
           </h2>
           <p className="text-white/60 text-lg max-w-2xl mx-auto">
             สินค้าที่มีในสต็อก สั่งวันนี้จัดส่งทันที 🚚
@@ -159,7 +159,7 @@ export default function ReadyToShipProductsHybrid() {
                 <p className="text-white/50 text-xs truncate">{product.name}</p>
 
                 <div className="mt-3 flex items-center justify-between">
-                  <div className="text-hybrid-blue font-black">
+                  <div className="text-white-neon font-black">
                     ฿{product.price}
                   </div>
                   <div className="text-white/40 text-xs">
@@ -174,7 +174,7 @@ export default function ReadyToShipProductsHybrid() {
         <div className="mt-12 text-center">
           <Link
             href="/stock"
-            className="inline-flex items-center gap-2 btn-blue-glow px-8 py-4 rounded-full font-bold text-lg transition-all"
+            className="inline-flex items-center gap-2 btn-white-cta px-8 py-4 rounded-full font-bold text-lg transition-all"
           >
             <span>ดูสินค้าพร้อมส่งทั้งหมด</span>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
