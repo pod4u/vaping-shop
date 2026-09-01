@@ -37,7 +37,7 @@ export default function HeroVideoNavy() {
       <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
         {/* Small Tag */}
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-8">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></span>
           <span className="text-white/80 text-sm font-medium tracking-wide">PREMIUM VAPE SHOP</span>
         </div>
 
@@ -58,23 +58,23 @@ export default function HeroVideoNavy() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          {/* LINE Button - Green Gradient with Glow */}
+          {/* LINE Button - Acid Lime Gradient */}
           <a
             href={storeConfig.lineLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="group relative px-8 py-4 rounded-full text-base font-bold tracking-wide inline-flex items-center gap-3 overflow-hidden transition-all duration-300 hover:scale-110 hover:shadow-[0_0_50px_rgba(34,197,94,0.6)]"
+            className="group relative px-8 py-4 rounded-full text-base font-bold tracking-wide inline-flex items-center gap-3 overflow-hidden transition-all duration-300 hover:scale-110 hover:shadow-[0_0_50px_rgba(212,255,20,0.6)]"
             style={{
-              background: 'linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #16a34a 100%)',
+              background: 'linear-gradient(135deg, #d4ff14 0%, #a3e635 50%, #d4ff14 100%)',
               backgroundSize: '200% 200%',
               animation: 'gradient-shift 3s ease infinite',
-              color: 'white',
-              boxShadow: '0 0 30px -5px rgba(34, 197, 94, 0.5), inset 0 1px 0 rgba(255,255,255,0.2)',
+              color: '#0f172a',
+              boxShadow: '0 0 30px -5px rgba(212, 255, 20, 0.5), inset 0 1px 0 rgba(255,255,255,0.3)',
             }}
           >
             {/* Shine Effect on Hover */}
             <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
             </span>
 
             <svg className="w-6 h-6 relative z-10" viewBox="0 0 24 24" fill="currentColor">
