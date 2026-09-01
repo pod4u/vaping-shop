@@ -85,6 +85,75 @@ body::before {
   color: #d4ff14;
 }
 
+/* ============================================
+   NAVY BLUE THEME
+   ============================================ */
+
+/* Navy Card */
+.navy-card {
+  background: #172554;
+  border: 1px solid #1e40af;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navy-card:hover {
+  background: #1e3a8a;
+  border-color: #3b82f6;
+  box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.35);
+}
+
+/* Navy Button Outline */
+.btn-navy-outline {
+  background: rgba(30, 64, 175, 0.15);
+  border: 1px solid #3b82f6;
+  color: #ffffff;
+  transition: all 0.25s ease;
+}
+
+.btn-navy-outline:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: #d4ff14;
+  color: #d4ff14;
+}
+
+/* Navy Glass Effect */
+.navy-glass {
+  background: rgba(23, 37, 84, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+}
+
+/* Gradient Border Animated for Navy */
+.gradient-border-animated-navy {
+  position: relative;
+  background: #172554;
+  border-radius: 16px;
+}
+
+.gradient-border-animated-navy::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    #d4ff14,
+    #3b82f6,
+    #1e40af,
+    #d4ff14
+  );
+  background-size: 300% 300%;
+  animation: gradient-border-rotate 4s ease infinite;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gradient-border-animated-navy:hover::before {
+  opacity: 1;
+}
+
 /* Neon Glow utilities */
 .text-acid {
   color: #d4ff14;

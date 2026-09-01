@@ -175,7 +175,212 @@ export async function searchFlavors(query: string) {
     .select('*')
     .or(`name.ilike.%${query}%,name_th.ilike.%${query}%`)
     .eq('is_active', true);
-  
+
+  if (error) throw error;
+  return data;
+}
+
+// ============================================
+// Types for E-Commerce
+// ============================================
+
+export interface Customer {
+  id: number
+  phone: string
+  name: string | null
+  line_user_id: string | null
+  email: string | null
+  created_at: string
+}
+
+export interface Address {
+  id: number
+  customer_id: number
+  name: string
+  phone: string
+  address: string
+  province: string | null
+  postal_code: string | null
+  is_default: boolean
+}
+
+export interface Order {
+  id: number
+  customer_id: number
+  total_price: number
+  discount: number
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
+  tracking_number: string | null
+  created_at: string
+}
+
+export interface OrderItem {
+  id: number
+  order_id: number
+  product_id: string
+  flavor_id: string
+  quantity: number
+  price: number
+  created_at: string
+}
+
+// ============================================
+// Customer Functions
+// ============================================
+
+export async function createCustomer(data: {
+  phone: string
+  name?: string
+  line_user_id?: string
+  email?: string
+}) {
+  const { data: customer, error } = await getServerSupabase()
+    .from('customers')
+    .insert(data)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return customer;
+}
+
+export async function getCustomerByPhone(phone: string) {
+  const { data, error } = await getServerSupabase()
+    .from('customers')
+    .select('*')
+    .eq('phone', phone)
+    .single();
+
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
+}
+
+export async function getCustomerByLineUserId(lineUserId: string) {
+  const { data, error } = await getServerSupabase()
+    .from('customers')
+    .select('*')
+    .eq('line_user_id', lineUserId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') throw error;
+  return data;
+}
+
+// ============================================
+// Order Functions
+// ============================================
+
+export async function createOrder(data: {
+  customer_id: number
+  total_price: number
+  discount?: number
+  items: {
+    product_id: string
+    flavor_id: string
+    quantity: number
+    price: number
+  }[]
+}) {
+  // Start a transaction-like flow
+  const { data: order, error: orderError } = await getServerSupabase()
+    .from('orders')
+    .insert({
+      customer_id: data.customer_id,
+      total_price: data.total_price,
+      discount: data.discount || 10,
+      status: 'pending',
+    })
+    .select()
+    .single();
+
+  if (orderError) throw orderError;
+
+  // Insert order items
+  const orderItems = data.items.map(item => ({
+    order_id: order.id,
+    ...item,
+  }));
+
+  const { error: itemsError } = await getServerSupabase()
+    .from('order_items')
+    .insert(orderItems);
+
+  if (itemsError) {
+    // Rollback: delete the order
+    await getServerSupabase().from('orders').delete().eq('id', order.id);
+    throw itemsError;
+  }
+
+  return order;
+}
+
+export async function getOrders(status?: string) {
+  let query = getServerSupabase()
+    .from('orders')
+    .select(`
+      *,
+      customer:customers(*),
+      items:order_items(*)
+    `)
+    .order('created_at', { ascending: false });
+
+  if (status) {
+    query = query.eq('status', status);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+}
+
+export async function updateOrderStatus(orderId: number, status: string, trackingNumber?: string) {
+  const updateData: any = { status };
+  if (trackingNumber) {
+    updateData.tracking_number = trackingNumber;
+  }
+
+  const { data, error } = await getServerSupabase()
+    .from('orders')
+    .update(updateData)
+    .eq('id', orderId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// ============================================
+// Address Functions
+// ============================================
+
+export async function createAddress(data: {
+  customer_id: number
+  name: string
+  phone: string
+  address: string
+  province?: string
+  postal_code?: string
+  is_default?: boolean
+}) {
+  const { data: address, error } = await getServerSupabase()
+    .from('addresses')
+    .insert(data)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return address;
+}
+
+export async function getCustomerAddresses(customerId: number) {
+  const { data, error } = await getServerSupabase()
+    .from('addresses')
+    .select('*')
+    .eq('customer_id', customerId)
+    .order('is_default', { ascending: false });
+
   if (error) throw error;
   return data;
 }

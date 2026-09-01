@@ -30,6 +30,16 @@ module.exports = {
           deep: '#3b0764',
           glow: '#9d4edd',
         },
+        navy: {
+          DEFAULT: '#1e3a8a',
+          deep: '#0f172a',
+          surface: '#172554',
+          'surface-hover': '#1e3a8a',
+          border: '#1e40af',
+          'border-light': '#3b82f6',
+          glow: '#3b82f6',
+          accent: '#60a5fa',
+        },
         // Shadcn CSS variables
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -84,15 +94,21 @@ module.exports = {
       },
       backgroundImage: {
         'vapor-glow': 'radial-gradient(circle at 50% 30%, rgba(91, 19, 236, 0.35) 0%, rgba(212, 255, 20, 0.08) 40%, transparent 70%)',
+        'navy-glow': 'radial-gradient(circle at 50% 30%, rgba(30, 64, 175, 0.4) 0%, rgba(59, 130, 246, 0.15) 40%, transparent 70%)',
         'acid-gradient': 'linear-gradient(135deg, #d4ff14 0%, #a3e635 100%)',
         'purple-gradient': 'linear-gradient(135deg, #7928ca 0%, #5b13ec 100%)',
+        'navy-gradient': 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
         'dark-gradient': 'linear-gradient(180deg, #0a0712 0%, #06040a 100%)',
+        'navy-dark-gradient': 'linear-gradient(180deg, #0f172a 0%, #020617 100%)',
       },
       boxShadow: {
         'acid': '0 0 25px -5px rgba(212, 255, 20, 0.4)',
         'acid-sm': '0 0 12px -2px rgba(212, 255, 20, 0.3)',
         'vapor': '0 0 35px -5px rgba(91, 19, 236, 0.4)',
+        'navy': '0 0 35px -5px rgba(30, 64, 175, 0.5)',
+        'navy-sm': '0 0 15px -3px rgba(59, 130, 246, 0.4)',
         'card-glow': '0 8px 32px 0 rgba(91, 19, 236, 0.15)',
+        'navy-card-glow': '0 8px 32px 0 rgba(30, 64, 175, 0.2)',
       },
       animation: {
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
