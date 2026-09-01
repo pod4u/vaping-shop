@@ -5,23 +5,17 @@ import { storeConfig } from "@/lib/config";
 export default function HeroVideoNavy() {
   return (
     <section className="relative min-h-[100vh] flex items-center justify-center overflow-hidden">
-      {/* Video Background */}
+      {/* Image Background */}
       <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
+        <img
+          src="/hero-bg.png"
+          alt="Hero Background"
           className="w-full h-full object-cover"
-          poster="/hero-poster.jpg"
-        >
-          <source src="/hero-video.mp4" type="video/mp4" />
-          <source src="/hero-video.webm" type="video/webm" />
-        </video>
-
+        />
+        
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-navy-deep/70 backdrop-blur-[2px]"></div>
-
+        <div className="absolute inset-0 bg-navy-deep/60 backdrop-blur-[1px]"></div>
+        
         {/* Gradient Fade */}
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-navy-deep to-transparent"></div>
         <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-navy-deep to-transparent"></div>
@@ -29,9 +23,9 @@ export default function HeroVideoNavy() {
       </div>
 
       {/* Decorative Lines */}
-      <div className="absolute top-1/4 left-10 w-px h-40 bg-gradient-to-b from-transparent via-navy-glow/50 to-transparent"></div>
-      <div className="absolute top-1/3 right-10 w-px h-60 bg-gradient-to-b from-transparent via-navy-glow/50 to-transparent"></div>
-      <div className="absolute bottom-1/4 left-1/4 w-40 h-px bg-gradient-to-r from-transparent via-navy-glow/30 to-transparent"></div>
+      <div className="absolute top-1/4 left-10 w-px h-40 bg-gradient-to-b from-transparent via-acid-lime/50 to-transparent"></div>
+      <div className="absolute top-1/3 right-10 w-px h-60 bg-gradient-to-b from-transparent via-acid-lime/50 to-transparent"></div>
+      <div className="absolute bottom-1/4 left-1/4 w-40 h-px bg-gradient-to-r from-transparent via-acid-lime/30 to-transparent"></div>
 
       {/* Main Content */}
       <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
@@ -43,10 +37,10 @@ export default function HeroVideoNavy() {
 
         {/* Main Title - Gradient Text */}
         <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight mb-6 leading-[1.1]">
-          <span className="bg-gradient-to-r from-white via-navy-accent to-white bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(96,165,250,0.5)]">
+          <span className="bg-gradient-to-r from-white via-acid-lime to-white bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(212,255,20,0.5)]">
             VAPING
           </span>
-          <span className="block mt-2 bg-gradient-to-r from-navy-accent via-white to-navy-accent bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+          <span className="block mt-2 bg-gradient-to-r from-acid-lime via-white to-acid-lime bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
             SHOP
           </span>
         </h1>
@@ -98,19 +92,19 @@ export default function HeroVideoNavy() {
         {/* Stats */}
         <div className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto">
           <div className="text-center group cursor-default">
-            <div className="bg-gradient-to-r from-white to-navy-accent bg-clip-text text-transparent text-2xl sm:text-3xl font-bold group-hover:scale-110 transition-transform">
+            <div className="bg-gradient-to-r from-white to-acid-lime bg-clip-text text-transparent text-2xl sm:text-3xl font-bold group-hover:scale-110 transition-transform">
               500+
             </div>
             <div className="text-white/50 text-xs sm:text-sm mt-1">สินค้าพร้อมส่ง</div>
           </div>
           <div className="text-center border-x border-white/10 group cursor-default">
-            <div className="bg-gradient-to-r from-navy-accent to-white bg-clip-text text-transparent text-2xl sm:text-3xl font-bold group-hover:scale-110 transition-transform">
+            <div className="bg-gradient-to-r from-acid-lime to-white bg-clip-text text-transparent text-2xl sm:text-3xl font-bold group-hover:scale-110 transition-transform">
               24h
             </div>
             <div className="text-white/50 text-xs sm:text-sm mt-1">บริการตลอด</div>
           </div>
           <div className="text-center group cursor-default">
-            <div className="bg-gradient-to-r from-white to-navy-accent bg-clip-text text-transparent text-2xl sm:text-3xl font-bold group-hover:scale-110 transition-transform">
+            <div className="bg-gradient-to-r from-white to-acid-lime bg-clip-text text-transparent text-2xl sm:text-3xl font-bold group-hover:scale-110 transition-transform">
               ส่งฟรี
             </div>
             <div className="text-white/50 text-xs sm:text-sm mt-1">ทั่วไทย</div>
