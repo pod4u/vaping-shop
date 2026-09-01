@@ -40,6 +40,18 @@ module.exports = {
           glow: '#3b82f6',
           accent: '#60a5fa',
         },
+        hybrid: {
+          deep: '#020617',
+          darker: '#0a0f1a',
+          surface: '#0f172a',
+          'surface-hover': '#1e293b',
+          border: '#1e3a8a',
+          'border-light': '#3b82f6',
+          glow: '#2563eb',
+          'glow-bright': '#3b82f6',
+          blue: '#1d4ed8',
+          'blue-light:': '#60a5fa',
+        },
         // Shadcn CSS variables
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
