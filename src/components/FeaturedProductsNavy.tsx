@@ -14,7 +14,7 @@ export default function FeaturedProductsNavy() {
 
         {/* Ambient glows */}
         <div className="absolute top-1/3 left-[10%] w-[400px] h-[400px] bg-navy-glow/15 rounded-full blur-[120px] animate-float-slow"></div>
-        <div className="absolute bottom-1/4 right-[15%] w-[300px] h-[300px] bg-acid-lime/8 rounded-full blur-[100px] animate-float-slow" style={{ animationDelay: '-2s' }}></div>
+        <div className="absolute bottom-1/4 right-[15%] w-[300px] h-[300px] bg-navy-glow/8 rounded-full blur-[100px] animate-float-slow" style={{ animationDelay: '-2s' }}></div>
 
         {/* Subtle grid */}
         <div className="absolute inset-0 bg-[radial-gradient(rgba(59,130,246,0.04)_1px,transparent_1px)] bg-[size:36px_36px] opacity-50"></div>
@@ -26,14 +26,14 @@ export default function FeaturedProductsNavy() {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
           <div>
-            <div className="text-acid-lime text-xs font-mono tracking-widest uppercase mb-2">TOP PICKS</div>
+            <div className="text-navy-glow text-xs font-mono tracking-widest uppercase mb-2">TOP PICKS</div>
             <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
               สินค้าแนะนำ
             </h2>
           </div>
           <Link
             href="/products"
-            className="mt-3 sm:mt-0 inline-flex items-center gap-2 text-sm font-semibold text-white/70 hover:text-acid-lime transition-colors group"
+            className="mt-3 sm:mt-0 inline-flex items-center gap-2 text-sm font-semibold text-white/70 hover:text-navy-glow transition-colors group"
           >
             ดูทั้งหมด
             <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

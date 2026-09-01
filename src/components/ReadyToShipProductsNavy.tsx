@@ -88,7 +88,7 @@ export default function ReadyToShipProductsNavy() {
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-navy-glow border-t-acid-lime rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-12 h-12 border-4 border-navy-glow border-t-navy-glow rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-white/60">กำลังโหลดสินค้าพร้อมส่ง...</p>
           </div>
         </div>
@@ -104,7 +104,7 @@ export default function ReadyToShipProductsNavy() {
     <section className="py-20 px-4 relative overflow-hidden">
       {/* Background Effects - Navy Blue */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-acid-lime/5 rounded-full blur-[150px]"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-navy-glow/5 rounded-full blur-[150px]"></div>
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-navy-deep to-transparent"></div>
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-navy-deep to-transparent"></div>
       </div>
@@ -112,12 +112,12 @@ export default function ReadyToShipProductsNavy() {
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-acid-lime/10 border border-acid-lime/30 mb-4">
-            <div className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></div>
-            <span className="text-acid-lime text-sm font-bold">พร้อมส่งทันที</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-navy-glow/10 border border-navy-glow/30 mb-4">
+            <div className="w-2 h-2 rounded-full bg-navy-glow animate-pulse"></div>
+            <span className="text-navy-glow text-sm font-bold">พร้อมส่งทันที</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
-            สินค้า<span className="text-acid-lime">พร้อมส่ง</span>
+            สินค้า<span className="text-navy-glow">พร้อมส่ง</span>
           </h2>
           <p className="text-white/60 text-lg max-w-2xl mx-auto">
             สินค้าที่มีในสต็อก สั่งวันนี้จัดส่งทันที 🚚
@@ -147,7 +147,7 @@ export default function ReadyToShipProductsNavy() {
                 />
 
                 {/* Stock Badge */}
-                <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-acid-lime text-navy-deep text-xs font-black">
+                <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-navy-glow text-navy-deep text-xs font-black">
                   {product.stock} ชิ้น
                 </div>
               </div>
@@ -169,7 +169,7 @@ export default function ReadyToShipProductsNavy() {
 
                 {/* Price */}
                 <div className="mt-3 flex items-center justify-between">
-                  <div className="text-acid-lime font-black">
+                  <div className="text-navy-glow font-black">
                     ฿{product.price}
                   </div>
                   <div className="text-white/40 text-xs">
