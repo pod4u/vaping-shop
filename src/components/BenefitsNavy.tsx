@@ -62,26 +62,22 @@ const benefitItems = [
 export default function BenefitsNavy() {
   return (
     <section id="about" className="py-20 px-4 relative overflow-hidden">
-      {/* Multi-layer depth background - Navy Blue */}
+      {/* Multi-layer depth background */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Top gradient */}
         <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-navy-deep via-navy-deep/50 to-transparent"></div>
 
-        {/* Floating orbs for depth */}
-        <div className="absolute top-[20%] left-[5%] w-[300px] h-[300px] bg-navy-glow/20 rounded-full blur-[100px] animate-float-slow"></div>
-        <div className="absolute bottom-[30%] right-[10%] w-[250px] h-[250px] bg-navy-glow/8 rounded-full blur-[80px] animate-float-slow" style={{ animationDelay: '-3s' }}></div>
+        <div className="absolute top-[20%] left-[5%] w-[300px] h-[300px] bg-acid-lime/10 rounded-full blur-[100px] animate-float-slow"></div>
+        <div className="absolute bottom-[30%] right-[10%] w-[250px] h-[250px] bg-acid-lime/5 rounded-full blur-[80px] animate-float-slow" style={{ animationDelay: '-3s' }}></div>
 
-        {/* Grid pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(rgba(212,255,20,0.02)_1px,transparent_1px)] bg-[size:48px_48px] opacity-40"></div>
 
-        {/* Bottom gradient */}
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-navy-deep via-navy-deep/50 to-transparent"></div>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
           <div>
-            <div className="text-navy-glow text-xs font-mono tracking-widest uppercase mb-2">ADVANTAGES</div>
+            <div className="text-acid-lime text-xs font-mono tracking-widest uppercase mb-2">ADVANTAGES</div>
             <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
               ทำไมต้องเลือกเรา?
             </h2>
@@ -93,49 +89,48 @@ export default function BenefitsNavy() {
           {benefitItems.map((benefit, index) => (
             <div
               key={index}
-              className="navy-card rounded-2xl p-6 hover:border-navy-glow/50 transition-all duration-300 group relative overflow-hidden card-tilt animate-slide-up"
+              className="navy-card rounded-2xl p-6 hover:border-acid-lime/50 transition-all duration-300 group relative overflow-hidden card-tilt animate-slide-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Inner glow on hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-navy-glow/15 via-transparent to-navy-glow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-acid-lime/10 via-transparent to-acid-lime/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
               {/* Ambient spot light */}
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-navy-glow/10 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-acid-lime/10 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-              <div className="relative z-10 w-12 h-12 rounded-xl bg-navy/30 border border-navy-border text-navy-glow flex items-center justify-center mb-5 group-hover:scale-110 group-hover:border-navy-glow/40 group-hover:shadow-lg group-hover:shadow-navy-glow/20 transition-all duration-300">
+              <div className="relative z-10 w-12 h-12 rounded-xl bg-navy/30 border border-navy-border text-acid-lime flex items-center justify-center mb-5 group-hover:scale-110 group-hover:border-acid-lime/40 group-hover:shadow-lg group-hover:shadow-acid-lime/20 transition-all duration-300">
                 {benefit.icon}
               </div>
-              <h3 className="relative z-10 text-white font-bold text-lg mb-2 group-hover:text-navy-glow transition-colors">
+              <h3 className="relative z-10 text-white font-bold text-lg mb-2 group-hover:text-acid-lime transition-colors">
                 {benefit.title}
               </h3>
               <p className="relative z-10 text-white/60 text-sm leading-relaxed group-hover:text-white/70 transition-colors">{benefit.description}</p>
 
               {/* Bottom accent line */}
-              <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-navy-glow to-navy-glow group-hover:w-full transition-all duration-500"></div>
+              <div className="absolute bottom-0 left-0 w-0 h-1 bg-acid-lime group-hover:w-full transition-all duration-500"></div>
             </div>
           ))}
         </div>
 
-        {/* Shipping Banner - Enhanced with Navy Blue depth */}
+        {/* Shipping Banner */}
         <div className="mt-14 relative overflow-hidden rounded-3xl navy-card p-8 sm:p-10 border-navy-border-light group">
           {/* Multi-layer background effects */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-navy/20 rounded-full blur-[120px] group-hover:opacity-70 transition-opacity duration-700"></div>
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-navy-glow/10 rounded-full blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-            {/* Moving gradient animation */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-navy-glow/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-acid-lime/10 rounded-full blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-acid-lime/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
           </div>
 
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
             <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-2xl bg-navy-glow text-black flex items-center justify-center shrink-0 shadow-acid group-hover:shadow-acid-lg group-hover:scale-105 transition-all duration-300">
+              <div className="w-16 h-16 rounded-2xl bg-acid-lime text-navy-deep flex items-center justify-center shrink-0 shadow-acid group-hover:shadow-acid-lg group-hover:scale-105 transition-all duration-300">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
                 </svg>
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-black text-white mb-1">
-                  จัดส่งฟรีทันที เมื่อสั่งซื้อครบ <span className="text-white-neon">{storeConfig.freeShippingMin}฿</span>
+                  จัดส่งฟรีทันที เมื่อสั่งซื้อครบ <span className="text-acid-lime">{storeConfig.freeShippingMin}฿</span>
                 </h3>
                 <p className="text-white/60 text-sm">พร้อมบริการแพ็กห่อกันกระแทกอย่างดี ส่งด่วนถึงมือปลอดภัย</p>
               </div>
@@ -145,7 +140,7 @@ export default function BenefitsNavy() {
               href={storeConfig.lineLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-white-cta px-8 py-4 rounded-full text-base font-extrabold whitespace-nowrap shrink-0 btn-press"
+              className="bg-gradient-to-r from-acid-lime to-[#a3e635] text-navy-deep px-8 py-4 rounded-full text-base font-extrabold whitespace-nowrap shrink-0 shadow-acid hover:shadow-[0_0_40px_rgba(212,255,20,0.5)] transition-all hover:scale-105"
             >
               สั่งซื้อสินค้าเลย
             </a>
