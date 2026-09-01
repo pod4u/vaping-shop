@@ -73,7 +73,7 @@ export default function BenefitsHybrid() {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
           <div>
-            <div className="text-hybrid-glow-bright text-xs font-mono tracking-widest uppercase mb-2">ADVANTAGES</div>
+            <div className="text-hybrid-blue text-xs font-mono tracking-widest uppercase mb-2">ADVANTAGES</div>
             <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
               ทำไมต้องเลือกเรา?
             </h2>
@@ -91,15 +91,15 @@ export default function BenefitsHybrid() {
               <div className="absolute inset-0 bg-gradient-to-br from-hybrid-glow/10 via-transparent to-hybrid-glow-bright/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-hybrid-glow/10 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-              <div className="relative z-10 w-12 h-12 rounded-xl bg-hybrid-blue/25 border border-hybrid-border text-hybrid-glow-bright flex items-center justify-center mb-5 group-hover:scale-110 group-hover:border-hybrid-glow-bright/40 group-hover:shadow-lg group-hover:shadow-hybrid-blue/20 transition-all duration-300">
+              <div className="relative z-10 w-12 h-12 rounded-xl bg-hybrid-blue/25 border border-hybrid-border text-white flex items-center justify-center mb-5 group-hover:scale-110 group-hover:border-hybrid-blue/40 group-hover:shadow-lg group-hover:shadow-hybrid-blue/20 transition-all duration-300">
                 {benefit.icon}
               </div>
-              <h3 className="relative z-10 text-white font-bold text-lg mb-2 group-hover:text-hybrid-glow-bright transition-colors">
+              <h3 className="relative z-10 text-white font-bold text-lg mb-2 group-hover:text-hybrid-blue transition-colors">
                 {benefit.title}
               </h3>
               <p className="relative z-10 text-white/60 text-sm leading-relaxed group-hover:text-white/70 transition-colors">{benefit.description}</p>
 
-              <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-hybrid-glow-bright to-hybrid-blue group-hover:w-full transition-all duration-500"></div>
+              <div className="absolute bottom-0 left-0 w-0 h-1 bg-hybrid-blue group-hover:w-full transition-all duration-500"></div>
             </div>
           ))}
         </div>
@@ -121,7 +121,7 @@ export default function BenefitsHybrid() {
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-black text-white mb-1">
-                  จัดส่งฟรีทันที เมื่อสั่งซื้อครบ <span className="text-hybrid-glow-bright">{storeConfig.freeShippingMin}฿</span>
+                  จัดส่งฟรีทันที เมื่อสั่งซื้อครบ <span className="text-hybrid-blue">{storeConfig.freeShippingMin}฿</span>
                 </h3>
                 <p className="text-white/60 text-sm">พร้อมบริการแพ็กห่อกันกระแทกอย่างดี ส่งด่วนถึงมือปลอดภัย</p>
               </div>

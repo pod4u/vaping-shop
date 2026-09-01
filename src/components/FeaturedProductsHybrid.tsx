@@ -18,14 +18,14 @@ export default function FeaturedProductsHybrid() {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
           <div>
-            <div className="text-hybrid-glow-bright text-xs font-mono tracking-widest uppercase mb-2">TOP PICKS</div>
+            <div className="text-hybrid-blue text-xs font-mono tracking-widest uppercase mb-2">TOP PICKS</div>
             <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
               สินค้าแนะนำ
             </h2>
           </div>
           <Link
             href="/products"
-            className="mt-3 sm:mt-0 inline-flex items-center gap-2 text-sm font-semibold text-white/70 hover:text-hybrid-glow-bright transition-colors group"
+            className="mt-3 sm:mt-0 inline-flex items-center gap-2 text-sm font-semibold text-white/70 hover:text-hybrid-blue transition-colors group"
           >
             ดูทั้งหมด
             <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -9,7 +9,7 @@ export default function BlogSectionHybrid() {
       <div className="max-w-7xl mx-auto relative">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
           <div>
-            <div className="text-hybrid-glow-bright text-xs font-mono tracking-widest uppercase mb-2">STORIES &amp; TIPS</div>
+            <div className="text-hybrid-blue text-xs font-mono tracking-widest uppercase mb-2">STORIES &amp; TIPS</div>
             <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
               บทความน่ารู้
             </h2>
@@ -30,20 +30,20 @@ export default function BlogSectionHybrid() {
                       (e.target as HTMLImageElement).src = "https://placehold.co/600x400/020617/3b82f6?text=Blog";
                     }}
                   />
-                  <div className="absolute top-3 left-3 bg-hybrid-surface/90 backdrop-blur-md border border-hybrid-border text-hybrid-glow-bright text-xs font-mono font-bold px-2.5 py-1 rounded-md uppercase">
+                  <div className="absolute top-3 left-3 bg-hybrid-surface/90 backdrop-blur-md border border-hybrid-border text-hybrid-blue text-xs font-mono font-bold px-2.5 py-1 rounded-md uppercase">
                     {post.category}
                   </div>
                 </div>
                 <div className="p-6 flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="text-white font-bold text-lg mb-2 group-hover:text-hybrid-glow-bright transition-colors duration-200 line-clamp-2">
+                    <h3 className="text-white font-bold text-lg mb-2 group-hover:text-hybrid-blue transition-colors duration-200 line-clamp-2">
                       {post.title}
                     </h3>
                     <p className="text-white/50 text-sm line-clamp-2 leading-relaxed mb-4">{post.excerpt}</p>
                   </div>
                   <div className="text-white/40 text-xs font-mono pt-4 border-t border-hybrid-border/60 flex items-center justify-between">
                     <span>{post.date}</span>
-                    <span className="text-hybrid-glow-bright group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                    <span className="text-hybrid-blue group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
                       อ่านต่อ &rarr;
                     </span>
                   </div>

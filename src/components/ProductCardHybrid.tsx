@@ -37,7 +37,7 @@ export default function ProductCardHybrid({ product }: ProductCardHybridProps) {
           </div>
 
           {product.originalPrice && (
-            <div className="absolute top-3 left-3 bg-hybrid-glow-bright text-hybrid-deep text-xs font-black px-2.5 py-1 rounded-md shadow-[0_0_15px_rgba(59,130,246,0.4)] uppercase tracking-wider">
+            <div className="absolute top-3 left-3 bg-hybrid-blue text-white text-xs font-black px-2.5 py-1 rounded-md shadow-[0_0_15px_rgba(59,130,246,0.4)] uppercase tracking-wider">
               -{Math.round((1 - product.price / product.originalPrice) * 100)}%
             </div>
           )}
@@ -53,7 +53,7 @@ export default function ProductCardHybrid({ product }: ProductCardHybridProps) {
 
         <div className="p-5 flex-1 flex flex-col justify-between relative">
           <div>
-            <h3 className="text-white font-bold text-base mb-1.5 line-clamp-1 group-hover:text-hybrid-glow-bright transition-colors duration-300">
+            <h3 className="text-white font-bold text-base mb-1.5 line-clamp-1 group-hover:text-hybrid-blue transition-colors duration-300">
               {product.name}
             </h3>
             <p className="text-white/50 text-xs line-clamp-2 leading-relaxed mb-4 group-hover:text-white/60 transition-colors">{product.description}</p>
@@ -63,7 +63,7 @@ export default function ProductCardHybrid({ product }: ProductCardHybridProps) {
             <div>
               <div className="text-xs text-white/40 font-mono mb-0.5">ราคา</div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-black text-hybrid-glow-bright tracking-tight">{product.price}฿</span>
+                <span className="text-2xl font-black text-hybrid-blue tracking-tight">{product.price}฿</span>
                 {product.originalPrice && (
                   <span className="text-white/30 text-xs line-through">{product.originalPrice}฿</span>
                 )}
@@ -71,8 +71,8 @@ export default function ProductCardHybrid({ product }: ProductCardHybridProps) {
             </div>
 
             {product.inStock ? (
-              <div className="flex items-center gap-1.5 text-xs text-hybrid-glow-bright font-mono bg-hybrid-glow/10 px-2.5 py-1 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-hybrid-glow-bright animate-pulse"></span>
+              <div className="flex items-center gap-1.5 text-xs text-hybrid-blue font-mono bg-hybrid-blue/10 px-2.5 py-1 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-hybrid-blue animate-pulse"></span>
                 <span>IN STOCK</span>
               </div>
             ) : (

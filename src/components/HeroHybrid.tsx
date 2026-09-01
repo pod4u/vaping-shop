@@ -73,7 +73,7 @@ export default function HeroHybrid() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 text-center">
         {/* Badge */}
         <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-hybrid-surface/70 backdrop-blur-sm border border-hybrid-border mb-8 shadow-lg animate-slide-up">
-          <span className="w-2 h-2 rounded-full bg-hybrid-glow-bright animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-hybrid-blue animate-pulse"></span>
           <span className="text-white/90 text-xs font-mono tracking-widest uppercase">
             AUTHENTIC PODS &amp; DISPOSABLES • 24/7
           </span>
@@ -123,7 +123,7 @@ export default function HeroHybrid() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto animate-slide-up" style={{ animationDelay: '0.4s' }}>
           <div className="group hybrid-card rounded-2xl p-4 sm:p-5 flex items-center gap-4 text-left relative overflow-hidden card-tilt">
             <div className="absolute inset-0 bg-gradient-to-r from-hybrid-glow/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div className="relative z-10 w-12 h-12 rounded-xl bg-hybrid-blue/30 border border-hybrid-border-light/50 flex items-center justify-center shrink-0 text-hybrid-glow-bright group-hover:scale-110 transition-all duration-300 shadow-lg shadow-hybrid-blue/20">
+            <div className="relative z-10 w-12 h-12 rounded-xl bg-hybrid-blue/30 border border-hybrid-border-light/50 flex items-center justify-center shrink-0 text-white group-hover:scale-110 transition-all duration-300 shadow-lg shadow-hybrid-blue/20">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
@@ -136,7 +136,7 @@ export default function HeroHybrid() {
 
           <div className="group hybrid-card rounded-2xl p-4 sm:p-5 flex items-center gap-4 text-left relative overflow-hidden card-tilt">
             <div className="absolute inset-0 bg-gradient-to-r from-hybrid-glow/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div className="relative z-10 w-12 h-12 rounded-xl bg-hybrid-blue/30 border border-hybrid-border-light/50 flex items-center justify-center shrink-0 text-hybrid-glow-bright group-hover:scale-110 transition-all duration-300 shadow-lg shadow-hybrid-blue/20">
+            <div className="relative z-10 w-12 h-12 rounded-xl bg-hybrid-blue/30 border border-hybrid-border-light/50 flex items-center justify-center shrink-0 text-white group-hover:scale-110 transition-all duration-300 shadow-lg shadow-hybrid-blue/20">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
@@ -149,7 +149,7 @@ export default function HeroHybrid() {
 
           <div className="group hybrid-card rounded-2xl p-4 sm:p-5 flex items-center gap-4 text-left relative overflow-hidden card-tilt">
             <div className="absolute inset-0 bg-gradient-to-r from-hybrid-glow/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div className="relative z-10 w-12 h-12 rounded-xl bg-hybrid-blue/30 border border-hybrid-border-light/50 flex items-center justify-center shrink-0 text-hybrid-glow-bright group-hover:scale-110 transition-all duration-300 shadow-lg shadow-hybrid-blue/20">
+            <div className="relative z-10 w-12 h-12 rounded-xl bg-hybrid-blue/30 border border-hybrid-border-light/50 flex items-center justify-center shrink-0 text-white group-hover:scale-110 transition-all duration-300 shadow-lg shadow-hybrid-blue/20">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>

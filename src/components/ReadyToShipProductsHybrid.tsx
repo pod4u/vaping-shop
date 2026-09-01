@@ -107,12 +107,12 @@ export default function ReadyToShipProductsHybrid() {
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-hybrid-glow/10 border border-hybrid-glow/30 mb-4">
-            <div className="w-2 h-2 rounded-full bg-hybrid-glow-bright animate-pulse"></div>
-            <span className="text-hybrid-glow-bright text-sm font-bold">พร้อมส่งทันที</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-hybrid-blue/10 border border-hybrid-blue/30 mb-4">
+            <div className="w-2 h-2 rounded-full bg-hybrid-blue animate-pulse"></div>
+            <span className="text-hybrid-blue text-sm font-bold">พร้อมส่งทันที</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
-            สินค้า<span className="text-hybrid-glow-bright">พร้อมส่ง</span>
+            สินค้า<span className="text-hybrid-blue">พร้อมส่ง</span>
           </h2>
           <p className="text-white/60 text-lg max-w-2xl mx-auto">
             สินค้าที่มีในสต็อก สั่งวันนี้จัดส่งทันที 🚚
@@ -139,7 +139,7 @@ export default function ReadyToShipProductsHybrid() {
                   }}
                 />
 
-                <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-hybrid-glow-bright text-hybrid-deep text-xs font-black">
+                <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-hybrid-blue text-white text-xs font-black">
                   {product.stock} ชิ้น
                 </div>
               </div>
@@ -159,7 +159,7 @@ export default function ReadyToShipProductsHybrid() {
                 <p className="text-white/50 text-xs truncate">{product.name}</p>
 
                 <div className="mt-3 flex items-center justify-between">
-                  <div className="text-hybrid-glow-bright font-black">
+                  <div className="text-hybrid-blue font-black">
                     ฿{product.price}
                   </div>
                   <div className="text-white/40 text-xs">
