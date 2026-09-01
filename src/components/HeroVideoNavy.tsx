@@ -13,7 +13,7 @@ export default function HeroVideoNavy() {
           className="w-full h-full object-cover object-center"
         />
         {/* Dark Gradient Overlay - Left side for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-navy-deep via-navy-deep/80 to-transparent lg:w-[60%]"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-navy-deep via-navy-deep/70 to-transparent lg:w-[55%]"></div>
         {/* Bottom gradient fade */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-navy-deep to-transparent"></div>
       </div>
@@ -22,17 +22,35 @@ export default function HeroVideoNavy() {
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-20">
         <div className="max-w-xl">
           {/* Small Tag */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-acid-lime/10 border border-acid-lime/30 backdrop-blur-sm mb-6">
-            <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></span>
-            <span className="text-acid-lime text-sm font-medium tracking-wide">PREMIUM VAPE SHOP</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/20 backdrop-blur-sm mb-6">
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+            <span className="text-white/80 text-sm font-medium tracking-wide">PREMIUM VAPE SHOP</span>
           </div>
 
-          {/* Main Title */}
+          {/* Main Title - Glowing White/Blue Gradient */}
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight mb-4 leading-[1.1]">
-            <span className="bg-gradient-to-r from-white via-acid-lime to-white bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(212,255,20,0.3)]">
+            <span 
+              className="block drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+              style={{
+                background: 'linear-gradient(135deg, #ffffff 0%, #93c5fd 50%, #ffffff 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                textShadow: '0 0 40px rgba(255,255,255,0.3)',
+              }}
+            >
               VAPING
             </span>
-            <span className="block mt-1 bg-gradient-to-r from-acid-lime via-white to-acid-lime bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+            <span 
+              className="block mt-1 drop-shadow-[0_0_25px_rgba(147,197,253,0.5)]"
+              style={{
+                background: 'linear-gradient(135deg, #93c5fd 0%, #ffffff 50%, #93c5fd 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                textShadow: '0 0 35px rgba(147,197,253,0.3)',
+              }}
+            >
               SHOP
             </span>
           </h1>
@@ -44,7 +62,7 @@ export default function HeroVideoNavy() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-start gap-3 mb-10">
-            {/* LINE Button */}
+            {/* LINE Button - Green */}
             <a
               href={storeConfig.lineLink}
               target="_blank"
@@ -77,17 +95,17 @@ export default function HeroVideoNavy() {
           {/* Stats */}
           <div className="flex items-center gap-6">
             <div>
-              <div className="text-acid-lime text-2xl font-bold">500+</div>
+              <div className="text-white text-2xl font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">500+</div>
               <div className="text-white/50 text-sm">สินค้าพร้อมส่ง</div>
             </div>
             <div className="w-px h-10 bg-white/20"></div>
             <div>
-              <div className="text-acid-lime text-2xl font-bold">24h</div>
+              <div className="text-white text-2xl font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">24h</div>
               <div className="text-white/50 text-sm">บริการตลอด</div>
             </div>
             <div className="w-px h-10 bg-white/20"></div>
             <div>
-              <div className="text-acid-lime text-2xl font-bold">ส่งฟรี</div>
+              <div className="text-white text-2xl font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">ส่งฟรี</div>
               <div className="text-white/50 text-sm">ทั่วไทย</div>
             </div>
           </div>
