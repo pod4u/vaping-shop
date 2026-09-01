@@ -1,4 +1,4 @@
-import HeroNavy from "@/components/HeroNavy";
+import HeroVideoNavy from "@/components/HeroVideoNavy";
 import CategoriesNavy from "@/components/CategoriesNavy";
 import ReadyToShipProductsNavy from "@/components/ReadyToShipProductsNavy";
 import FeaturedProductsNavy from "@/components/FeaturedProductsNavy";
@@ -8,7 +8,7 @@ import BlogSectionNavy from "@/components/BlogSectionNavy";
 export default function NavyHomePage() {
   return (
     <>
-      <HeroNavy />
+      <HeroVideoNavy />
       <CategoriesNavy />
       <ReadyToShipProductsNavy />
       <FeaturedProductsNavy />
