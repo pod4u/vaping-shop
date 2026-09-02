@@ -49,20 +49,20 @@
     },
     {
       "id": "marbo",
-      "name": "MARBO BAR 9K",
+      "name": "MARBO M BAR 9K",
       "nameTh": "มาร์โบ 9K",
       "color": "#EF4444",
       "products": [
         {
           "id": "marbo-1",
-          "name": "MARBO BAR 9K",
+          "name": "MARBO M BAR 9K",
           "nameTh": "มาร์โบ 9K",
           "price": 280,
           "salePrice": 250,
           "puffCount": 9000,
           "flavors": [
             {
-              "id": "watermelon-bubble",
+              "id": "watermelon-bubblegum",
               "name": "Watermelon Bubblegum",
               "nameTh": "แตงโมบับเบิ้ลกัม",
               "stock": 6,
@@ -88,13 +88,13 @@
     },
     {
       "id": "mood",
-      "name": "MOOD 14K",
+      "name": "MOOOD 14K",
       "nameTh": "มูด 14K",
       "color": "#EC4899",
       "products": [
         {
           "id": "mood-1",
-          "name": "MOOD 14K",
+          "name": "MOOOD 14K",
           "nameTh": "มูด 14K",
           "price": 320,
           "salePrice": 290,
@@ -238,13 +238,13 @@
     {
       "id": "relx",
       "name": "RELX PRO 2",
-      "nameTh": "เรลแซกโปร 2",
+      "nameTh": "รีแล็กซ์โปร 2",
       "color": "#06B6D4",
       "products": [
         {
           "id": "relx-1",
           "name": "RELX PRO 2",
-          "nameTh": "เรลแซกโปร 2",
+          "nameTh": "รีแล็กซ์โปร 2",
           "price": 450,
           "salePrice": null,
           "puffCount": 0,

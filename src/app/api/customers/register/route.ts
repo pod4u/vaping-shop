@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Mock in-memory storage (จะเปลี่ยนเป็น Supabase ทีหลัง)
-const customers: any[] = [];
+// Global in-memory storage (shared with admin/customers route)
+// TODO: Replace with Supabase
+declare global {
+  var customersStorage: any[];
+}
+
+// Initialize global storage if not exists
+if (!global.customersStorage) {
+  global.customersStorage = [];
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check duplicate phone
-    const existingCustomer = customers.find((c) => c.phone === phone);
+    const existingCustomer = global.customersStorage.find((c) => c.phone === phone);
     if (existingCustomer) {
       return NextResponse.json(
         { success: false, error: "เบอร์โทรนี้เคยสมัครแล้ว" },
@@ -28,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Create customer
     const newCustomer = {
-      id: customers.length + 1,
+      id: global.customersStorage.length + 1,
       full_name,
       phone,
       line_id: line_id || null,
@@ -43,7 +51,7 @@ export async function POST(request: NextRequest) {
       created_at: new Date().toISOString(),
     };
 
-    customers.push(newCustomer);
+    global.customersStorage.push(newCustomer);
 
     // TODO: Save to Supabase
     // const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
@@ -54,7 +62,7 @@ export async function POST(request: NextRequest) {
     //   .single();
 
     console.log("✅ Customer registered:", newCustomer);
-    console.log("📊 Total customers:", customers.length);
+    console.log("📊 Total customers:", global.customersStorage.length);
 
     return NextResponse.json({
       success: true,
