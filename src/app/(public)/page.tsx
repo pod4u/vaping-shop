@@ -5,6 +5,7 @@ import BestSellersNavy from "@/components/BestSellersNavy";
 import ReadyToShipProductsNavy from "@/components/ReadyToShipProductsNavy";
 import FeaturedProductsNavy from "@/components/FeaturedProductsNavy";
 import TestimonialsNavy from "@/components/TestimonialsNavy";
+import FAQNavy from "@/components/FAQNavy";
 import BenefitsNavy from "@/components/BenefitsNavy";
 import BlogSectionNavy from "@/components/BlogSectionNavy";
 
@@ -18,6 +19,7 @@ export default function HomePage() {
       <ReadyToShipProductsNavy />
       <FeaturedProductsNavy />
       <TestimonialsNavy />
+      <FAQNavy />
       <BenefitsNavy />
       <BlogSectionNavy />
     </>

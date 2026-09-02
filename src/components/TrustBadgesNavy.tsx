@@ -3,7 +3,7 @@ export default function TrustBadgesNavy() {
     {
       icon: "💳",
       title: "ชำระเงินหลายช่องทาง",
-      items: ["พร้อมเพย์", "โอนเงิน", "COD"],
+      items: ["พร้อมเพย์", "โอนเงิน"],
     },
     {
       icon: "📦",
