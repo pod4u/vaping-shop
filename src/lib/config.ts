@@ -21,13 +21,6 @@ export const storeConfig = {
 // Product Categories
 export const categories = [
   {
-    id: "pod-system",
-    name: "POD SYSTEM",
-    nameTh: "พอตไฟฟ้า",
-    description: "อุปกรณ์พอตไฟฟ้า สามารถเปลี่ยนหัวได้",
-    icon: "🔋",
-  },
-  {
     id: "disposable-pod",
     name: "DISPOSABLE POD",
     nameTh: "พอตใช้แล้วทิ้ง",
@@ -35,18 +28,25 @@ export const categories = [
     icon: "💨",
   },
   {
-    id: "coil-cartridge",
-    name: "COIL CARTRIDGE",
-    nameTh: "คอยล์บุหรี่ไฟฟ้า",
-    description: "คอยล์สำหรับพอตไฟฟ้าทุกยี่ห้อ",
-    icon: "⚡",
-  },
-  {
     id: "flavor-pod",
     name: "FLAVOR POD",
     nameTh: "หัวน้ำยา หัวพอต",
     description: "หัวพอตรสชาติหลากหลาย",
     icon: "🍒",
+  },
+  {
+    id: "pod-system",
+    name: "POD SYSTEM",
+    nameTh: "พอตไฟฟ้า",
+    description: "อุปกรณ์พอตไฟฟ้า สามารถเปลี่ยนหัวได้",
+    icon: "🔋",
+  },
+  {
+    id: "coil-cartridge",
+    name: "COIL CARTRIDGE",
+    nameTh: "คอยล์บุหรี่ไฟฟ้า",
+    description: "คอยล์สำหรับพอตไฟฟ้าทุกยี่ห้อ",
+    icon: "⚡",
   },
   {
     id: "salt nic",
