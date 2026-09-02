@@ -105,19 +105,19 @@ export default function FooterNavy() {
               </li>
             </ul>
 
-            {/* QR Code */}
+            {/* LINE Add Friend Button */}
             <div className="mt-6 pt-6 border-t border-navy-border">
-              <p className="text-white/50 text-xs mb-3">แสกนเพิ่ม LINE</p>
+              <p className="text-white/50 text-xs mb-3">เพิ่มเพื่อน LINE</p>
               <a
                 href={storeConfig.lineLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block"
               >
                 <img
-                  src="/images/line-qr.png"
-                  alt="LINE QR Code"
-                  className="w-24 h-24 rounded-lg border border-navy-border bg-white p-2 hover:border-acid-lime transition-colors"
+                  src="https://scdn.line-apps.com/n/line_add_friends/btn/th.png"
+                  alt="เพิ่มเพื่อน"
+                  height="36"
+                  className="hover:opacity-80 transition-opacity"
                 />
               </a>
             </div>
