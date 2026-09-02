@@ -1,4 +1,5 @@
 import HeroVideoNavy from "@/components/HeroVideoNavy";
+import FreeShippingBannerNavy from "@/components/FreeShippingBannerNavy";
 import SocialProofNavy from "@/components/SocialProofNavy";
 import CategoriesNavy from "@/components/CategoriesNavy";
 import TrustBadgesNavy from "@/components/TrustBadgesNavy";
@@ -14,6 +15,7 @@ export default function HomePage() {
   return (
     <>
       <HeroVideoNavy />
+      <FreeShippingBannerNavy />
       <SocialProofNavy />
       <CategoriesNavy />
       <TrustBadgesNavy />
