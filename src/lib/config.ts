@@ -34,34 +34,6 @@ export const categories = [
     description: "หัวพอตรสชาติหลากหลาย",
     icon: "🍒",
   },
-  {
-    id: "pod-system",
-    name: "POD SYSTEM",
-    nameTh: "พอตไฟฟ้า",
-    description: "อุปกรณ์พอตไฟฟ้า สามารถเปลี่ยนหัวได้",
-    icon: "🔋",
-  },
-  {
-    id: "coil-cartridge",
-    name: "COIL CARTRIDGE",
-    nameTh: "คอยล์บุหรี่ไฟฟ้า",
-    description: "คอยล์สำหรับพอตไฟฟ้าทุกยี่ห้อ",
-    icon: "⚡",
-  },
-  {
-    id: "salt nic",
-    name: "SALTNIC E-LIQUIDS",
-    nameTh: "น้ำยาซอลนิค",
-    description: "น้ำยาซอลนิค จากมาเลเซียและ USA",
-    icon: "🧪",
-  },
-  {
-    id: "freebase",
-    name: "FREEBASE E-LIQUIDS",
-    nameTh: "น้ำยาฟรีเบส",
-    description: "น้ำยาฟรีเบส 30ml, 60ml, 100ml",
-    icon: "💧",
-  },
 ] as const;
 
 // Store Benefits
