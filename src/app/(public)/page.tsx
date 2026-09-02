@@ -3,6 +3,7 @@ import CategoriesNavy from "@/components/CategoriesNavy";
 import TrustBadgesNavy from "@/components/TrustBadgesNavy";
 import ReadyToShipProductsNavy from "@/components/ReadyToShipProductsNavy";
 import FeaturedProductsNavy from "@/components/FeaturedProductsNavy";
+import TestimonialsNavy from "@/components/TestimonialsNavy";
 import BenefitsNavy from "@/components/BenefitsNavy";
 import BlogSectionNavy from "@/components/BlogSectionNavy";
 
@@ -14,6 +15,7 @@ export default function HomePage() {
       <TrustBadgesNavy />
       <ReadyToShipProductsNavy />
       <FeaturedProductsNavy />
+      <TestimonialsNavy />
       <BenefitsNavy />
       <BlogSectionNavy />
     </>
