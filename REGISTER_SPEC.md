@@ -190,10 +190,10 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ## ✅ 7. Implementation Checklist
 
 ### **Phase 1: Setup Supabase**
-- [ ] สร้าง Supabase project
-- [ ] สร้าง `customers` table
-- [ ] Setup Row Level Security (RLS)
-- [ ] ได้ API keys
+- [x] สร้าง Supabase project
+- [x] สร้าง `customers` table
+- [x] Setup Row Level Security (RLS)
+- [x] ได้ API keys
 
 ### **Phase 2: Frontend**
 - [ ] สร้าง `/register` page
