@@ -1,19 +1,19 @@
-import Hero from "@/components/Hero";
-import Categories from "@/components/Categories";
-import ReadyToShipProducts from "@/components/ReadyToShipProducts";
-import FeaturedProducts from "@/components/FeaturedProducts";
-import Benefits from "@/components/Benefits";
-import BlogSection from "@/components/BlogSection";
+import HeroVideoNavy from "@/components/HeroVideoNavy";
+import CategoriesNavy from "@/components/CategoriesNavy";
+import ReadyToShipProductsNavy from "@/components/ReadyToShipProductsNavy";
+import FeaturedProductsNavy from "@/components/FeaturedProductsNavy";
+import BenefitsNavy from "@/components/BenefitsNavy";
+import BlogSectionNavy from "@/components/BlogSectionNavy";
 
 export default function HomePage() {
   return (
     <>
-      <Hero />
-      <Categories />
-      <ReadyToShipProducts />
-      <FeaturedProducts />
-      <Benefits />
-      <BlogSection />
+      <HeroVideoNavy />
+      <CategoriesNavy />
+      <ReadyToShipProductsNavy />
+      <FeaturedProductsNavy />
+      <BenefitsNavy />
+      <BlogSectionNavy />
     </>
   );
 }
