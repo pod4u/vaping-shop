@@ -1,6 +1,7 @@
 import HeroVideoNavy from "@/components/HeroVideoNavy";
 import CategoriesNavy from "@/components/CategoriesNavy";
 import TrustBadgesNavy from "@/components/TrustBadgesNavy";
+import BestSellersNavy from "@/components/BestSellersNavy";
 import ReadyToShipProductsNavy from "@/components/ReadyToShipProductsNavy";
 import FeaturedProductsNavy from "@/components/FeaturedProductsNavy";
 import TestimonialsNavy from "@/components/TestimonialsNavy";
@@ -13,6 +14,7 @@ export default function HomePage() {
       <HeroVideoNavy />
       <CategoriesNavy />
       <TrustBadgesNavy />
+      <BestSellersNavy />
       <ReadyToShipProductsNavy />
       <FeaturedProductsNavy />
       <TestimonialsNavy />
