@@ -2,6 +2,7 @@ import HeaderNavy from "@/components/HeaderNavy";
 import FooterNavy from "@/components/FooterNavy";
 import LineButtonNavy from "@/components/LineButtonNavy";
 import AnnouncementBannerNavy from "@/components/AnnouncementBannerNavy";
+import { storeConfig } from "@/lib/config";
 
 export default function PublicLayout({
   children,
@@ -12,7 +13,7 @@ export default function PublicLayout({
     <>
       <AnnouncementBannerNavy
         message="📢 แจ้งเปลี่ยน LINE ID ใหม่!"
-        lineId="@vaping_shop"
+        lineId={storeConfig.lineId}
       />
       <div className="pt-12 sm:pt-14 bg-navy-deep min-h-screen">
         <HeaderNavy />

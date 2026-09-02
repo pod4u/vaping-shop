@@ -104,6 +104,23 @@ export default function FooterNavy() {
                 <span>ส่งฟรีเมื่อซื้อครบ {storeConfig.freeShippingMin}฿</span>
               </li>
             </ul>
+
+            {/* QR Code */}
+            <div className="mt-6 pt-6 border-t border-navy-border">
+              <p className="text-white/50 text-xs mb-3">แสกนเพิ่ม LINE</p>
+              <a
+                href={storeConfig.lineLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block"
+              >
+                <img
+                  src="/images/line-qr.png"
+                  alt="LINE QR Code"
+                  className="w-24 h-24 rounded-lg border border-navy-border bg-white p-2 hover:border-acid-lime transition-colors"
+                />
+              </a>
+            </div>
           </div>
         </div>
 
