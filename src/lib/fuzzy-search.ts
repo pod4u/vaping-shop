@@ -31,7 +31,7 @@ export const productList: Product[] = brands.flatMap(brand =>
     color: flavor.color || '#6B7280',
     image: flavor.image,
     price: getPriceByBrand(brand.id),
-    aliases: generateAliases(brand.name, brand.nameTh, flavor.name, flavor.nameTh)
+    aliases: generateAliases(brand.id, brand.name, brand.nameTh, flavor.name, flavor.nameTh)
   }))
 );
 
@@ -46,6 +46,7 @@ function getPriceByBrand(brandId: string): number {
 
 // สร้าง aliases สำหรับ fuzzy search
 function generateAliases(
+  brandId: string,
   brandName: string,
   brandNameTh: string,
   flavorName: string,
@@ -59,17 +60,17 @@ function generateAliases(
   aliases.push(simplifyThai(brandNameTh)); // มาโบโล
 
   // Common misspellings
-  if (brandName === 'Marbo') {
+  if (brandId === 'marbo') {
     aliases.push('marbolo', 'มาร์โบโล', 'มาโบโล', 'มาโบ', 'marble', 'mobolo');
   }
-  if (brandName === 'Mood') {
-    aliases.push('มูด', 'หมูด', 'mmods');
+  if (brandId === 'mood') {
+    aliases.push('mood', 'moood', 'มูด', 'หมูด', 'mmods');
   }
-  if (brandName === 'Alfa') {
+  if (brandId === 'alfa') {
     aliases.push('alpha', 'อัลฟา', 'อาลฟา');
   }
-  if (brandName === 'Vplus') {
-    aliases.push('v-plus', 'วีพลัส', 'วีพลัส');
+  if (brandId === 'vplus') {
+    aliases.push('vplus', 'v-plus', 'v plus', 'วีพลัส');
   }
 
   // Flavor aliases

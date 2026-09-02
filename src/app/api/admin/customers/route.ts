@@ -1,29 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Mock in-memory storage (shared with register route)
-// TODO: Replace with Supabase
-declare global {
-  var customersStorage: any[];
-}
-
-// Initialize global storage if not exists
-if (!global.customersStorage) {
-  global.customersStorage = [];
-}
+import { getAllCustomers } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Fetch from Supabase
-    // const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-    // const { data, error } = await supabase
-    //   .from('customers')
-    //   .select('*')
-    //   .order('created_at', { ascending: false });
+    const customers = await getAllCustomers();
 
-    const customers = global.customersStorage || [];
+    // Transform data for frontend
+    const transformedCustomers = customers.map((customer: any) => ({
+      id: customer.id,
+      full_name: customer.name,
+      phone: customer.phone,
+      line_id: customer.line_user_id,
+      email: customer.email,
+      total_orders: customer.total_orders || 0,
+      total_spent: customer.total_spent || 0,
+      created_at: customer.created_at,
+    }));
 
     return NextResponse.json({
-      customers,
+      customers: transformedCustomers,
     });
   } catch (error) {
     console.error("Failed to fetch customers:", error);

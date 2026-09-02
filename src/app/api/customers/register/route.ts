@@ -1,15 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Global in-memory storage (shared with admin/customers route)
-// TODO: Replace with Supabase
-declare global {
-  var customersStorage: any[];
-}
-
-// Initialize global storage if not exists
-if (!global.customersStorage) {
-  global.customersStorage = [];
-}
+import { registerCustomer } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,52 +15,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check duplicate phone
-    const existingCustomer = global.customersStorage.find((c) => c.phone === phone);
-    if (existingCustomer) {
+    // Register customer in Supabase
+    const customer = await registerCustomer({
+      full_name,
+      phone,
+      line_id,
+      email,
+      address,
+      district,
+      sub_district,
+      province,
+      postal_code,
+    });
+
+    console.log("✅ Customer registered:", customer);
+
+    return NextResponse.json({
+      success: true,
+      customer_id: customer.id,
+      message: "สมัครสมาชิกสำเร็จ!",
+    });
+  } catch (error: any) {
+    console.error("❌ Registration error:", error);
+
+    // Handle duplicate phone
+    if (error.message === "เบอร์โทรนี้เคยสมัครแล้ว") {
       return NextResponse.json(
-        { success: false, error: "เบอร์โทรนี้เคยสมัครแล้ว" },
+        { success: false, error: error.message },
         { status: 400 }
       );
     }
 
-    // Create customer
-    const newCustomer = {
-      id: global.customersStorage.length + 1,
-      full_name,
-      phone,
-      line_id: line_id || null,
-      email: email || null,
-      address,
-      district: district || null,
-      sub_district,
-      province,
-      postal_code: postal_code || null,
-      total_orders: 0,
-      total_spent: 0,
-      created_at: new Date().toISOString(),
-    };
-
-    global.customersStorage.push(newCustomer);
-
-    // TODO: Save to Supabase
-    // const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-    // const { data, error } = await supabase
-    //   .from('customers')
-    //   .insert([newCustomer])
-    //   .select()
-    //   .single();
-
-    console.log("✅ Customer registered:", newCustomer);
-    console.log("📊 Total customers:", global.customersStorage.length);
-
-    return NextResponse.json({
-      success: true,
-      customer_id: newCustomer.id,
-      message: "สมัครสมาชิกสำเร็จ!",
-    });
-  } catch (error) {
-    console.error("❌ Registration error:", error);
     return NextResponse.json(
       { success: false, error: "เกิดข้อผิดพลาด กรุณาลองใหม่" },
       { status: 500 }

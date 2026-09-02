@@ -244,6 +244,49 @@ export async function createCustomer(data: {
   return customer;
 }
 
+export async function registerCustomer(data: {
+  full_name: string
+  phone: string
+  line_id?: string
+  email?: string
+  address: string
+  district?: string
+  sub_district: string
+  province: string
+  postal_code?: string
+}) {
+  const { data: customer, error } = await getServerSupabase()
+    .from('customers')
+    .insert({
+      phone: data.phone,
+      name: data.full_name,
+      line_user_id: data.line_id || null,
+      email: data.email || null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    // Check for duplicate phone
+    if (error.code === '23505') {
+      throw new Error('เบอร์โทรนี้เคยสมัครแล้ว');
+    }
+    throw error;
+  }
+
+  return customer;
+}
+
+export async function getAllCustomers() {
+  const { data, error } = await getServerSupabase()
+    .from('customers')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
 export async function getCustomerByPhone(phone: string) {
   const { data, error } = await getServerSupabase()
     .from('customers')
