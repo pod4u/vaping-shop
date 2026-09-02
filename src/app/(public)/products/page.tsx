@@ -9,14 +9,21 @@ import ProductCard from "@/components/ProductCard";
 function ProductsContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
+  const searchParam = searchParams.get("search");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParam || "");
 
   useEffect(() => {
     if (categoryParam) {
       setSelectedCategory(categoryParam);
     }
   }, [categoryParam]);
+
+  useEffect(() => {
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    }
+  }, [searchParam]);
 
   const filteredProducts = products.filter((product) => {
     const matchesCategory = !selectedCategory || product.category === selectedCategory;
