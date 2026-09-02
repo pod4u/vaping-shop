@@ -83,7 +83,14 @@ export default function ConsentModal({ onAccept }: ConsentModalProps) {
           {/* Contact */}
           <div>
             <h3 className="font-bold text-white mb-2">ติดต่อเรื่องข้อมูลส่วนบุคคล</h3>
-            <p>LINE: <span className="text-acid-lime">@vaping_shop</span></p>
+            <a
+              href="https://lin.ee/RU5qNLj"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-acid-lime hover:underline"
+            >
+              LINE: คลิกเพื่อติดต่อ →
+            </a>
           </div>
         </div>
 

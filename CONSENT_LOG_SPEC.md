@@ -67,11 +67,11 @@ CREATE POLICY "Service role full access" ON consent_logs
 
 ## ✅ Checklist
 
-- [ ] สร้าง table `consent_logs`
-- [ ] สร้าง indexes
-- [ ] เปิด RLS
-- [ ] สร้าง policy สำหรับ service_role
-- [ ] ทดสอบ insert ผ่าน service_role
+- [x] สร้าง table `consent_logs`
+- [x] สร้าง indexes
+- [x] เปิด RLS
+- [x] สร้าง policy สำหรับ service_role
+- [x] ทดสอบ insert ผ่าน service_role
 
 ---
 
