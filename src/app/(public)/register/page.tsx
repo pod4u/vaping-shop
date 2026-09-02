@@ -91,6 +91,33 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (data.success) {
+        // Save consent logs
+        const customerId = data.customer_id;
+        
+        // Log terms acceptance
+        await fetch("/api/consent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customer_id: customerId,
+            consent_type: "terms",
+            accepted: true,
+          }),
+        });
+
+        // Log marketing acceptance (if accepted)
+        if (acceptedMarketing) {
+          await fetch("/api/consent", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              customer_id: customerId,
+              consent_type: "marketing",
+              accepted: true,
+            }),
+          });
+        }
+
         alert("สมัครสมาชิกสำเร็จ!");
         router.push("/");
       } else {
