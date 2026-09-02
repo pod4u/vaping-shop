@@ -12,6 +12,7 @@ export interface Product {
   flavorId: string;
   flavorName: string;
   flavorNameTh: string;
+  nicotinePercent?: number;
   color: string;
   image: string;
   price: number;
@@ -28,10 +29,11 @@ export const productList: Product[] = brands.flatMap(brand =>
     flavorId: flavor.id,
     flavorName: flavor.name,
     flavorNameTh: flavor.nameTh,
+    nicotinePercent: flavor.nicotinePercent,
     color: flavor.color || '#6B7280',
     image: flavor.image,
     price: getPriceByBrand(brand.id),
-    aliases: generateAliases(brand.id, brand.name, brand.nameTh, flavor.name, flavor.nameTh)
+    aliases: generateAliases(brand.id, brand.name, brand.nameTh, flavor.name, flavor.nameTh, flavor.nicotinePercent)
   }))
 );
 
@@ -50,7 +52,8 @@ function generateAliases(
   brandName: string,
   brandNameTh: string,
   flavorName: string,
-  flavorNameTh: string
+  flavorNameTh: string,
+  nicotinePercent?: number
 ): string[] {
   const aliases: string[] = [];
 
@@ -81,6 +84,16 @@ function generateAliases(
   // Combined: brand + flavor
   aliases.push(`${brandName} ${flavorName}`.toLowerCase());
   aliases.push(`${brandNameTh} ${flavorNameTh}`);
+
+  if (nicotinePercent) {
+    aliases.push(
+      `${flavorName} ${nicotinePercent}%`.toLowerCase(),
+      `${flavorNameTh} ${nicotinePercent}%`,
+      `${flavorNameTh} น.${nicotinePercent}`,
+      `${flavorNameTh} น${nicotinePercent}`,
+      `${brandNameTh} ${flavorNameTh} น.${nicotinePercent}`,
+    );
+  }
 
   return [...new Set(aliases)]; // ลบซ้ำ
 }

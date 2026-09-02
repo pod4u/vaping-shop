@@ -6,6 +6,7 @@ export interface BrandFlavor {
   nameTh: string;
   image: string;
   color?: string;
+  nicotinePercent?: number;
 }
 
 export interface Brand {
@@ -82,16 +83,17 @@ export const brands: Brand[] = [
     color: '#EC4899',
     puffCount: 14000,
     flavors: [
-      { id: 'blueberry', name: 'Blueberry', nameTh: 'บลูเบอร์รี่', image: '/images/products/moood/monster-series-14k/blueberry.webp', color: '#4F46E5' },
-      { id: 'cola', name: 'Cola', nameTh: 'โคล่า', image: '/images/products/moood/monster-series-14k/cola.webp', color: '#7C2D12' },
-      { id: 'grape', name: 'Grape', nameTh: 'องุ่น', image: '/images/products/moood/monster-series-14k/grape.webp', color: '#9333EA' },
-      { id: 'lemon-tea', name: 'Lemon Tea', nameTh: 'ชาเลมอน', image: '/images/products/moood/monster-series-14k/lemon-tea.webp', color: '#FDE047' },
-      { id: 'lychee', name: 'Lychee', nameTh: 'ลิ้นจี่', image: '/images/products/moood/monster-series-14k/lychee.webp', color: '#F472B6' },
-      { id: 'mint', name: 'Mint', nameTh: 'มิ้นท์', image: '/images/products/moood/monster-series-14k/mint.webp', color: '#22D3EE' },
-      { id: 'pineapple', name: 'Pineapple', nameTh: 'สับปะรด', image: '/images/products/moood/monster-series-14k/pineapple.webp', color: '#FCD34D' },
-      { id: 'strawberry', name: 'Strawberry', nameTh: 'สตรอว์เบอร์รี่', image: '/images/products/moood/monster-series-14k/strawberry.webp', color: '#EF4444' },
-      { id: 'watermelon', name: 'Watermelon', nameTh: 'แตงโม', image: '/images/products/moood/monster-series-14k/watermelon.webp', color: '#EF4444' },
-      { id: 'peach-orange', name: 'Peach Orange', nameTh: 'พีชออเรนจ์', image: '/images/products/moood/monster-series-14k/peach-orange.webp', color: '#FB923C' },
+      { id: 'blueberry', name: 'Blueberry', nameTh: 'บลูเบอร์รี่', image: '/images/products/moood/monster-series-14k/blueberry.webp', color: '#4F46E5', nicotinePercent: 3 },
+      { id: 'cola', name: 'Cola', nameTh: 'โคล่า', image: '/images/products/moood/monster-series-14k/cola.webp', color: '#7C2D12', nicotinePercent: 3 },
+      { id: 'grape', name: 'Grape', nameTh: 'องุ่น', image: '/images/products/moood/monster-series-14k/grape-5.jpg', color: '#9333EA', nicotinePercent: 5 },
+      { id: 'kyoho-grape', name: 'Kyoho Grape', nameTh: 'องุ่นเคียวโฮ', image: '/images/products/moood/monster-series-14k/kyoho-grape-3.jpg', color: '#7C3AED', nicotinePercent: 3 },
+      { id: 'lemon-tea', name: 'Lemon Tea', nameTh: 'ชาเลมอน', image: '/images/products/moood/monster-series-14k/lemon-tea.webp', color: '#FDE047', nicotinePercent: 3 },
+      { id: 'lychee', name: 'Lychee', nameTh: 'ลิ้นจี่', image: '/images/products/moood/monster-series-14k/lychee.webp', color: '#F472B6', nicotinePercent: 3 },
+      { id: 'mint', name: 'Mint', nameTh: 'มิ้นท์', image: '/images/products/moood/monster-series-14k/mint.webp', color: '#22D3EE', nicotinePercent: 3 },
+      { id: 'pineapple', name: 'Pineapple', nameTh: 'สับปะรด', image: '/images/products/moood/monster-series-14k/pineapple.webp', color: '#FCD34D', nicotinePercent: 3 },
+      { id: 'strawberry', name: 'Strawberry', nameTh: 'สตรอว์เบอร์รี่', image: '/images/products/moood/monster-series-14k/strawberry.webp', color: '#EF4444', nicotinePercent: 3 },
+      { id: 'watermelon', name: 'Watermelon', nameTh: 'แตงโม', image: '/images/products/moood/monster-series-14k/watermelon.webp', color: '#EF4444', nicotinePercent: 3 },
+      { id: 'peach-orange', name: 'Peach Orange', nameTh: 'พีชออเรนจ์', image: '/images/products/moood/monster-series-14k/peach-orange.webp', color: '#FB923C', nicotinePercent: 3 },
     ],
   },
   {

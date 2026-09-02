@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import ConsentModal from "@/components/ConsentModal";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasConsent, setHasConsent] = useState(false);
+  const [acceptedMarketing, setAcceptedMarketing] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -19,6 +22,11 @@ export default function RegisterPage() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleConsentAccept = (marketing: boolean) => {
+    setHasConsent(true);
+    setAcceptedMarketing(marketing);
+  };
 
   // Validation
   const validateForm = () => {
@@ -96,23 +104,28 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen py-16 px-4 bg-navy-deep">
-      <div className="max-w-xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="text-acid-lime text-xs font-mono tracking-widest uppercase mb-2">
-            📝 JOIN US
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">
-            สมัคร<span className="text-white-neon">สมาชิก</span>
-          </h1>
-          <p className="text-white/50 text-sm">
-            สมัครสมาชิกเพื่อรับสิทธิพิเศษและโปรโมชั่นพิเศษ
-          </p>
-        </div>
+    <>
+      {/* Consent Modal */}
+      {!hasConsent && <ConsentModal onAccept={handleConsentAccept} />}
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Registration Form */}
+      <div className={`min-h-screen py-16 px-4 bg-navy-deep ${!hasConsent ? 'opacity-30 pointer-events-none' : ''}`}>
+        <div className="max-w-xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div className="text-acid-lime text-xs font-mono tracking-widest uppercase mb-2">
+              📝 JOIN US
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">
+              สมัคร<span className="text-white-neon">สมาชิก</span>
+            </h1>
+            <p className="text-white/50 text-sm">
+              สมัครสมาชิกเพื่อรับสิทธิพิเศษและโปรโมชั่นพิเศษ
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal Info */}
           <div className="vapor-card rounded-2xl p-6 border border-navy-border">
             <h2 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
@@ -315,7 +328,8 @@ export default function RegisterPage() {
             )}
           </button>
         </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
