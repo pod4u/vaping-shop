@@ -51,6 +51,7 @@ export default function StockPage() {
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStock();
@@ -60,7 +61,7 @@ export default function StockPage() {
     try {
       const res = await fetch('/api/stock');
       const data = await res.json();
-      
+
       if (data.success) {
         setStockData(data);
       } else {
@@ -84,21 +85,20 @@ export default function StockPage() {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    
+
     const today = now.toLocaleDateString('th-TH');
     const updateDate = date.toLocaleDateString('th-TH');
     const isToday = today === updateDate;
 
-    if (diffMins < 1) return `วันนี้ ${date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
-    if (diffMins < 60) return `วันนี้ ${date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
+    if (diffMins < 1) return `เมื่อสักครู่`;
+    if (diffMins < 60) return `${diffMins} นาทีที่แล้ว`;
     if (isToday) return `วันนี้ ${date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`;
     if (diffDays === 1) return 'เมื่อวาน';
     if (diffDays < 7) return `${diffDays} วันที่แล้ว`;
-    
-    return date.toLocaleDateString('th-TH', { 
-      day: 'numeric', 
-      month: 'short',
-      year: 'numeric'
+
+    return date.toLocaleDateString('th-TH', {
+      day: 'numeric',
+      month: 'short'
     });
   };
 
@@ -118,10 +118,10 @@ export default function StockPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-brand-void flex items-center justify-center">
+      <div className="min-h-screen bg-navy-deep flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-vapor-violet border-t-acid-lime rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/60">กำลังโหลดข้อมูลสินค้า...</p>
+          <div className="w-12 h-12 border-4 border-vapor-violet border-t-acid-lime rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/60">กำลังโหลด...</p>
         </div>
       </div>
     );
@@ -129,12 +129,12 @@ export default function StockPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-brand-void flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-navy-deep flex items-center justify-center">
+        <div className="text-center p-4">
           <p className="text-red-400 mb-4">เกิดข้อผิดพลาด: {error}</p>
           <button
             onClick={fetchStock}
-            className="btn-acid px-6 py-3 rounded-full font-bold"
+            className="bg-acid-lime text-navy-deep px-6 py-3 rounded-full font-bold hover:shadow-acid transition-all"
           >
             ลองใหม่
           </button>
@@ -153,62 +153,167 @@ export default function StockPage() {
     ), 0
   ) || 0;
 
-  return (
-    <div className="min-h-screen bg-brand-void">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-brand-void/80 backdrop-blur-xl border-b border-brand-border">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-vapor-violet/20 border border-vapor-violet/50 flex items-center justify-center">
-                <span className="text-xl">💨</span>
-              </div>
-              <span className="text-xl font-black text-white">
-                VAPING <span className="text-acid-lime">SHOP</span>
-              </span>
-            </Link>
+  // Get all flavors flattened for simple view
+  const allFlavors: { brand: Brand; product: Product; flavor: AvailableFlavor }[] = [];
+  stockData?.data.forEach(b => {
+    b.products.forEach(p => {
+      p.availableFlavors.forEach(f => {
+        allFlavors.push({ brand: b.brand, product: p, flavor: f });
+      });
+    });
+  });
 
-            <button
-              onClick={shareLink}
-              className="btn-acid px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-              แชร์
-            </button>
+  // Filter by brand if selected
+  const filteredFlavors = selectedBrand 
+    ? allFlavors.filter(f => f.brand.id === selectedBrand)
+    : allFlavors;
+
+  return (
+    <div className="min-h-screen bg-navy-deep">
+      {/* Simple Header */}
+      <header className="sticky top-0 z-50 bg-navy-deep/95 backdrop-blur-xl border-b border-navy-border">
+        <div className="max-w-4xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="text-lg font-bold text-white">
+              <span className="text-acid-lime">←</span> หน้าร้าน
+            </Link>
+            <div className="flex items-center gap-3">
+              <span className="text-white/50 text-xs">
+                {stockData?.lastUpdated && `อัปเดต ${formatLastUpdated(stockData.lastUpdated)}`}
+              </span>
+              <button
+                onClick={shareLink}
+                className="text-white/60 hover:text-acid-lime transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Banner */}
-      <section className="relative py-12 px-4">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-vapor-violet/20 rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-0 right-0 w-[400px] h-[300px] bg-acid-lime/10 rounded-full blur-[100px]"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-acid-lime/10 border border-acid-lime/30 mb-6">
+      {/* Title Section */}
+      <section className="py-8 px-4 border-b border-navy-border">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-3 mb-2">
             <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></span>
-            <span className="text-acid-lime text-xs font-mono tracking-wider uppercase">
-              อัปเดต {stockData?.lastUpdated ? formatLastUpdated(stockData.lastUpdated) : '-'}
-            </span>
+            <h1 className="text-2xl font-black text-white">
+              สินค้าพร้อมส่ง
+            </h1>
           </div>
-
-          <h1 className="text-4xl md:text-6xl font-black text-white mb-4">
-            สินค้า <span className="text-acid-lime">พร้อมส่ง</span>
-          </h1>
-
-          <p className="text-white/60 text-lg mb-8">
-            มีสินค้าพร้อมส่ง {totalProducts} รายการ, {totalFlavors} รสชาติ
+          <p className="text-white/50 text-sm">
+            {totalFlavors} รายการ • {totalProducts} สินค้า • 7 แบรนด์
           </p>
+        </div>
+      </section>
 
+      {/* Brand Filter Tabs */}
+      <section className="sticky top-[57px] z-40 bg-navy-deep/95 backdrop-blur-xl border-b border-navy-border">
+        <div className="max-w-4xl mx-auto px-4 py-3">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+            <button
+              onClick={() => setSelectedBrand(null)}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                selectedBrand === null
+                  ? 'bg-acid-lime text-navy-deep'
+                  : 'bg-navy-surface text-white/70 hover:bg-white/10'
+              }`}
+            >
+              ทั้งหมด ({totalFlavors})
+            </button>
+            {stockData?.data.map(b => {
+              const count = b.products.reduce((s, p) => s + p.availableFlavors.length, 0);
+              return (
+                <button
+                  key={b.brand.id}
+                  onClick={() => setSelectedBrand(b.brand.id)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                    selectedBrand === b.brand.id
+                      ? 'text-white'
+                      : 'bg-navy-surface text-white/70 hover:bg-white/10'
+                  }`}
+                  style={selectedBrand === b.brand.id ? { backgroundColor: b.brand.color || '#7928ca' } : {}}
+                >
+                  {b.brand.name_th || b.brand.name} ({count})
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Flavor Grid - Simple & Clean */}
+      <section className="py-6 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {filteredFlavors.map((item, index) => (
+              <div
+                key={`${item.product.id}-${item.flavor.id}`}
+                className="bg-navy-surface/50 border border-navy-border rounded-xl p-3 hover:border-acid-lime/50 transition-all"
+              >
+                {/* Flavor Image */}
+                <div className="relative aspect-square bg-navy-void rounded-lg mb-3 overflow-hidden">
+                  {item.flavor.flavor.image ? (
+                    <img
+                      src={item.flavor.flavor.image}
+                      alt={item.flavor.flavor.name_th || item.flavor.flavor.name || ''}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full flex items-center justify-center text-2xl font-bold text-white/30"
+                      style={{ backgroundColor: item.flavor.flavor.color ? `${item.flavor.flavor.color}20` : 'transparent' }}
+                    >
+                      {item.flavor.flavor.name_th?.charAt(0) || item.flavor.flavor.name?.charAt(0) || '?'}
+                    </div>
+                  )}
+                  
+                  {/* Stock Badge */}
+                  <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded bg-acid-lime/90 text-navy-deep text-[10px] font-bold">
+                    {item.flavor.stock_quantity}
+                  </div>
+                </div>
+
+                {/* Flavor Name */}
+                <div className="space-y-0.5">
+                  <p className="text-white text-sm font-medium truncate">
+                    {item.flavor.flavor.name_th || item.flavor.flavor.name}
+                  </p>
+                  <p className="text-white/40 text-xs truncate">
+                    {item.brand.name_th || item.brand.name}
+                  </p>
+                  {item.flavor.flavor.name_th && item.flavor.flavor.name && (
+                    <p className="text-white/30 text-[10px] truncate">
+                      {item.flavor.flavor.name}
+                    </p>
+                  )}
+                </div>
+
+                {/* Price */}
+                <div className="mt-2 pt-2 border-t border-navy-border/50">
+                  <p className="text-acid-lime text-sm font-bold">
+                    ฿{formatPrice(item.product.sale_price || item.product.price)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Order CTA */}
+      <section className="py-6 px-4 border-t border-navy-border">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-white/50 text-sm mb-4">
+            สนใจสินค้าทัก LINE ได้เลย
+          </p>
           <a
-            href="https://line.me/ti/p/@vaping-shop"
+            href="https://lin.ee/RU5qNLj"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-acid px-8 py-4 rounded-full text-base font-extrabold inline-flex items-center gap-3"
+            className="inline-flex items-center gap-2 bg-acid-lime text-navy-deep px-6 py-3 rounded-full font-bold hover:shadow-acid transition-all"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C6.48 2 2 5.58 2 10c0 2.12.92 4.04 2.42 5.44L3 22l6.4-3.2c.84.13 1.71.2 2.6.2 5.52 0 10-3.58 10-8s-4.48-8-10-8z"/>
@@ -218,192 +323,20 @@ export default function StockPage() {
         </div>
       </section>
 
-      {/* Brand Sections */}
-      {stockData?.data.map((brandStock) => (
-        <section key={brandStock.brand.id} className="py-8 px-4 relative">
-          {/* Brand Banner */}
-          <div className="max-w-7xl mx-auto mb-8">
-            <div
-              className="relative h-28 md:h-44 rounded-2xl overflow-hidden"
-              style={{ background: `linear-gradient(135deg, ${brandStock.brand.color || '#7928ca'}40, ${brandStock.brand.color || '#7928ca'}10)` }}
-            >
-              {/* Animated Background Elements */}
-              <div className="absolute inset-0 overflow-hidden">
-                <div 
-                  className="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl opacity-30 animate-pulse"
-                  style={{ backgroundColor: brandStock.brand.color || '#7928ca' }}
-                ></div>
-                <div 
-                  className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-2xl opacity-20"
-                  style={{ backgroundColor: '#05FF00' }}
-                ></div>
-                {/* Diagonal Lines */}
-                <div 
-                  className="absolute inset-0 opacity-10"
-                  style={{
-                    backgroundImage: `repeating-linear-gradient(
-                      45deg,
-                      transparent,
-                      transparent 10px,
-                      rgba(255,255,255,0.1) 10px,
-                      rgba(255,255,255,0.1) 20px
-                    )`
-                  }}
-                ></div>
-              </div>
-
-              {/* Content */}
-              <div className="relative z-10 h-full flex items-center justify-between px-6 md:px-10">
-                <div>
-                  <h2 
-                    className="text-3xl md:text-5xl font-black text-white drop-shadow-lg"
-                    style={{ textShadow: `0 0 40px ${brandStock.brand.color || '#7928ca'}` }}
-                  >
-                    {brandStock.brand.name_th || brandStock.brand.name}
-                  </h2>
-                  <p className="text-white/60 text-sm md:text-base mt-1">
-                    {brandStock.products.length} สินค้าพร้อมส่ง
-                  </p>
-                </div>
-
-                {/* Brand Icon */}
-                <div 
-                  className="w-14 h-14 md:w-20 md:h-20 rounded-2xl flex items-center justify-center text-3xl md:text-4xl font-black text-white shadow-2xl"
-                  style={{ 
-                    backgroundColor: brandStock.brand.color || '#7928ca',
-                    boxShadow: `0 0 30px ${brandStock.brand.color || '#7928ca'}60`
-                  }}
-                >
-                  {brandStock.brand.name.charAt(0)}
-                </div>
-              </div>
-
-              {/* Bottom Gradient */}
-              <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-brand-void to-transparent"></div>
-            </div>
-          </div>
-
-          <div className="max-w-7xl mx-auto">
-            {/* Product Info - เต็มความกว้าง */}
-            {brandStock.products.map((product) => (
-              <div key={product.id} className="mb-12">
-                {/* Product Header */}
-                <div className="vapor-card rounded-2xl p-6 mb-6">
-                  <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <div>
-                      <h3 className="text-white font-bold text-2xl">
-                        {product.name_th || product.name}
-                      </h3>
-                      {product.puff_count && (
-                        <span className="inline-block mt-2 px-3 py-1 rounded bg-vapor-violet/20 text-vapor-violet text-sm font-mono">
-                          {product.puff_count / 1000}K Puffs
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-acid-lime text-3xl font-black">
-                        ฿{formatPrice(product.sale_price || product.price)}
-                      </div>
-                      {product.sale_price && (
-                        <div className="text-white/40 text-base line-through">
-                          ฿{formatPrice(product.price)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Flavors Grid - นอก product card */}
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl md:text-2xl font-black text-white">
-                      รสชาติที่มี ({product.availableFlavors.length})
-                    </h2>
-                    <span className="text-acid-lime text-sm font-bold">พร้อมส่ง</span>
-                  </div>
-
-                  {/* Grid เหมือนหน้าแบรนด์ */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-                    {product.availableFlavors.map((af, index) => (
-                      <div
-                        key={af.id}
-                        className="group vapor-card rounded-2xl overflow-hidden card-tilt animate-slide-up"
-                        style={{ animationDelay: `${index * 0.05}s` }}
-                      >
-                        {/* Flavor Image */}
-                        <div className="relative aspect-square bg-brand-void overflow-hidden">
-                          {af.flavor.image ? (
-                            <img
-                              src={af.flavor.image}
-                              alt={af.flavor.name || ''}
-                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                            />
-                          ) : (
-                            <div 
-                              className="w-full h-full flex items-center justify-center text-white font-bold text-3xl"
-                              style={{ backgroundColor: af.flavor.color ? `${af.flavor.color}30` : 'rgba(255,255,255,0.1)' }}
-                            >
-                              {af.flavor.name_th?.charAt(0) || af.flavor.name?.charAt(0)}
-                            </div>
-                          )}
-
-                          {/* พร้อมส่ง Badge */}
-                          <div className="absolute top-2 left-2 px-3 py-1 rounded-full bg-acid-lime text-brand-void text-xs font-black uppercase tracking-wide shadow-lg">
-                            ✓ พร้อมส่ง
-                          </div>
-
-                          {/* Stock Badge */}
-                          {af.stock_quantity > 1 && (
-                            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white text-brand-void text-xs font-black flex items-center justify-center shadow-lg">
-                              {af.stock_quantity}
-                            </div>
-                          )}
-
-                          {/* Hover overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-brand-void/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
-                            <span className="text-acid-lime text-sm font-bold">พร้อมส่ง</span>
-                          </div>
-                        </div>
-
-                        {/* Flavor Info */}
-                        <div className="p-4 text-center">
-                          <h3 className="text-white font-bold text-sm mb-1 group-hover:text-acid-lime transition-colors">
-                            {af.flavor.name_th || af.flavor.name}
-                          </h3>
-                          <p className="text-white/40 text-xs">{af.flavor.name}</p>
-
-                          {/* Color indicator */}
-                          {af.flavor.color && (
-                            <div
-                              className="w-3 h-3 rounded-full mx-auto mt-2"
-                              style={{ backgroundColor: af.flavor.color }}
-                            ></div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      ))}
-
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-brand-border">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="text-white/40 text-sm mb-4">
-            อัปเดตล่าสุด: {stockData?.lastUpdated ? formatLastUpdated(stockData.lastUpdated) : '-'}
+      <footer className="py-4 px-4 border-t border-navy-border">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-white/30 text-xs">
+            อัปเดต: {stockData?.lastUpdated ? formatLastUpdated(stockData.lastUpdated) : '-'}
           </p>
-          <p className="text-white/60 text-sm">
-            สนใจสินค้าทัก LINE ได้เลย แอดมินตอบเร็ว 🚀
-          </p>
-          <Link href="/" className="text-acid-lime text-sm mt-4 inline-block hover:underline">
-            ← กลับหน้าร้าน
-          </Link>
         </div>
       </footer>
+
+      {/* Hide scrollbar style */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }

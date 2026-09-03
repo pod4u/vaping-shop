@@ -1,10 +1,6 @@
-// Fuzzy Search สำหรับจับคู่ชื่อสินค้าที่พิมพ์ผิด
-// ใช้กับ LINE Bot เมื่อลูกค้าสั่งซื้อ
+import { getServerSupabase } from "@/lib/supabase";
 
-import { brands } from '@/lib/brands';
-
-// สร้าง product list จาก brands
-export interface Product {
+export interface ProductSearchResult {
   id: string;
   brandId: string;
   brandName: string;
@@ -16,242 +12,105 @@ export interface Product {
   color: string;
   image: string;
   price: number;
-  aliases: string[]; // ชื่อที่อาจพิมพ์ผิด
+  stock: number;
+  aliases: string[];
 }
 
-// สร้าง product list
-export const productList: Product[] = brands.flatMap(brand =>
-  brand.flavors.map(flavor => ({
-    id: `${brand.id}-${flavor.id}`,
-    brandId: brand.id,
-    brandName: brand.name,
-    brandNameTh: brand.nameTh,
-    flavorId: flavor.id,
-    flavorName: flavor.name,
-    flavorNameTh: flavor.nameTh,
-    nicotinePercent: flavor.nicotinePercent,
-    color: flavor.color || '#6B7280',
-    image: flavor.image,
-    price: getPriceByBrand(brand.id),
-    aliases: generateAliases(brand.id, brand.name, brand.nameTh, flavor.name, flavor.nameTh, flavor.nicotinePercent)
-  }))
-);
+const searchSelect = `
+  id, nicotine_level, price, sale_price, image_url, stock_quantity,
+  flavor:flavors(id, slug, name, name_th, color),
+  product:products(id, brand:brands(id, slug, name, name_th)),
+  aliases:product_aliases(alias, normalized_alias)
+`;
 
-// ราคาตามแบรนด์
-function getPriceByBrand(brandId: string): number {
-  const prices: Record<string, number> = {
-    alfa: 450, marbo: 280, mood: 320, vplus: 380,
-    eskobar: 480, mbar: 350, relx: 450
-  };
-  return prices[brandId] || 350;
+function relation<T>(value: T | T[] | null): T | null {
+  return Array.isArray(value) ? value[0] ?? null : value;
 }
 
-// สร้าง aliases สำหรับ fuzzy search
-function generateAliases(
-  brandId: string,
-  brandName: string,
-  brandNameTh: string,
-  flavorName: string,
-  flavorNameTh: string,
-  nicotinePercent?: number
-): string[] {
-  const aliases: string[] = [];
-
-  // Brand aliases
-  aliases.push(brandName.toLowerCase()); // marbo
-  aliases.push(brandNameTh); // มาโบโล่
-  aliases.push(simplifyThai(brandNameTh)); // มาโบโล
-
-  // Common misspellings
-  if (brandId === 'marbo') {
-    aliases.push('marbolo', 'มาร์โบโล', 'มาโบโล', 'มาโบ', 'marble', 'mobolo');
-  }
-  if (brandId === 'mood') {
-    aliases.push('mood', 'moood', 'มูด', 'หมูด', 'mmods');
-  }
-  if (brandId === 'alfa') {
-    aliases.push('alpha', 'อัลฟา', 'อาลฟา');
-  }
-  if (brandId === 'vplus') {
-    aliases.push('vplus', 'v-plus', 'v plus', 'วีพลัส');
-  }
-
-  // Flavor aliases
-  aliases.push(flavorName.toLowerCase());
-  aliases.push(flavorNameTh);
-  aliases.push(simplifyThai(flavorNameTh));
-
-  // Combined: brand + flavor
-  aliases.push(`${brandName} ${flavorName}`.toLowerCase());
-  aliases.push(`${brandNameTh} ${flavorNameTh}`);
-
-  if (nicotinePercent) {
-    aliases.push(
-      `${flavorName} ${nicotinePercent}%`.toLowerCase(),
-      `${flavorNameTh} ${nicotinePercent}%`,
-      `${flavorNameTh} น.${nicotinePercent}`,
-      `${flavorNameTh} น${nicotinePercent}`,
-      `${brandNameTh} ${flavorNameTh} น.${nicotinePercent}`,
-    );
-  }
-
-  return [...new Set(aliases)]; // ลบซ้ำ
-}
-
-// ลบวรรณยุกต์ภาษาไทย เพื่อ fuzzy matching
-function simplifyThai(text: string): string {
-  return text
-    .replace(/[่้๊๋]/g, '') // ลบวรรณยุกต์
-    .replace(/[ืึัิีๅํ์]/g, '') // ลบสระบน/ล่าง
-    .replace(/ะ/g, 'า') // ะ → า
-    .replace(/ๅ/g, 'า'); // ๅ → า
-}
-
-// Fuzzy Search Algorithm
-export function fuzzySearchProducts(query: string, limit: number = 5): Product[] {
-  const normalizedQuery = normalizeQuery(query);
-
-  // คะแนนสำหรับแต่ละ product
-  const scores: { product: Product; score: number }[] = [];
-
-  for (const product of productList) {
-    const score = calculateScore(normalizedQuery, product);
-    if (score > 0) {
-      scores.push({ product, score });
-    }
-  }
-
-  // เรียงตามคะแนน
-  scores.sort((a, b) => b.score - a.score);
-
-  return scores.slice(0, limit).map(s => s.product);
-}
-
-// Normalize query
 function normalizeQuery(text: string): string {
-  return simplifyThai(text)
-    .toLowerCase()
-    .replace(/[^a-z0-9ก-๙\s]/g, '') // เก็บแค่ตัวอักษรและตัวเลข
-    .trim();
+  return text.toLowerCase().normalize("NFKC").replace(/[่้๊๋์]/g, "").replace(/[^a-z0-9ก-๙]+/g, " ").trim();
 }
 
-// คำนวณคะแนน
-function calculateScore(query: string, product: Product): number {
-  let maxScore = 0;
-
-  // ตรวจสอบทุก alias
-  for (const alias of product.aliases) {
-    const normalizedAlias = normalizeQuery(alias);
-
-    // Exact match
-    if (normalizedAlias === query) {
-      return 100;
-    }
-
-    // Contains
-    if (normalizedAlias.includes(query) || query.includes(normalizedAlias)) {
-      const score = 80;
-      if (score > maxScore) maxScore = score;
-      continue;
-    }
-
-    // Levenshtein distance
-    const distance = levenshteinDistance(query, normalizedAlias);
-    const maxLength = Math.max(query.length, normalizedAlias.length);
-    const similarity = 1 - (distance / maxLength);
-
-    if (similarity > 0.6) { // 60% ความคล้ายคลึง
-      const score = Math.round(similarity * 70);
-      if (score > maxScore) maxScore = score;
-    }
-  }
-
-  return maxScore;
+function toSearchResult(row: any): ProductSearchResult {
+  const product = relation<any>(row.product);
+  const brand = relation<any>(product?.brand);
+  const flavor = relation<any>(row.flavor);
+  return {
+    id: row.id,
+    brandId: brand?.slug,
+    brandName: brand?.name,
+    brandNameTh: brand?.name_th,
+    flavorId: flavor?.slug,
+    flavorName: flavor?.name,
+    flavorNameTh: flavor?.name_th,
+    nicotinePercent: row.nicotine_level == null ? undefined : Number(row.nicotine_level),
+    color: flavor?.color || "#6B7280",
+    image: row.image_url,
+    price: Number(row.sale_price ?? row.price),
+    stock: row.stock_quantity,
+    aliases: (row.aliases || []).flatMap((item: any) => [item.alias, item.normalized_alias]).filter(Boolean),
+  };
 }
 
-// Levenshtein Distance Algorithm
 function levenshteinDistance(a: string, b: string): number {
-  const matrix: number[][] = [];
-
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
-  }
-
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j;
-  }
-
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1, // substitution
-          matrix[i][j - 1] + 1,     // insertion
-          matrix[i - 1][j] + 1      // deletion
-        );
-      }
+  const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);
+  for (let j = 0; j <= a.length; j += 1) matrix[0][j] = j;
+  for (let i = 1; i <= b.length; i += 1) {
+    for (let j = 1; j <= a.length; j += 1) {
+      matrix[i][j] = b[i - 1] === a[j - 1]
+        ? matrix[i - 1][j - 1]
+        : Math.min(matrix[i - 1][j - 1], matrix[i][j - 1], matrix[i - 1][j]) + 1;
     }
   }
-
   return matrix[b.length][a.length];
 }
 
-// Parse quantity จากข้อความ
-export function parseQuantity(text: string): number {
-  // หาตัวเลขในข้อความ
-  const numbers = text.match(/\d+/g);
-  if (numbers) {
-    return parseInt(numbers[0]) || 1;
+function calculateScore(query: string, product: ProductSearchResult): number {
+  let best = 0;
+  for (const rawAlias of product.aliases) {
+    const alias = normalizeQuery(rawAlias);
+    if (!alias) continue;
+    if (alias === query) return 100;
+    if (alias.includes(query) || query.includes(alias)) best = Math.max(best, 80);
+    const maxLength = Math.max(query.length, alias.length);
+    if (maxLength) {
+      const similarity = 1 - levenshteinDistance(query, alias) / maxLength;
+      if (similarity > 0.6) best = Math.max(best, Math.round(similarity * 70));
+    }
   }
-
-  // คำที่แทนจำนวน
-  if (text.includes('สอง') || text.includes('2ตัว') || text.includes('สองตัว')) {
-    return 2;
-  }
-  if (text.includes('สาม') || text.includes('3ตัว') || text.includes('สามตัว')) {
-    return 3;
-  }
-  if (text.includes('สี่') || text.includes('4ตัว') || text.includes('สี่ตัว')) {
-    return 4;
-  }
-  if (text.includes('ห้า') || text.includes('5ตัว') || text.includes('ห้าตัว')) {
-    return 5;
-  }
-  if (text.includes('ครึ่งโหล') || text.includes('6ตัว')) {
-    return 6;
-  }
-  if (text.includes('โหล') || text.includes('12ตัว')) {
-    return 12;
-  }
-
-  return 1; // default
+  return best;
 }
 
-// ตัวอย่างการใช้งาน
-/*
-// เมื่อลูกค้าพิมพ์ใน LINE
-const userMessage = "มาโบโล บลูเบอร์รี่ 2 ตัว";
+async function loadProducts(availableOnly = false): Promise<ProductSearchResult[]> {
+  let query = getServerSupabase().from("product_flavors").select(searchSelect).eq("is_active", true).eq("is_available", true);
+  if (availableOnly) query = query.gt("stock_quantity", 0);
+  const { data, error } = await query.order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data || []).map(toSearchResult);
+}
 
-// ค้นหาสินค้า
-const products = fuzzySearchProducts(userMessage);
-// → จะได้ [{ id: 'marbo-blueberry', ... }]
+export async function fuzzySearchProducts(query: string, limit = 5): Promise<ProductSearchResult[]> {
+  const normalized = normalizeQuery(query);
+  const products = await loadProducts(false);
+  return products
+    .map((product) => ({ product, score: calculateScore(normalized, product) }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score || b.product.stock - a.product.stock)
+    .slice(0, limit)
+    .map(({ product }) => product);
+}
 
-// ดึงจำนวน
-const quantity = parseQuantity(userMessage);
-// → 2
+export async function getAvailableProducts(limit = 20): Promise<ProductSearchResult[]> {
+  return (await loadProducts(true)).slice(0, limit);
+}
 
-// ส่ง Quick Reply ให้ลูกค้ายืนยัน
-const quickReply = {
-  type: 'quickReply',
-  items: products.map(p => ({
-    type: 'action',
-    action: {
-      type: 'postback',
-      label: `${p.brandNameTh} ${p.flavorNameTh}`,
-      data: `order:${p.id}:${quantity}`
-    }
-  }))
-};
-*/
+export function parseQuantity(text: string): number {
+  const explicit = text.match(/(\d+)\s*(?:ตัว|ชิ้น|อัน)/);
+  if (explicit) return Math.max(1, Number(explicit[1]));
+  const thaiQuantities: Array<[RegExp, number]> = [
+    [/สอง(?:ตัว|ชิ้น|อัน)?/, 2], [/สาม(?:ตัว|ชิ้น|อัน)?/, 3],
+    [/สี่(?:ตัว|ชิ้น|อัน)?/, 4], [/ห้า(?:ตัว|ชิ้น|อัน)?/, 5],
+    [/ครึ่งโหล/, 6], [/โหล/, 12],
+  ];
+  return thaiQuantities.find(([pattern]) => pattern.test(text))?.[1] ?? 1;
+}

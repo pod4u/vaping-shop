@@ -2,6 +2,7 @@
 
 export interface Brand {
   id: string;
+  slug: string;
   name: string;
   name_th: string | null;
   description: string | null;
@@ -18,26 +19,32 @@ export interface Category {
   id: string;
   name: string;
   name_th: string;
+  description: string | null;
   icon: string | null;
   slug: string;
   sort_order: number;
   is_active: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Flavor {
   id: string;
+  slug: string;
   name: string;
   name_th: string | null;
   color: string | null;
   icon: string | null;
   is_active: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Product {
   id: string;
+  product_key: string;
   sku: string | null;
+  slug: string;
   name: string;
   name_th: string | null;
   brand_id: string | null;
@@ -52,6 +59,7 @@ export interface Product {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  sort_order: number;
   // Relations
   brand?: Brand;
   category?: Category;
@@ -62,9 +70,21 @@ export interface ProductFlavor {
   id: string;
   product_id: string;
   flavor_id: string;
+  variant_key: string;
+  sku: string;
+  nicotine_level: number | null;
+  price: number;
+  sale_price: number | null;
+  image_path: string;
+  image_url: string;
+  image_alt_en: string | null;
+  image_alt_th: string | null;
   stock_quantity: number;
   is_available: boolean;
+  is_active: boolean;
+  sort_order: number;
   created_at: string;
+  updated_at: string;
   // Relations
   flavor?: Flavor;
   product?: Product;

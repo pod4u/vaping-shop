@@ -1,10 +1,14 @@
 "use client";
 
-import { featuredProducts } from "../data/products";
+import { useEffect, useState } from "react";
+import type { Product } from "../types/product";
+import { getCatalogProducts } from "@/lib/catalog";
 import ProductCard from "./ProductCard";
 import Link from "next/link";
 
 export default function FeaturedProducts() {
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  useEffect(() => { getCatalogProducts().then((items) => setFeaturedProducts(items.filter((item) => item.inStock).slice(0, 4))).catch(console.error); }, []);
   return (
     <section className="py-20 px-4 relative overflow-hidden">
       {/* Multi-layer depth background */}

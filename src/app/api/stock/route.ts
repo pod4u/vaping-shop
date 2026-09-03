@@ -1,84 +1,59 @@
-import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { brands } from '@/lib/brands';
+import { NextResponse } from "next/server";
+import { getServerSupabase } from "@/lib/supabase";
 
-const STOCK_FILE = path.join(process.cwd(), 'src/data/stock.json');
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    if (!fs.existsSync(STOCK_FILE)) {
-      return NextResponse.json({
-        success: false,
-        error: 'ไม่มีข้อมูลสินค้า',
-        data: [],
-        lastUpdated: new Date().toISOString()
+    const { data, error } = await getServerSupabase()
+      .from("product_flavors")
+      .select(`
+        id, stock_quantity, price, sale_price, image_url,
+        flavor:flavors(id, slug, name, name_th, color),
+        product:products(id, name, name_th, puff_count, brand:brands(id, slug, name, name_th, color, banner_url))
+      `)
+      .eq("is_active", true)
+      .eq("is_available", true)
+      .gt("stock_quantity", 0)
+      .order("stock_quantity", { ascending: false });
+    if (error) throw error;
+
+    const grouped = new Map<string, any>();
+    for (const variant of data || []) {
+      const product = Array.isArray(variant.product) ? variant.product[0] : variant.product;
+      const brand = Array.isArray(product?.brand) ? product.brand[0] : product?.brand;
+      const flavor = Array.isArray(variant.flavor) ? variant.flavor[0] : variant.flavor;
+      if (!product || !brand || !flavor) continue;
+      if (!grouped.has(brand.slug)) {
+        grouped.set(brand.slug, {
+          brand: { id: brand.slug, name: brand.name, name_th: brand.name_th, color: brand.color, banner_url: brand.banner_url },
+          products: new Map<string, any>(),
+        });
+      }
+      const brandGroup = grouped.get(brand.slug);
+      if (!brandGroup.products.has(product.id)) {
+        brandGroup.products.set(product.id, {
+          id: product.id,
+          name: product.name,
+          name_th: product.name_th,
+          price: Number(variant.price),
+          sale_price: variant.sale_price == null ? null : Number(variant.sale_price),
+          puff_count: product.puff_count,
+          image_url: variant.image_url,
+          availableFlavors: [],
+        });
+      }
+      brandGroup.products.get(product.id).availableFlavors.push({
+        id: variant.id,
+        stock_quantity: variant.stock_quantity,
+        flavor: { id: flavor.slug, name: flavor.name, name_th: flavor.name_th, color: flavor.color, image: variant.image_url },
       });
     }
 
-    const fileContents = fs.readFileSync(STOCK_FILE, 'utf8');
-    const stockData = JSON.parse(fileContents);
-    
-    // Merge กับ brands.ts เพื่อเพิ่มรูปภาพ
-    const availableBrands = stockData.brands.map((stockBrand: any) => {
-      const brandConfig = brands.find(b => b.id === stockBrand.id);
-      
-      const availableProducts = stockBrand.products.map((product: any) => {
-        const availableFlavors = product.flavors
-          .filter((f: any) => f.stock > 0)
-          .map((flavor: any) => {
-            // หารูปภาพจาก brands.ts
-            const flavorConfig = brandConfig?.flavors.find(f => f.id === flavor.id);
-            
-            return {
-              id: flavor.id,
-              stock_quantity: flavor.stock,
-              flavor: {
-                id: flavor.id,
-                name: flavor.name,
-                name_th: flavor.nameTh,
-                color: flavor.color,
-                image: flavorConfig?.image || null
-              }
-            };
-          });
-        
-        return {
-          id: product.id,
-          name: product.name,
-          name_th: product.nameTh,
-          price: product.price,
-          sale_price: product.salePrice,
-          puff_count: product.puffCount,
-          image_url: brandConfig?.banner || null,
-          availableFlavors
-        };
-      }).filter((p: any) => p.availableFlavors.length > 0);
-      
-      return {
-        brand: {
-          id: stockBrand.id,
-          name: stockBrand.name,
-          name_th: stockBrand.nameTh,
-          color: stockBrand.color,
-          banner_url: brandConfig?.banner || null
-        },
-        products: availableProducts
-      };
-    }).filter((b: any) => b.products.length > 0);
-    
-    return NextResponse.json({
-      success: true,
-      data: availableBrands,
-      lastUpdated: stockData.lastUpdated
-    });
+    const result = [...grouped.values()].map((group) => ({ ...group, products: [...group.products.values()] }));
+    return NextResponse.json({ success: true, data: result, lastUpdated: new Date().toISOString() });
   } catch (error) {
-    console.error('Error reading stock file:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'ไม่สามารถอ่านข้อมูลได้',
-      data: [],
-      lastUpdated: new Date().toISOString()
-    }, { status: 500 });
+    console.error("Error reading Supabase stock", error);
+    return NextResponse.json({ success: false, error: "ไม่สามารถอ่านข้อมูลได้", data: [], lastUpdated: new Date().toISOString() }, { status: 500 });
   }
 }

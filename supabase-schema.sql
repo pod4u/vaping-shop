@@ -1,5 +1,6 @@
--- VAPING SHOP DATABASE SCHEMA
--- Run this in Supabase SQL Editor
+-- LEGACY REFERENCE ONLY.
+-- The active catalog schema is maintained in:
+-- supabase/migrations/20260902164434_product_catalog_storage.sql
 
 -- ============================================
 -- 1. BRANDS (แบรนด์สินค้า)

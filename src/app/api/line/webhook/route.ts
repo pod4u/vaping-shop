@@ -2,16 +2,19 @@
 // ใช้สำหรับรับข้อความจาก LINE และตอบกลับ
 
 import { NextRequest, NextResponse } from 'next/server';
-import { fuzzySearchProducts, parseQuantity } from '@/lib/fuzzy-search';
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { fuzzySearchProducts, getAvailableProducts, parseQuantity } from '@/lib/fuzzy-search';
 import { sendReply } from '@/lib/line-client';
 
 // Webhook Handler
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-
-    // Verify signature (security)
-    // TODO: Add signature verification
+    const rawBody = await req.text();
+    const signature = req.headers.get('x-line-signature');
+    if (!verifyLineSignature(rawBody, signature)) {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
+    const body = JSON.parse(rawBody);
 
     const events = body.events || [];
 
@@ -30,6 +33,15 @@ export async function POST(req: NextRequest) {
   }
 }
 
+function verifyLineSignature(body: string, signature: string | null): boolean {
+  const secret = process.env.LINE_CHANNEL_SECRET;
+  if (!secret || !signature) return false;
+  const expected = createHmac('sha256', secret).update(body).digest('base64');
+  const actualBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expected);
+  return actualBuffer.length === expectedBuffer.length && timingSafeEqual(actualBuffer, expectedBuffer);
+}
+
 // Handle text message
 async function handleMessage(event: any) {
   const userId = event.source.userId;
@@ -44,7 +56,7 @@ async function handleMessage(event: any) {
   // ตรวจสอบคำสั่ง
   if (message.includes('สั่ง') || message.includes('ซื้อ') || message.includes('เอา')) {
     // ค้นหาสินค้า
-    const products = fuzzySearchProducts(message, 4);
+    const products = await fuzzySearchProducts(message, 4);
     const quantity = parseQuantity(message);
 
     if (products.length > 0) {
@@ -121,7 +133,7 @@ async function replyWithQuickReply(
         type: 'action',
         action: {
           type: 'postback',
-          label: `${p.brandNameTh} ${p.flavorNameTh}`,
+          label: `${p.brandNameTh} ${p.flavorNameTh}`.slice(0, 20),
           data: `order:${p.id}:${quantity}`,
           displayText: `${p.brandNameTh} ${p.flavorNameTh} ${quantity} ตัว`
         }
@@ -134,7 +146,7 @@ async function replyWithQuickReply(
 
 // Reply with product list
 async function replyWithProductList(replyToken: string) {
-  const products = fuzzySearchProducts('marbo mood alfa vplus', 6);
+  const products = await getAvailableProducts(10);
 
   const message = {
     type: 'text',
@@ -148,18 +160,14 @@ async function replyWithProductList(replyToken: string) {
 
 // Reply with price list
 async function replyWithPriceList(replyToken: string) {
+  const products = await getAvailableProducts(100);
+  const prices = new Map<string, number>();
+  for (const product of products) prices.set(product.brandNameTh, product.price);
   const message = {
     type: 'text',
-    text:
-      '💰 ราคาสินค้า:\n\n' +
-      '• Marbo - ฿250 (ปกติ ฿280)\n' +
-      '• Mood - ฿290 (ปกติ ฿320)\n' +
-      '• Alfa - ฿450\n' +
-      '• Vplus - ฿380\n' +
-      '• Eskobar - ฿480\n' +
-      '• Mbar - ฿350\n' +
-      '• Relx - ฿450\n\n' +
-      '🔥 สมาชิกลดเพิ่ม 10 บาท/ออเดอร์!'
+    text: '💰 ราคาสินค้า:\n\n' +
+      [...prices.entries()].map(([brand, price]) => `• ${brand} - ฿${price}`).join('\n') +
+      '\n\nสอบถามรสชาติและสต็อกเพิ่มเติมได้เลยครับ'
   };
 
   await sendReply(replyToken, message);

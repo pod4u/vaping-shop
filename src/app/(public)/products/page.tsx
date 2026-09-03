@@ -2,7 +2,8 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { products } from "@/data/products";
+import type { Product } from "@/types/product";
+import { getCatalogProducts } from "@/lib/catalog";
 import { categories } from "@/lib/config";
 import ProductCard from "@/components/ProductCard";
 
@@ -12,6 +13,15 @@ function ProductsContent() {
   const searchParam = searchParams.get("search");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
   const [searchQuery, setSearchQuery] = useState(searchParam || "");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    getCatalogProducts()
+      .then(setProducts)
+      .catch((error) => console.error("Unable to load catalog", error))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   useEffect(() => {
     if (categoryParam) {
@@ -32,6 +42,10 @@ function ProductsContent() {
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  if (isLoading) {
+    return <div className="vapor-card rounded-2xl p-12 text-center text-white/50">กำลังโหลดข้อมูลสินค้า...</div>;
+  }
 
   return (
     <>

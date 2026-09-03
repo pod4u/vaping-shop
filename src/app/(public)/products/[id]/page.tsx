@@ -1,14 +1,31 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { products } from "@/data/products";
+import { useEffect, useState } from "react";
+import type { Product } from "@/types/product";
+import { getCatalogProductById, getCatalogProducts } from "@/lib/catalog";
 import { categories, storeConfig } from "@/lib/config";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const product = products.find((p) => p.id === Number(params.id));
+  const [product, setProduct] = useState<Product | null | undefined>(undefined);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const id = String(params.id);
+    Promise.all([getCatalogProductById(id), getCatalogProducts()])
+      .then(([item, all]) => {
+        setProduct(item);
+        setProducts(all);
+      })
+      .catch(() => setProduct(null));
+  }, [params.id]);
+
+  if (product === undefined) {
+    return <div className="pt-28 min-h-screen flex items-center justify-center text-white/50">กำลังโหลดข้อมูลสินค้า...</div>;
+  }
 
   if (!product) {
     return (
@@ -57,7 +74,7 @@ export default function ProductDetailPage() {
             <div className="relative aspect-square vapor-card rounded-3xl overflow-hidden border border-brand-border bg-brand-void/80 flex items-center justify-center">
               <img
                 src={product.image}
-                alt={product.name}
+                alt={product.imageAlt || product.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "https://placehold.co/600x600/120d20/5b13ec?text=VAPING";

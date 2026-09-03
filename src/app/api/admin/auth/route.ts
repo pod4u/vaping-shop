@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+import { ADMIN_COOKIE_NAME, createAdminSessionToken } from '@/lib/admin-auth';
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { password } = body;
-  
-  if (password !== ADMIN_PASSWORD) {
+
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const sessionToken = await createAdminSessionToken();
+  if (!adminPassword || !sessionToken) {
+    return NextResponse.json({
+      success: false,
+      error: 'ยังไม่ได้ตั้งค่าระบบแอดมิน'
+    }, { status: 503 });
+  }
+
+  if (password !== adminPassword) {
     return NextResponse.json({
       success: false,
       error: 'รหัสผ่านไม่ถูกต้อง'
@@ -18,9 +26,10 @@ export async function POST(request: NextRequest) {
     message: 'เข้าสู่ระบบสำเร็จ'
   });
   
-  // ตั้ง cookie ง่ายๆ
-  response.cookies.set('admin_logged_in', 'true', {
+  response.cookies.set(ADMIN_COOKIE_NAME, sessionToken, {
     httpOnly: true,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 24 * 60 * 60,
     path: '/',
   });
@@ -34,7 +43,7 @@ export async function DELETE() {
     message: 'ออกจากระบบสำเร็จ'
   });
   
-  response.cookies.delete('admin_logged_in');
+  response.cookies.delete(ADMIN_COOKIE_NAME);
   
   return response;
 }
