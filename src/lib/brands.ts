@@ -117,6 +117,7 @@ export const brands: Brand[] = [
       { id: 'peach-strawberry', name: 'Peach Strawberry', nameTh: 'พีชสตรอว์เบอร์รี่', image: '/images/products/marbo/m-switch-15k/peach-strawberry.webp', color: '#FB7185', isAvailable: false },
       { id: 'pink-berry', name: 'Pink Berry', nameTh: 'พิงค์เบอร์รี่', image: '/images/products/marbo/m-switch-15k/pink-berry.webp', color: '#EC4899', isAvailable: false },
       { id: 'strawberry', name: 'Strawberry', nameTh: 'สตรอว์เบอร์รี่', image: '/images/products/marbo/m-switch-15k/strawberry.webp', color: '#F43F5E', isAvailable: false },
+      { id: 'grape', name: 'Grape', nameTh: 'องุ่น', image: '/images/products/marbo/m-switch-15k/grape.webp', color: '#7C3AED' },
     ],
   },
   {

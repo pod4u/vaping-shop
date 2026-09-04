@@ -26,6 +26,6 @@ Rules:
 
 ## Missing or pending assets for the current LINE catalog
 
-- MARBO M SWITCH 15K: Grape still needs an individual product image. Eleven flavor images are now stored with canonical flavor filenames; ten were supplied by the shop owner and Grape Aloe was sourced from the linked FATVAPOR product page.
+- MARBO M SWITCH 15K: Twelve flavor images are stored with canonical flavor filenames. The Grape image was created from the Grape Lychee reference artwork with the visible flavor labels changed to GRAPE.
 - ALFA Duo Mesh 20K Watermelon Strawberry: no matching image is currently available.
 - VPLUS 16K Double Apple Shisha: no matching image is currently available.

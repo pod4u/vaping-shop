@@ -34,7 +34,7 @@ const catalogMeta = {
   alfa: { brandName: "ALFA", brandNameTh: "อัลฟา", model: "Duo Mesh 20K", modelTh: "ดูโอเมช 20K", category: "disposable-pod", price: 400 },
   eskobar: { brandName: "ESKO BAR", brandNameTh: "เอสโกบาร์", model: "Switch 20K", modelTh: "สวิตช์ 20K", category: "disposable-pod", price: 480 },
   marbo: { brandSlug: "marbo", brandName: "MARBO", brandNameTh: "มาร์โบ", model: "M BAR 9K", modelTh: "เอ็มบาร์ 9K", category: "disposable-pod", price: 390 },
-  msw: { brandSlug: "marbo", brandName: "MARBO", brandNameTh: "มาร์โบ", model: "M SWITCH 15K", modelTh: "หัวเปลี่ยน MSW 15K", category: "flavor-pod", price: 390 },
+  msw: { brandSlug: "marbo", brandName: "MARBO", brandNameTh: "มาร์โบ", model: "M SWITCH 15K", modelTh: "หัวเปลี่ยน MSW 15K", category: "flavor-pod", price: 390, defaultNicotine: 3, includeNicotineInVariantKey: false },
   mbar: { brandName: "M BAR", brandNameTh: "เอ็มบาร์", model: "10K", modelTh: "10K", category: "disposable-pod", price: 350 },
   mood: { brandName: "MOOOD", brandNameTh: "มูด", model: "Monster Series 14K", modelTh: "มอนสเตอร์ซีรีส์ 14K", category: "disposable-pod", price: 350 },
   relx: { brandName: "RELX", brandNameTh: "รีแล็กซ์", model: "Pod Pro 2", modelTh: "พอดโปร 2", category: "flavor-pod", price: 200 },
@@ -191,8 +191,9 @@ for (let brandIndex = 0; brandIndex < brands.length; brandIndex += 1) {
     const { data: publicUrlData } = supabase.storage.from("product-images").getPublicUrl(storagePath);
     const imageUrl = publicUrlData.publicUrl;
     primaryImageUrl ||= imageUrl;
-    const nicotine = flavor.nicotinePercent ?? (brand.id === "relx" ? 5 : null);
-    const variantKey = [productKey, flavor.id, nicotine ? `n${nicotine}` : null].filter(Boolean).join("-");
+    const nicotine = flavor.nicotinePercent ?? meta.defaultNicotine ?? (brand.id === "relx" ? 5 : null);
+    const nicotineKey = meta.includeNicotineInVariantKey === false ? null : nicotine ? `n${nicotine}` : null;
+    const variantKey = [productKey, flavor.id, nicotineKey].filter(Boolean).join("-");
     const { data: existingVariant } = await supabase.from("product_flavors").select("stock_quantity").eq("variant_key", variantKey).maybeSingle();
     const { data: variantRow, error: variantError } = await supabase.from("product_flavors").upsert({
       product_id: productRow.id,

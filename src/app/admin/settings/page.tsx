@@ -70,14 +70,6 @@ export default function AdminSettingsPage() {
         </div>
       )}
 
-      <Card className="border-white/10 bg-white/5">
-        <CardHeader><CardTitle className="text-white">การจัดการค่าความลับ</CardTitle><CardDescription className="text-white/50">ค่าจริงของระบบ Production</CardDescription></CardHeader>
-        <CardContent className="space-y-2 text-sm text-white/60">
-          <p>รหัสผ่านแอดมิน, Supabase Key และ LINE Token จัดการใน Environment Variables ของ Vercel</p>
-          <p>หลังเปลี่ยนค่าใน Vercel ต้อง Deploy ใหม่หนึ่งครั้ง จึงจะมีผลกับเว็บไซต์จริง</p>
-        </CardContent>
-      </Card>
-
       {status && <p className="text-xs text-white/30">ตรวจสอบล่าสุด {new Date(status.checkedAt).toLocaleString("th-TH")}</p>}
     </div>
   );

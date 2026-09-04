@@ -33,4 +33,4 @@ const rows = (data || []).map((row) => ({
 
 const invalid = rows.filter((row) => row.price !== 390 || !row.image_url_ok || !row.image_path || !row.variant_key.startsWith("marbo-m-switch-15k-"));
 console.log(JSON.stringify({ count: rows.length, invalid: invalid.length, rows }, null, 2));
-if (rows.length !== 11 || invalid.length > 0) process.exitCode = 1;
+if (rows.length !== 12 || invalid.length > 0) process.exitCode = 1;
