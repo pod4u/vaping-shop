@@ -76,6 +76,13 @@ export default function AdminDashboard() {
       }
     };
     loadDashboard();
+
+    // Auto refresh every 60 seconds
+    const interval = setInterval(() => {
+      loadDashboard();
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const summary = useMemo(() => {
