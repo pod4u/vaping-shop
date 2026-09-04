@@ -114,7 +114,7 @@ export default function StockPage() {
     const url = window.location.href;
     if (navigator.share) {
       await navigator.share({
-        title: 'สินค้าพร้อมส่ง - Vaping Shop',
+        title: 'สินค้าพร้อมส่ง - Pod4U',
         text: 'ดูสินค้าพร้อมส่งของเราได้ที่นี่',
         url: url,
       });

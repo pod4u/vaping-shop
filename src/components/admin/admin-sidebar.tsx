@@ -60,7 +60,7 @@ export function AdminSidebar() {
           </div>
           <div>
             <h1 className="text-white font-bold">Admin Panel</h1>
-            <p className="text-xs text-white/50">Vaping Shop</p>
+            <p className="text-xs text-white/50">Pod4U</p>
           </div>
         </div>
       </div>

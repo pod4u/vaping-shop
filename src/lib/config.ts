@@ -1,7 +1,7 @@
 // Store Configuration - Edit this file to customize your shop
 export const storeConfig = {
   // Store Information
-  storeName: "VAPING SHOP",
+  storeName: "Pod4U",
   tagline: "ร้านขายพอดเปลี่ยนหัว และพอดใช้แล้วทิ้ง ราคาส่ง ครบ จบในที่เดียว",
   
   // Contact

@@ -108,7 +108,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-16 pt-8 border-t border-brand-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40 font-mono">
-          <p>© {new Date().getFullYear()} VAPING SHOP. ALL RIGHTS RESERVED.</p>
+          <p>© {new Date().getFullYear()} Pod4U. ALL RIGHTS RESERVED.</p>
           <p className="text-white/30">PREMIUM VAPE &amp; POD SYSTEM</p>
         </div>
       </div>

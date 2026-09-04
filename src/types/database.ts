@@ -1,4 +1,4 @@
-// Database Types for Vaping Shop
+// Database Types for Pod4U
 
 export interface Brand {
   id: string;
