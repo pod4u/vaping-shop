@@ -56,10 +56,10 @@ export default function StockPage() {
   useEffect(() => {
     fetchStock();
 
-    // Auto refresh every 30 seconds
+    // Auto refresh every 60 seconds (optimized for Supabase free tier)
     const interval = setInterval(() => {
       fetchStock();
-    }, 30000);
+    }, 60000);
 
     // Cleanup on unmount
     return () => clearInterval(interval);
