@@ -253,9 +253,13 @@ export default function AdminDashboard() {
         <Card className="border-white/10 bg-white/5">
           <CardHeader><CardTitle className="text-white">แคตตาล็อกในระบบ</CardTitle><CardDescription className="text-white/50">{data.brands.length} แบรนด์ · {summary.totalProducts} รุ่น · {summary.totalVariants} variants</CardDescription></CardHeader>
           <CardContent className="space-y-2">
-            {summary.brandStock.map((brand) => (
+            {summary.brandStock.map((brand, index) => (
               <Link key={brand.id} href={`/admin/stock?brand=${brand.id}`} className="flex items-center justify-between rounded-lg bg-white/5 p-3 transition-colors hover:bg-white/10">
                 <div className="flex items-center gap-3">
+                  {/* Rank Number */}
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-acid-lime/20 text-acid-lime text-xs font-bold">
+                    {index + 1}
+                  </div>
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: `${brand.color}33` }}><Boxes className="h-4 w-4" style={{ color: brand.color }} /></div>
                   <div><p className="font-medium text-white">{brand.name}</p><p className="text-xs text-white/40">{brand.products} รุ่น · {brand.variants} variants</p></div>
                 </div>
