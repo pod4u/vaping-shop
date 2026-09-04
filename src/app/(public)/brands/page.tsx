@@ -40,7 +40,7 @@ export default function BrandsPage() {
             เลือก <span className="text-acid-lime">แบรนด์</span> ที่คุณชอบ
           </h1>
           <p className="text-lg text-white/50 max-w-2xl mx-auto">
-            รวมแบรนด์พอตใช้แล้วทิ้งคุณภาพดี หลากหลายราคา หลากหลายระบบ
+            รวมแบรนด์พอดใช้แล้วทิ้งคุณภาพดี หลากหลายราคา หลากหลายระบบ
           </p>
         </div>
       </section>

@@ -2,7 +2,7 @@
 export const storeConfig = {
   // Store Information
   storeName: "VAPING SHOP",
-  tagline: "ร้านขายพอตเปลี่ยนหัว และพอตใช้แล้วทิ้ง ราคาส่ง ครบ จบในที่เดียว",
+  tagline: "ร้านขายพอดเปลี่ยนหัว และพอดใช้แล้วทิ้ง ราคาส่ง ครบ จบในที่เดียว",
   
   // Contact
   lineId: "@994tiktt", // LINE Official Account
@@ -23,15 +23,15 @@ export const categories = [
   {
     id: "disposable-pod",
     name: "DISPOSABLE POD",
-    nameTh: "พอตใช้แล้วทิ้ง",
-    description: "พอตใช้แล้วทิ้ง สะดวก พกพาง่าย",
+    nameTh: "พอดใช้แล้วทิ้ง",
+    description: "พอดใช้แล้วทิ้ง สะดวก พกพาง่าย",
     icon: "💨",
   },
   {
     id: "flavor-pod",
     name: "FLAVOR POD",
-    nameTh: "หัวน้ำยา หัวพอต",
-    description: "หัวพอตรสชาติหลากหลาย",
+    nameTh: "หัวน้ำยา หัวพอด",
+    description: "หัวพอดรสชาติหลากหลาย",
     icon: "🍒",
   },
 ] as const;

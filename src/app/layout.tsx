@@ -15,8 +15,8 @@ const prompt = Prompt({
 });
 
 export const metadata: Metadata = {
-  title: "VAPING SHOP - ร้านขายพอต ราคาส่ง",
-  description: "ร้านขายพอตเปลี่ยนหัว และพอตใช้แล้วทิ้ง ราคาส่ง ครบ จบในที่เดียว",
+  title: "VAPING SHOP - ร้านขายพอด ราคาส่ง",
+  description: "ร้านขายพอดเปลี่ยนหัว และพอดใช้แล้วทิ้ง ราคาส่ง ครบ จบในที่เดียว",
 };
 
 export default function RootLayout({

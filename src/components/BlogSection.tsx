@@ -14,7 +14,7 @@ export default function BlogSection() {
               บทความน่ารู้
             </h2>
           </div>
-          <p className="text-white/50 text-sm mt-2 sm:mt-0 font-normal">ความรู้และข่าวสารล่าสุดเกี่ยวกับพอตไฟฟ้า</p>
+          <p className="text-white/50 text-sm mt-2 sm:mt-0 font-normal">ความรู้และข่าวสารล่าสุดเกี่ยวกับพอดไฟฟ้า</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

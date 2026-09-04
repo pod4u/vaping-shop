@@ -12,8 +12,8 @@ export const blogPosts: BlogPost[] = [
   },
   {
     id: 2,
-    title: "วิธีแก้พอตขาดวงจร (Short Circuit)",
-    excerpt: "พอตขาดวงจรทำไง? มาดูวิธีแก้ไขและป้องกันกันครับ...",
+    title: "วิธีแก้พอดขาดวงจร (Short Circuit)",
+    excerpt: "พอดขาดวงจรทำไง? มาดูวิธีแก้ไขและป้องกันกันครับ...",
     image: "/images/products/esko-bar/switch-20k/watermelon-ice.webp",
     date: "2026-08-18",
     category: "Tips",

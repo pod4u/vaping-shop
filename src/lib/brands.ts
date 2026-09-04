@@ -28,7 +28,7 @@ export const brands: Brand[] = [
     slug: 'alfa',
     name: 'ALFA DUO MESH 20K',
     nameTh: 'อัลฟา 20K',
-    description: 'พอตใช้แล้วทิ้ง 20,000 Puffs ระบบ Dual Mesh Coil',
+    description: 'พอดใช้แล้วทิ้ง 20,000 Puffs ระบบ Dual Mesh Coil',
     color: '#3B82F6',
     puffCount: 20000,
     banner: '/images/products/alfa/duo-mesh-20k/banner.webp',
@@ -50,7 +50,7 @@ export const brands: Brand[] = [
     slug: 'marbo',
     name: 'MARBO M BAR 9K',
     nameTh: 'มาร์โบ 9K',
-    description: 'พอตใช้แล้วทิ้ง 9,000 Puffs ราคาสบายกระเป๋า',
+    description: 'พอดใช้แล้วทิ้ง 9,000 Puffs ราคาสบายกระเป๋า',
     color: '#EF4444',
     puffCount: 9000,
     flavors: [
@@ -79,7 +79,7 @@ export const brands: Brand[] = [
     slug: 'mood',
     name: 'MOOOD 14K',
     nameTh: 'มูด 14K',
-    description: 'พอตใช้แล้วทิ้ง 14,000 Puffs ดีไซน์สวย รสชาติเยอะ',
+    description: 'พอดใช้แล้วทิ้ง 14,000 Puffs ดีไซน์สวย รสชาติเยอะ',
     color: '#EC4899',
     puffCount: 14000,
     flavors: [
@@ -101,7 +101,7 @@ export const brands: Brand[] = [
     slug: 'vplus',
     name: 'V-PLUS 16K',
     nameTh: 'วีพลัส 16K',
-    description: 'พอตใช้แล้วทิ้ง 16,000 Puffs พลังงานสูง รสชาติจัดจ้าน',
+    description: 'พอดใช้แล้วทิ้ง 16,000 Puffs พลังงานสูง รสชาติจัดจ้าน',
     color: '#10B981',
     puffCount: 16000,
     flavors: [
@@ -130,7 +130,7 @@ export const brands: Brand[] = [
     slug: 'eskobar',
     name: 'ESKO BAR SWITCH 20K',
     nameTh: 'เอสโกบาร์ 20K',
-    description: 'พอตใช้แล้วทิ้ง 20,000 Puffs ระบบ Dual Mesh Coil ปรับโหมดได้',
+    description: 'พอดใช้แล้วทิ้ง 20,000 Puffs ระบบ Dual Mesh Coil ปรับโหมดได้',
     color: '#F59E0B',
     puffCount: 20000,
     flavors: [
@@ -147,7 +147,7 @@ export const brands: Brand[] = [
     slug: 'mbar',
     name: 'M BAR 10K',
     nameTh: 'เอ็มบาร์ 10K',
-    description: 'พอตใช้แล้วทิ้ง 10,000 Puffs 3 โหมด ECO/SOFT/BOOST',
+    description: 'พอดใช้แล้วทิ้ง 10,000 Puffs 3 โหมด ECO/SOFT/BOOST',
     color: '#8B5CF6',
     puffCount: 10000,
     flavors: [
@@ -167,7 +167,7 @@ export const brands: Brand[] = [
     slug: 'relx',
     name: 'RELX PRO 2',
     nameTh: 'รีแล็กซ์โปร 2',
-    description: 'พอตระบบที่ได้รับความนิยมสูง สินค้าคุณภาพ',
+    description: 'พอดระบบที่ได้รับความนิยมสูง สินค้าคุณภาพ',
     color: '#06B6D4',
     puffCount: 0,
     flavors: [
