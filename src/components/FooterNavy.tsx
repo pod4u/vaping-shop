@@ -58,7 +58,7 @@ export default function FooterNavy() {
             <h3 className="text-white font-bold text-base mb-6 tracking-wide">เมนูด่วน</h3>
             <ul className="space-y-2.5">
               <li>
-                <Link href="/navy" className="text-white/50 hover:text-white transition-colors text-sm">
+                <Link href="/" className="text-white/50 hover:text-white transition-colors text-sm">
                   หน้าแรก
                 </Link>
               </li>
@@ -68,7 +68,7 @@ export default function FooterNavy() {
                 </Link>
               </li>
               <li>
-                <Link href="/navy#about" className="text-white/50 hover:text-white transition-colors text-sm">
+                <Link href="/#about" className="text-white/50 hover:text-white transition-colors text-sm">
                   ทำไมต้องเลือกเรา
                 </Link>
               </li>

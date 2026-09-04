@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function BestSellersNavy() {
   const bestSellers = [
@@ -81,10 +82,11 @@ export default function BestSellersNavy() {
               <div className="relative">
                 {/* Image */}
                 <div className="aspect-square relative overflow-hidden">
-                  <img
+                  <Image
                     src={product.image}
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
                   />
 
                   {/* Overlay */}

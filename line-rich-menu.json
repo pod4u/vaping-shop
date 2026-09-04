@@ -1,0 +1,50 @@
+{
+  "size": {
+    "width": 2160,
+    "height": 728
+  },
+  "selected": true,
+  "name": "Pod4u Main Menu 2026-09-04",
+  "chatBarText": "เมนู POD4U",
+  "areas": [
+    {
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 728
+      },
+      "action": {
+        "type": "message",
+        "label": "สั่งซื้อสินค้า",
+        "text": "ต้องการสั่งซื้อสินค้า"
+      }
+    },
+    {
+      "bounds": {
+        "x": 720,
+        "y": 0,
+        "width": 720,
+        "height": 728
+      },
+      "action": {
+        "type": "uri",
+        "label": "สินค้าพร้อมส่ง",
+        "uri": "https://www.pod4u.store/stock"
+      }
+    },
+    {
+      "bounds": {
+        "x": 1440,
+        "y": 0,
+        "width": 720,
+        "height": 728
+      },
+      "action": {
+        "type": "uri",
+        "label": "ไลน์สำรอง",
+        "uri": "https://lin.ee/P17vzBB"
+      }
+    }
+  ]
+}

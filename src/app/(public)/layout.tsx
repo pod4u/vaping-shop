@@ -1,8 +1,7 @@
 import HeaderNavy from "@/components/HeaderNavy";
 import FooterNavy from "@/components/FooterNavy";
 import LineButtonNavy from "@/components/LineButtonNavy";
-import AnnouncementBannerNavy from "@/components/AnnouncementBannerNavy";
-import { storeConfig } from "@/lib/config";
+import WelcomePopup from "@/components/WelcomePopup";
 
 export default function PublicLayout({
   children,
@@ -11,13 +10,10 @@ export default function PublicLayout({
 }) {
   return (
     <>
-      <AnnouncementBannerNavy
-        message="📢 แจ้งเปลี่ยน LINE ID ใหม่!"
-        lineId={storeConfig.lineId}
-      />
-      <div className="pt-12 sm:pt-14 bg-navy-deep min-h-screen">
+      <WelcomePopup />
+      <div className="bg-navy-deep min-h-screen">
         <HeaderNavy />
-        <main className="min-h-screen">{children}</main>
+        <main className="min-h-screen pt-20">{children}</main>
         <FooterNavy />
         <LineButtonNavy />
       </div>

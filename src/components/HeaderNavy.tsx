@@ -61,7 +61,7 @@ export default function HeaderNavy() {
 
           <div className="flex items-center justify-between relative z-10">
             {/* Logo */}
-            <Link href="/navy" className="flex items-center gap-2.5 group">
+            <Link href="/" className="flex items-center gap-2.5 group">
               <div className="w-9 h-9 rounded-xl bg-navy/30 border border-navy-border-light/50 flex items-center justify-center group-hover:border-white/40 group-hover:shadow-lg group-hover:shadow-white/10 transition-all duration-300">
                 <span className="text-xl">💨</span>
               </div>
@@ -73,7 +73,7 @@ export default function HeaderNavy() {
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-8">
               <Link
-                href="/navy"
+                href="/"
                 className="text-white/80 hover:text-white transition-colors font-medium text-sm tracking-wide relative group"
               >
                 หน้าแรก
@@ -138,7 +138,7 @@ export default function HeaderNavy() {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
               </Link>
               <Link
-                href="/navy#about"
+                href="/#about"
                 className="text-white/80 hover:text-white transition-colors font-medium text-sm tracking-wide relative group"
               >
                 เกี่ยวกับเรา
@@ -227,7 +227,7 @@ export default function HeaderNavy() {
               </form>
 
               <nav className="flex flex-col gap-2">
-                <Link href="/navy" className="text-white/80 hover:text-white py-2.5 px-4 rounded-xl transition-all hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>
+                <Link href="/" className="text-white/80 hover:text-white py-2.5 px-4 rounded-xl transition-all hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>
                   หน้าแรก
                 </Link>
                 <Link href="/products" className="text-white/80 hover:text-white py-2.5 px-4 rounded-xl transition-all hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>

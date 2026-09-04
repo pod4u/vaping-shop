@@ -170,13 +170,16 @@ export default function StockPage() {
 
   return (
     <div className="min-h-screen bg-navy-deep">
-      {/* Simple Header */}
-      <header className="sticky top-0 z-50 bg-navy-deep/95 backdrop-blur-xl border-b border-navy-border">
-        <div className="max-w-4xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-lg font-bold text-white">
-              <span className="text-acid-lime">←</span> หน้าร้าน
-            </Link>
+      {/* Title Section */}
+      <section className="py-8 px-4 border-b border-navy-border">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></span>
+              <h1 className="text-2xl font-black text-white">
+                สินค้าพร้อมส่ง
+              </h1>
+            </div>
             <div className="flex items-center gap-3">
               <span className="text-white/50 text-xs">
                 {stockData?.lastUpdated && `อัปเดต ${formatLastUpdated(stockData.lastUpdated)}`}
@@ -190,18 +193,6 @@ export default function StockPage() {
                 </svg>
               </button>
             </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Title Section */}
-      <section className="py-8 px-4 border-b border-navy-border">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></span>
-            <h1 className="text-2xl font-black text-white">
-              สินค้าพร้อมส่ง
-            </h1>
           </div>
           <p className="text-white/50 text-sm">
             {totalFlavors} รายการ • {totalProducts} สินค้า • 7 แบรนด์
