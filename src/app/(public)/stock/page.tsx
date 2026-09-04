@@ -196,7 +196,7 @@ export default function StockPage() {
       {/* Title Section */}
       <section className="py-8 px-4 border-b border-navy-border">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></span>
               <h1 className="text-2xl font-black text-white">
@@ -204,7 +204,7 @@ export default function StockPage() {
               </h1>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-white/50 text-xs">
+              <span className="hidden sm:inline text-white/50 text-xs">
                 {stockData?.lastUpdated && `อัปเดต ${formatLastUpdated(stockData.lastUpdated)}`}
               </span>
               <button
@@ -224,7 +224,7 @@ export default function StockPage() {
       </section>
 
       {/* Brand Filter Tabs */}
-      <section className="sticky top-[57px] z-40 bg-navy-deep/95 backdrop-blur-xl border-b border-navy-border">
+      <section className="sticky top-20 z-40 bg-navy-deep/95 backdrop-blur-xl border-b border-navy-border">
         <div className="max-w-4xl mx-auto px-4 py-3">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
             <button
@@ -262,10 +262,11 @@ export default function StockPage() {
       <section className="py-6 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {filteredFlavors.map((item, index) => (
-              <div
+            {filteredFlavors.map((item) => (
+              <Link
                 key={`${item.product.id}-${item.flavor.id}`}
-                className="bg-navy-surface/50 border border-navy-border rounded-xl p-3 hover:border-acid-lime/50 transition-all"
+                href={`/products/${item.flavor.id}`}
+                className="group bg-navy-surface/50 border border-navy-border rounded-xl p-3 hover:border-acid-lime/50 transition-all h-full flex flex-col"
               >
                 {/* Flavor Image */}
                 <div className="relative aspect-square bg-navy-void rounded-lg mb-3 overflow-hidden">
@@ -273,7 +274,7 @@ export default function StockPage() {
                     <img
                       src={item.flavor.flavor.image}
                       alt={item.flavor.flavor.name_th || item.flavor.flavor.name || ''}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
                     <div
@@ -306,12 +307,12 @@ export default function StockPage() {
                 </div>
 
                 {/* Price */}
-                <div className="mt-2 pt-2 border-t border-navy-border/50">
+                <div className="mt-auto pt-2 border-t border-navy-border/50">
                   <p className="text-acid-lime text-sm font-bold">
                     ฿{formatPrice(item.product.sale_price || item.product.price)}
                   </p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

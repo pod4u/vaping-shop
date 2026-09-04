@@ -111,7 +111,7 @@ export default function ReadyToShipProductsNavy() {
   }
 
   return (
-    <section className="py-20 px-4 relative overflow-hidden">
+    <section className="py-12 sm:py-16 lg:py-20 px-4 relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-acid-lime/5 rounded-full blur-[150px]"></div>
@@ -139,8 +139,8 @@ export default function ReadyToShipProductsNavy() {
           {products.map((product) => (
             <Link
               key={`${product.brandId}-${product.id}`}
-              href={`/brand/${product.brandId}`}
-              className="group navy-card rounded-xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-acid"
+              href={`/products/${product.id}`}
+              className="group navy-card rounded-xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-acid h-full flex flex-col"
             >
               {/* Product Image */}
               <div
@@ -163,13 +163,13 @@ export default function ReadyToShipProductsNavy() {
               </div>
 
               {/* Product Info */}
-              <div className="p-4 border-t border-navy-border">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 sm:p-4 border-t border-navy-border flex-1 flex flex-col">
+                <div className="flex items-center gap-2 mb-2 min-w-0">
                   <div
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: product.color }}
                   />
-                  <span className="text-white/60 text-xs font-semibold tracking-wide">
+                  <span className="text-white/60 text-xs font-semibold tracking-wide truncate min-w-0">
                     {product.brandName || product.brandNameTh}
                   </span>
                 </div>
@@ -180,7 +180,7 @@ export default function ReadyToShipProductsNavy() {
                 <p className="text-white/50 text-xs truncate">{product.name}</p>
 
                 {/* Price */}
-                <div className="mt-3 flex items-center justify-between">
+                <div className="mt-auto pt-3 flex flex-col min-[390px]:flex-row min-[390px]:items-center justify-between gap-2">
                   <div className="text-acid-lime font-black">
                     ฿{product.price}
                   </div>

@@ -1,16 +1,20 @@
 "use client";
 
 import { storeConfig } from "@/lib/config";
+import Image from "next/image";
 
 export default function HeroVideoNavy() {
   return (
-    <section className="relative min-h-[100vh] flex items-center overflow-hidden">
+    <section className="relative min-h-[82svh] lg:min-h-screen flex items-center overflow-hidden">
       {/* Full Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
+        <Image
           src="/hero-bg.png"
           alt="Premium Vape Products"
-          className="w-full h-full object-cover object-center"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[68%_center] lg:object-center"
         />
         {/* Dark Gradient Overlay - Left side for text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-navy-deep via-navy-deep/70 to-transparent lg:w-[55%]"></div>
@@ -19,7 +23,7 @@ export default function HeroVideoNavy() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-20">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-10 sm:py-16 lg:py-20">
         <div className="max-w-xl">
           {/* Small Tag */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/20 backdrop-blur-sm mb-6">
@@ -61,13 +65,13 @@ export default function HeroVideoNavy() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-start gap-3 mb-10">
+          <div className="flex flex-col sm:flex-row items-start gap-3 mb-8 sm:mb-10">
             {/* LINE Button - Green */}
             <a
               href={storeConfig.lineLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative px-7 py-3.5 rounded-full text-sm font-bold tracking-wide inline-flex items-center gap-2.5 overflow-hidden transition-all duration-300 hover:scale-105"
+              className="group relative w-full sm:w-auto justify-center px-7 py-3.5 rounded-full text-sm font-bold tracking-wide inline-flex items-center gap-2.5 overflow-hidden transition-all duration-300 hover:scale-105"
               style={{
                 background: 'linear-gradient(135deg, #d4ff14 0%, #a3e635 100%)',
                 color: '#0f172a',
@@ -83,7 +87,7 @@ export default function HeroVideoNavy() {
             {/* Secondary Button */}
             <a
               href="/products"
-              className="px-7 py-3.5 rounded-full text-sm font-bold tracking-wide inline-flex items-center gap-2 border-2 border-white/50 text-white backdrop-blur-sm transition-all duration-300 hover:border-white hover:bg-white/10"
+              className="w-full sm:w-auto justify-center px-7 py-3.5 rounded-full text-sm font-bold tracking-wide inline-flex items-center gap-2 border-2 border-white/50 text-white backdrop-blur-sm transition-all duration-300 hover:border-white hover:bg-white/10"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -93,20 +97,20 @@ export default function HeroVideoNavy() {
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-6">
             <div>
               <div className="text-white text-2xl font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">500+</div>
-              <div className="text-white/50 text-sm">สินค้าพร้อมส่ง</div>
+              <div className="text-white/50 text-xs sm:text-sm">สินค้าพร้อมส่ง</div>
             </div>
             <div className="w-px h-10 bg-white/20"></div>
             <div>
               <div className="text-white text-2xl font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">24h</div>
-              <div className="text-white/50 text-sm">บริการตลอด</div>
+              <div className="text-white/50 text-xs sm:text-sm">บริการตลอด</div>
             </div>
             <div className="w-px h-10 bg-white/20"></div>
             <div>
               <div className="text-white text-2xl font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">ส่งฟรี</div>
-              <div className="text-white/50 text-sm">ทั่วไทย</div>
+              <div className="text-white/50 text-xs sm:text-sm">ทั่วไทย</div>
             </div>
           </div>
         </div>
