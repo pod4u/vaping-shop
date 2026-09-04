@@ -50,3 +50,4 @@ Thumbs.db
 
 # Large files
 *.node
+.env*

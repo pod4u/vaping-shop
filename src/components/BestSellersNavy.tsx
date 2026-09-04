@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 export default function BestSellersNavy() {
   const bestSellers = [
@@ -10,7 +9,7 @@ export default function BestSellersNavy() {
       flavor: "Blueberry",
       price: 89,
       sold: 2847,
-      image: "https://images.unsplash.com/photo-1560913210-81fb7a4e1b6e?w=300&h=300&fit=crop",
+      color: "from-blue-500 to-purple-600",
       badge: "🔥 ขายดีที่สุด",
     },
     {
@@ -20,7 +19,7 @@ export default function BestSellersNavy() {
       flavor: "Grape",
       price: 79,
       sold: 2156,
-      image: "https://images.unsplash.com/photo-1560913210-81fb7a4e1b6e?w=300&h=300&fit=crop",
+      color: "from-purple-500 to-pink-600",
       badge: "⚡ ยอดฮิต",
     },
     {
@@ -30,7 +29,7 @@ export default function BestSellersNavy() {
       flavor: "Mango",
       price: 69,
       sold: 1923,
-      image: "https://images.unsplash.com/photo-1560913210-81fb7a4e1b6e?w=300&h=300&fit=crop",
+      color: "from-orange-500 to-yellow-500",
       badge: "🌟 แนะนำ",
     },
     {
@@ -40,7 +39,7 @@ export default function BestSellersNavy() {
       flavor: "Watermelon",
       price: 99,
       sold: 1678,
-      image: "https://images.unsplash.com/photo-1560913210-81fb7a4e1b6e?w=300&h=300&fit=crop",
+      color: "from-green-500 to-teal-500",
       badge: "✨ ใหม่มาแรง",
     },
   ];
@@ -81,13 +80,13 @@ export default function BestSellersNavy() {
               {/* Rank Badge */}
               <div className="relative">
                 {/* Image */}
-                <div className="aspect-square relative overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
+                <div className={`aspect-square relative overflow-hidden bg-gradient-to-br ${product.color}`}>
+                  {/* Product Icon */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                      <span className="text-3xl">💨</span>
+                    </div>
+                  </div>
 
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-navy-deep via-transparent to-transparent opacity-60"></div>
