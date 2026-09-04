@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import type { Product } from "@/types/product";
 import { getCatalogProducts } from "@/lib/catalog";
 import { categories } from "@/lib/config";
@@ -138,12 +139,29 @@ export default function ProductsPage() {
     <div className="pt-28 pb-16 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-10 text-left">
+        <div className="mb-6 text-left">
           <div className="text-acid-lime text-xs font-mono tracking-widest uppercase mb-2">EXPLORE ALL</div>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white mb-2">
             สินค้าทั้งหมด
           </h1>
           <p className="text-white/50 text-sm">เลือกสรรสินค้าคุณภาพเยี่ยม ครบทุกประเภท พร้อมส่งทันที</p>
+        </div>
+
+        {/* Flashing Ready-to-Ship Button */}
+        <div className="mb-10">
+          <Link
+            href="/stock"
+            className="inline-flex items-center gap-3 bg-acid-lime text-navy-deep px-6 py-3.5 rounded-full font-bold text-sm shadow-acid animate-[pulse_1.5s_ease-in-out_infinite] hover:animate-none hover:scale-105 transition-transform"
+          >
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-navy-deep opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-navy-deep"></span>
+            </span>
+            <span>ดูสินค้าพร้อมส่ง</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
         </div>
 
         <Suspense fallback={

@@ -12,7 +12,7 @@ export default function NavyLayout({
     <>
       <AnnouncementBannerNavy
         message="📢 แจ้งเปลี่ยน LINE ID ใหม่!"
-        lineId="@vaping_shop"
+        lineId="@994tiktt"
       />
       <div className="pt-12 sm:pt-14 bg-navy-deep min-h-screen">
         <HeaderNavy />

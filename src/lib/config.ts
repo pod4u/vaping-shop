@@ -5,7 +5,7 @@ export const storeConfig = {
   tagline: "ร้านขายพอตเปลี่ยนหัว และพอตใช้แล้วทิ้ง ราคาส่ง ครบ จบในที่เดียว",
   
   // Contact
-  lineId: "@vaping_shop", // LINE Official Account
+  lineId: "@994tiktt", // LINE Official Account
   lineLink: "https://lin.ee/RU5qNLj", // LINE QR Code Link
   phone: "08X-XXX-XXXX", // TODO: Replace with your phone
   

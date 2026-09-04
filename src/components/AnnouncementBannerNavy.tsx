@@ -11,7 +11,7 @@ interface AnnouncementBannerNavyProps {
 
 export default function AnnouncementBannerNavy({
   message = "📢 แจ้งเปลี่ยน LINE ID ใหม่!",
-  lineId = "@vaping_shop",
+  lineId = "@994tiktt",
   show = true
 }: AnnouncementBannerNavyProps) {
   const [isVisible, setIsVisible] = useState(show);
