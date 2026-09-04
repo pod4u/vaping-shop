@@ -50,6 +50,58 @@ function ProductsContent() {
 
   return (
     <>
+      {/* Hero Section */}
+      <section className="relative -mt-20 pt-20 pb-8 overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-acid-lime/20 via-green-500/10 to-navy-deep"></div>
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
+
+        {/* Animated Shapes */}
+        <div className="absolute top-10 left-10 w-32 h-32 bg-acid-lime/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-10 right-10 w-40 h-40 bg-green-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+
+        <div className="relative max-w-7xl mx-auto px-4 py-12">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Left - Text */}
+            <div className="text-center md:text-left">
+              <div className="inline-flex items-center gap-2 bg-acid-lime/20 text-acid-lime px-4 py-1.5 rounded-full text-xs font-bold mb-4">
+                <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></span>
+                พร้อมส่งทันที
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">
+                {selectedCategory
+                  ? categories.find(c => c.id === selectedCategory)?.nameTh || "สินค้าทั้งหมด"
+                  : "สินค้าทั้งหมด"}
+              </h1>
+              <p className="text-white/60 text-sm sm:text-base">
+                {filteredProducts.length} รายการ • คุณภาพระดับพรีเมียม • ของแท้ 100%
+              </p>
+            </div>
+
+            {/* Right - Visual */}
+            <div className="relative">
+              <div className="w-48 h-48 relative">
+                {/* Glowing Circle */}
+                <div className="absolute inset-0 bg-gradient-to-br from-acid-lime/30 to-green-500/30 rounded-full animate-pulse"></div>
+
+                {/* Product Icons */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-6xl">💨</div>
+                </div>
+
+                {/* Floating Elements */}
+                <div className="absolute -top-2 -right-2 bg-acid-lime text-navy-deep text-xs font-bold px-3 py-1 rounded-full shadow-acid animate-bounce">
+                  พร้อมส่ง
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Border */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-acid-lime/30 to-transparent"></div>
+      </section>
+
       {/* Filters Bar */}
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         {/* Search */}
