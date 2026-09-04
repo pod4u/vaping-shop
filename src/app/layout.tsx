@@ -17,6 +17,9 @@ const prompt = Prompt({
 export const metadata: Metadata = {
   title: "Pod4U - ร้านขายพอด ราคาส่ง",
   description: "ร้านขายพอดเปลี่ยนหัว และพอดใช้แล้วทิ้ง ราคาส่ง ครบ จบในที่เดียว",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
