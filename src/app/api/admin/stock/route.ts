@@ -56,7 +56,10 @@ export async function POST(request: NextRequest) {
     const updates = (brands || []).flatMap((brand: any) => (brand.products || []).flatMap((product: any) => (product.flavors || []).map((flavor: any) => ({ id: flavor.variantId, brandId: brand.id, productId: product.id, flavorId: flavor.id, stock: Math.max(0, Number(flavor.stock) || 0) }))));
     const supabase = getServerSupabase();
     for (const item of updates) {
-      let query = supabase.from("product_flavors").update({ stock_quantity: item.stock });
+      let query = supabase.from("product_flavors").update({ 
+        stock_quantity: item.stock,
+        is_available: item.stock > 0  // Update is_available based on stock
+      });
       query = item.id ? query.eq("id", item.id) : query.eq("product_id", item.productId).eq("flavor_id", item.flavorId);
       const { error } = await query;
       if (error) throw error;
@@ -71,7 +74,10 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const { variantId, productId, flavorId, stock } = await request.json();
-    let query = getServerSupabase().from("product_flavors").update({ stock_quantity: Math.max(0, Number(stock) || 0) });
+    let query = getServerSupabase().from("product_flavors").update({ 
+      stock_quantity: Math.max(0, Number(stock) || 0),
+      is_available: stock > 0  // Update is_available based on stock
+    });
     query = variantId ? query.eq("id", variantId) : query.eq("product_id", productId).eq("flavor_id", flavorId);
     const { data, error } = await query.select("id").maybeSingle();
     if (error) throw error;
