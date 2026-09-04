@@ -234,9 +234,17 @@ export default function AdminStockPage() {
             </Button>
             <Button
               onClick={confirmSave}
-              className="bg-acid-lime text-brand-void hover:bg-acid-lime/90 px-6"
+              disabled={isSaving}
+              className="bg-acid-lime text-brand-void hover:bg-acid-lime/90 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              ยืนยันบันทึก
+              {isSaving ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin inline" />
+                  กำลังบันทึก...
+                </>
+              ) : (
+                'ยืนยันบันทึก'
+              )}
             </Button>
           </div>
         </div>
