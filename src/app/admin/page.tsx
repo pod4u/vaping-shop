@@ -137,10 +137,10 @@ export default function AdminDashboard() {
 
   const recentCustomers = data.customers.slice(0, 5);
   const statCards = [
-    { title: "สต็อกรวม", value: summary.totalStock.toLocaleString(), note: "จำนวนชิ้นใน Supabase", icon: Package, color: "text-blue-400", bg: "bg-blue-500/20" },
+    { title: "สต็อกรวม", value: summary.totalStock.toLocaleString(), note: `${summary.availableVariants} รายการพร้อมส่ง`, icon: Package, color: "text-blue-400", bg: "bg-blue-500/20" },
     { title: "รายการพร้อมส่ง", value: summary.availableVariants.toLocaleString(), note: `จาก ${summary.totalVariants.toLocaleString()} variants`, icon: PackageCheck, color: "text-acid-lime", bg: "bg-acid-lime/20" },
     { title: "สินค้าเตือน", value: (summary.lowStock + summary.outOfStock).toLocaleString(), note: `${summary.lowStock} ใกล้หมด · ${summary.outOfStock} หมด`, icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/20" },
-    { title: "ลูกค้าในระบบ", value: data.customers.length.toLocaleString(), note: "ข้อมูลที่บันทึกจริง", icon: Users, color: "text-vapor-violet", bg: "bg-vapor-violet/20" },
+    { title: "ลูกค้าในระบบ", value: data.customers.length.toLocaleString(), note: "ลงทะเบียนแล้ว", icon: Users, color: "text-vapor-violet", bg: "bg-vapor-violet/20" },
   ];
 
   if (isLoading) {
