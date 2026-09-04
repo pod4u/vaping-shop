@@ -148,7 +148,7 @@ export default function AdminDashboard() {
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-vapor-violet border-t-acid-lime" />
-          <p className="text-white/60">กำลังโหลดข้อมูลจริงจาก Supabase...</p>
+          <p className="text-white/60">กำลังโหลดข้อมูล...</p>
         </div>
       </div>
     );

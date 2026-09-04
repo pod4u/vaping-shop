@@ -205,7 +205,7 @@ export default function AdminStockPage() {
       <div className="flex items-center justify-center h-full min-h-[400px]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-vapor-violet border-t-acid-lime rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/60">กำลังโหลดข้อมูลจาก Supabase...</p>
+          <p className="text-white/60">กำลังโหลดข้อมูล...</p>
         </div>
       </div>
     );
@@ -261,7 +261,7 @@ export default function AdminStockPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">จัดการสต็อก</h1>
-          <p className="text-white/50 mt-1">ข้อมูลจาก Supabase • {totalProducts} สินค้า, {totalFlavors} variants, {availableFlavors} พร้อมส่ง</p>
+          <p className="text-white/50 mt-1">{totalProducts} สินค้า, {totalFlavors} variants, {availableFlavors} พร้อมส่ง</p>
         </div>
 
         <div className="flex gap-2">
@@ -504,8 +504,8 @@ export default function AdminStockPage() {
       {stockData.length === 0 && (
         <div className="text-center py-12">
           <Package className="w-16 h-16 text-white/20 mx-auto mb-4" />
-          <p className="text-white/50">ไม่พบข้อมูลสินค้าใน Supabase</p>
-          <p className="text-white/30 text-sm mt-2">กรุณาตรวจสอบการเชื่อมต่อ Supabase</p>
+          <p className="text-white/50">ไม่พบข้อมูลสินค้า</p>
+          <p className="text-white/30 text-sm mt-2">กรุณาตรวจสอบการเชื่อมต่อ</p>
         </div>
       )}
     </div>
