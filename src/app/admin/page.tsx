@@ -162,7 +162,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6 bg-brand-void min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 bg-brand-void min-h-screen">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-white">Dashboard</h1>
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat, index) => (
           <Card key={index} className="bg-white/5 border-white/10">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4">
               <CardTitle className="text-sm font-medium text-white/70">
                 {stat.title}
               </CardTitle>
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
                 <stat.icon className={`h-5 w-5 ${stat.color}`} />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-2 px-4 pb-4">
               <div className={`text-3xl font-bold ${stat.color}`}>
                 {stat.value}
               </div>
@@ -205,11 +205,11 @@ export default function AdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Sales Line Chart */}
         <Card className="lg:col-span-2 bg-white/5 border-white/10">
-          <CardHeader>
+          <CardHeader className="pt-4 px-4">
             <CardTitle className="text-white">ยอดขาย 7 วันล่าสุด</CardTitle>
             <CardDescription className="text-white/50">กราฟแสดงยอดขายรายวัน (บาท)</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4">
             <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={salesData}>
@@ -238,11 +238,11 @@ export default function AdminDashboard() {
 
         {/* Brand Pie Chart */}
         <Card className="bg-white/5 border-white/10">
-          <CardHeader>
+          <CardHeader className="pt-4 px-4">
             <CardTitle className="text-white">สัดส่วนแบรนด์</CardTitle>
             <CardDescription className="text-white/50">% ยอดขายแต่ละแบรนด์</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4">
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -285,11 +285,11 @@ export default function AdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Top Products Bar Chart */}
         <Card className="bg-white/5 border-white/10">
-          <CardHeader>
+          <CardHeader className="pt-4 px-4">
             <CardTitle className="text-white">สินค้าขายดี Top 5</CardTitle>
             <CardDescription className="text-white/50">จำนวนชิ้นที่ขายได้</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4">
             <div className="h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={topProducts} layout="vertical">
@@ -309,7 +309,7 @@ export default function AdminDashboard() {
 
         {/* Today's Orders */}
         <Card className="bg-white/5 border-white/10">
-          <CardHeader>
+          <CardHeader className="pt-4 px-4">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-white">ออเดอร์วันนี้</CardTitle>
@@ -318,7 +318,7 @@ export default function AdminDashboard() {
               <a href="/admin/orders" className="text-acid-lime text-sm hover:underline">ดูทั้งหมด</a>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4">
             <div className="space-y-3">
               {mockTodayOrders.map((order) => (
                 <div key={order.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
@@ -349,7 +349,7 @@ export default function AdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Customers */}
         <Card className="bg-white/5 border-white/10">
-          <CardHeader>
+          <CardHeader className="pt-4 px-4">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-white">ลูกค้าล่าสุด</CardTitle>
@@ -358,7 +358,7 @@ export default function AdminDashboard() {
               <a href="/admin/customers" className="text-acid-lime text-sm hover:underline">ดูทั้งหมด</a>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4">
             <div className="space-y-3">
               {mockRecentCustomers.map((customer, i) => (
                 <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
@@ -383,11 +383,11 @@ export default function AdminDashboard() {
 
         {/* Brands Overview */}
         <Card className="bg-white/5 border-white/10">
-          <CardHeader>
+          <CardHeader className="pt-4 px-4">
             <CardTitle className="text-white">แบรนด์ทั้งหมด</CardTitle>
             <CardDescription className="text-white/50">{brands.length} แบรนด์</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4">
             <div className="grid grid-cols-2 gap-3">
               {brands.map((brand) => (
                 <a

@@ -153,14 +153,37 @@ export default function StockPage() {
     ), 0
   ) || 0;
 
+  const sortedBrands = [...(stockData?.data || [])].sort((a, b) =>
+    (a.brand.name || a.brand.name_th || '').localeCompare(
+      b.brand.name || b.brand.name_th || '',
+      'en',
+      { sensitivity: 'base' }
+    )
+  );
+
   // Get all flavors flattened for simple view
   const allFlavors: { brand: Brand; product: Product; flavor: AvailableFlavor }[] = [];
-  stockData?.data.forEach(b => {
+  sortedBrands.forEach(b => {
     b.products.forEach(p => {
       p.availableFlavors.forEach(f => {
         allFlavors.push({ brand: b.brand, product: p, flavor: f });
       });
     });
+  });
+
+  allFlavors.sort((a, b) => {
+    const brandCompare = (a.brand.name || a.brand.name_th || '').localeCompare(
+      b.brand.name || b.brand.name_th || '',
+      'en',
+      { sensitivity: 'base' }
+    );
+
+    if (brandCompare !== 0) return brandCompare;
+    return (a.flavor.flavor.name || a.flavor.flavor.name_th || '').localeCompare(
+      b.flavor.flavor.name || b.flavor.flavor.name_th || '',
+      'en',
+      { sensitivity: 'base' }
+    );
   });
 
   // Filter by brand if selected
@@ -214,7 +237,7 @@ export default function StockPage() {
             >
               ทั้งหมด ({totalFlavors})
             </button>
-            {stockData?.data.map(b => {
+            {sortedBrands.map(b => {
               const count = b.products.reduce((s, p) => s + p.availableFlavors.length, 0);
               return (
                 <button
@@ -227,7 +250,7 @@ export default function StockPage() {
                   }`}
                   style={selectedBrand === b.brand.id ? { backgroundColor: b.brand.color || '#7928ca' } : {}}
                 >
-                  {b.brand.name_th || b.brand.name} ({count})
+                  {b.brand.name || b.brand.name_th} ({count})
                 </button>
               );
             })}
@@ -273,7 +296,7 @@ export default function StockPage() {
                     {item.flavor.flavor.name_th || item.flavor.flavor.name}
                   </p>
                   <p className="text-white/40 text-xs truncate">
-                    {item.brand.name_th || item.brand.name}
+                    {item.brand.name || item.brand.name_th}
                   </p>
                   {item.flavor.flavor.name_th && item.flavor.flavor.name && (
                     <p className="text-white/30 text-[10px] truncate">

@@ -3,7 +3,6 @@ import FreeShippingBannerNavy from "@/components/FreeShippingBannerNavy";
 import SocialProofNavy from "@/components/SocialProofNavy";
 import CategoriesNavy from "@/components/CategoriesNavy";
 import TrustBadgesNavy from "@/components/TrustBadgesNavy";
-import BestSellersNavy from "@/components/BestSellersNavy";
 import ReadyToShipProductsNavy from "@/components/ReadyToShipProductsNavy";
 import FeaturedProductsNavy from "@/components/FeaturedProductsNavy";
 import TestimonialsNavy from "@/components/TestimonialsNavy";
@@ -16,11 +15,10 @@ export default function HomePage() {
     <>
       <HeroVideoNavy />
       <FreeShippingBannerNavy />
+      <ReadyToShipProductsNavy />
       <SocialProofNavy />
       <CategoriesNavy />
       <TrustBadgesNavy />
-      <BestSellersNavy />
-      <ReadyToShipProductsNavy />
       <FeaturedProductsNavy />
       <TestimonialsNavy />
       <FAQNavy />

@@ -62,7 +62,20 @@ export default function ReadyToShipProductsNavy() {
           });
         });
 
-        readyProducts.sort((a, b) => b.stock - a.stock);
+        readyProducts.sort((a, b) => {
+          const brandCompare = (a.brandName || a.brandNameTh || '').localeCompare(
+            b.brandName || b.brandNameTh || '',
+            'en',
+            { sensitivity: 'base' }
+          );
+
+          if (brandCompare !== 0) return brandCompare;
+          return (a.name || a.nameTh || '').localeCompare(
+            b.name || b.nameTh || '',
+            'en',
+            { sensitivity: 'base' }
+          );
+        });
         setProducts(readyProducts.slice(0, 8));
       }
     } catch (error) {
@@ -156,7 +169,9 @@ export default function ReadyToShipProductsNavy() {
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: product.color }}
                   />
-                  <span className="text-white/60 text-xs">{product.brandNameTh}</span>
+                  <span className="text-white/60 text-xs font-semibold tracking-wide">
+                    {product.brandName || product.brandNameTh}
+                  </span>
                 </div>
 
                 <h3 className="text-white font-bold text-sm sm:text-base mb-1 truncate">
