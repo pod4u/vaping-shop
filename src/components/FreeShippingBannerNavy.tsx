@@ -28,7 +28,7 @@ export default function FreeShippingBannerNavy() {
                   ซื้อ 3 ชิ้น <span className="text-acid-lime">ส่งฟรี!</span>
                 </h3>
                 <p className="text-white/60 text-sm sm:text-base">
-                  เฉพาะ <span className="text-acid-lime font-bold">บุหรี่ไฟฟ้าดูดทิ้ง</span> (Disposable)
+                  เฉพาะ <span className="text-acid-lime font-bold">พอตใช้แล้วทิ้ง</span> (Disposable)
                 </p>
               </div>
             </div>
@@ -39,11 +39,11 @@ export default function FreeShippingBannerNavy() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 text-white/80 text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-acid-lime"></span>
-                  สั่งซื้อดูดทิ้ง 3 ชิ้นขึ้นไป = ส่งฟรีทันที
+                  สั่งซื้อพอตใช้แล้วทิ้ง 3 ชิ้นขึ้นไป = ส่งฟรีทันที
                 </div>
                 <div className="flex items-center gap-2 text-white/50 text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-white/30"></span>
-                  รายการอื่น (Pod, อะไหล่) ไม่ร่วมโปรโมชั่น
+                  รายการอื่น (พอตเปลี่ยนหัว, อะไหล่) ไม่ร่วมโปรโมชั่น
                 </div>
                 <div className="flex items-center gap-2 text-white/50 text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-white/30"></span>
@@ -53,10 +53,10 @@ export default function FreeShippingBannerNavy() {
 
               {/* CTA */}
               <Link
-                href="/products?category=disposable"
+                href="/products?category=disposable-pod"
                 className="flex items-center gap-2 bg-gradient-to-r from-acid-lime to-[#a3e635] text-navy-deep px-6 py-3 rounded-full text-sm font-bold hover:shadow-acid transition-all whitespace-nowrap"
               >
-                เลือกดูดทิ้งเลย
+                เลือกพอตใช้แล้วทิ้งเลย
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
