@@ -16,7 +16,7 @@ export default function Footer() {
                 <span className="text-lg">💨</span>
               </div>
               <span className="text-xl font-black tracking-tight text-white">
-                VAPING <span className="text-acid-lime">SHOP</span>
+                Pod<span className="text-acid-lime">4U</span>
               </span>
             </div>
             <p className="text-white/50 mb-6 text-sm leading-relaxed">

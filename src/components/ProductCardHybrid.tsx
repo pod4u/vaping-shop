@@ -21,7 +21,7 @@ export default function ProductCardHybrid({ product }: ProductCardHybridProps) {
             alt={product.imageAlt || product.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = "https://placehold.co/400x400/020617/3b82f6?text=VAPING";
+              (e.target as HTMLImageElement).src = "https://placehold.co/400x400/020617/3b82f6?text=Pod4U";
             }}
           />
 

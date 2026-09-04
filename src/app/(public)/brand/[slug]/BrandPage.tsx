@@ -28,7 +28,7 @@ export default function BrandPage({ brand }: BrandPageProps) {
                 <span className="text-xl">💨</span>
               </div>
               <span className="text-xl font-black text-white">
-                VAPING <span className="text-acid-lime">SHOP</span>
+                Pod<span className="text-acid-lime">4U</span>
               </span>
             </Link>
 

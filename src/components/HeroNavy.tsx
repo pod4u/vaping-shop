@@ -69,9 +69,9 @@ export default function HeroNavy() {
         <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight mb-6 leading-[1.08] text-white animate-slide-up" style={{ animationDelay: '0.1s' }}>
           ELEVATE YOUR <br className="hidden sm:block" />
           <span className="relative inline-block">
-            <span className="text-white-neon">VAPING</span>
+            <span className="text-white-neon">Pod</span>
             {/* Text reflection/glow effect */}
-            <span className="absolute -bottom-2 left-0 right-0 text-white/20 blur-sm select-none">VAPING</span>
+            <span className="absolute -bottom-2 left-0 right-0 text-white/20 blur-sm select-none">Pod4U</span>
           </span> EXPERIENCE
         </h1>
 

@@ -66,7 +66,7 @@ export default function HeaderNavy() {
                 <span className="text-xl">💨</span>
               </div>
               <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
-                VAPING <span className="text-white-neon font-black">SHOP</span>
+                Pod<span className="text-white-neon font-black">4U</span>
               </span>
             </Link>
 

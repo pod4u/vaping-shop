@@ -28,7 +28,7 @@ export default function HeroVideoNavy() {
           {/* Small Tag */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/20 backdrop-blur-sm mb-6">
             <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-            <span className="text-white/80 text-sm font-medium tracking-wide">PREMIUM VAPE SHOP</span>
+            <span className="text-white/80 text-sm font-medium tracking-wide">POD4U</span>
           </div>
 
           {/* Main Title - Glowing White/Blue Gradient */}
@@ -43,7 +43,7 @@ export default function HeroVideoNavy() {
                 textShadow: '0 0 40px rgba(255,255,255,0.3)',
               }}
             >
-              VAPING
+              Pod4U
             </span>
             <span 
               className="block mt-1 drop-shadow-[0_0_25px_rgba(147,197,253,0.5)]"

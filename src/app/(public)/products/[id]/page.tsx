@@ -77,7 +77,7 @@ export default function ProductDetailPage() {
                 alt={product.imageAlt || product.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = "https://placehold.co/600x600/120d20/5b13ec?text=VAPING";
+                  (e.target as HTMLImageElement).src = "https://placehold.co/600x600/120d20/5b13ec?text=Pod4U";
                 }}
               />
               

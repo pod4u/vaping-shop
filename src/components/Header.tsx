@@ -55,7 +55,7 @@ export default function Header() {
                 <span className="text-xl">💨</span>
               </div>
               <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
-                VAPING <span className="text-acid-lime font-black">SHOP</span>
+                Pod<span className="text-acid-lime font-black">4U</span>
               </span>
             </Link>
 

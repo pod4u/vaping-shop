@@ -84,7 +84,7 @@ export default function HeroHybrid() {
           <span className="text-white">ELEVATE YOUR</span>
           <br className="hidden sm:block" />
           <span className="text-white-neon">
-            VAPING
+            Pod4U
           </span>
           <span className="text-white"> EXPERIENCE</span>
         </h1>
