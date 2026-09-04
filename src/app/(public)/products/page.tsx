@@ -51,7 +51,7 @@ function ProductsContent() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative -mt-20 pt-20 pb-8 overflow-hidden">
+      <section className="relative pb-8 overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-acid-lime/20 via-green-500/10 to-navy-deep"></div>
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
