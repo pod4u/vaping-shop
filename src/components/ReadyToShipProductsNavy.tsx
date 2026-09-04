@@ -87,7 +87,7 @@ export default function ReadyToShipProductsNavy() {
 
   const getPrice = (brandId: string): number => {
     const prices: Record<string, number> = {
-      alfa: 450, marbo: 250, mood: 290, vplus: 380,
+      alfa: 450, marbo: 250, msw: 390, mood: 290, vplus: 380,
       eskobar: 480, mbar: 350, relx: 450
     };
     return prices[brandId] || 350;

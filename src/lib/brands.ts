@@ -7,6 +7,7 @@ export interface BrandFlavor {
   image: string;
   color?: string;
   nicotinePercent?: number;
+  isAvailable?: boolean;
 }
 
 export interface Brand {
@@ -94,6 +95,28 @@ export const brands: Brand[] = [
       { id: 'strawberry', name: 'Strawberry', nameTh: 'สตรอว์เบอร์รี่', image: '/images/products/moood/monster-series-14k/strawberry.webp', color: '#EF4444', nicotinePercent: 3 },
       { id: 'watermelon', name: 'Watermelon', nameTh: 'แตงโม', image: '/images/products/moood/monster-series-14k/watermelon.webp', color: '#EF4444', nicotinePercent: 3 },
       { id: 'peach-orange', name: 'Peach Orange', nameTh: 'พีชออเรนจ์', image: '/images/products/moood/monster-series-14k/peach-orange.webp', color: '#FB923C', nicotinePercent: 3 },
+    ],
+  },
+  {
+    id: 'msw',
+    slug: 'msw',
+    name: 'MARBO M SWITCH 15K',
+    nameTh: 'หัวเปลี่ยน MSW 15K',
+    description: 'หัวพอตพร้อมน้ำยา สำหรับเครื่อง MARBO M SWITCH และ F SWITCH',
+    color: '#E11D48',
+    puffCount: 15000,
+    flavors: [
+      { id: 'watermelon-bubblegum', name: 'Watermelon Bubblegum', nameTh: 'แตงโมบับเบิ้ลกั้ม', image: '/images/products/marbo/m-switch-15k/watermelon-bubblegum.webp', color: '#EF4444' },
+      { id: 'grape-lychee', name: 'Grape Lychee', nameTh: 'องุ่นลิ้นจี่', image: '/images/products/marbo/m-switch-15k/grape-lychee.webp', color: '#A855F7' },
+      { id: 'watermelon', name: 'Watermelon', nameTh: 'แตงโม', image: '/images/products/marbo/m-switch-15k/watermelon.webp', color: '#EF4444' },
+      { id: 'blue-ice', name: 'Blue Ice', nameTh: 'บลูไอซ์', image: '/images/products/marbo/m-switch-15k/blue-ice.webp', color: '#3B82F6' },
+      { id: 'kyoho-grape', name: 'Kyoho Grape', nameTh: 'องุ่นเคียวโฮ', image: '/images/products/marbo/m-switch-15k/kyoho-grape.webp', color: '#7C3AED' },
+      { id: 'grape-aloe', name: 'Grape Aloe', nameTh: 'องุ่นอโล', image: '/images/products/marbo/m-switch-15k/grape-aloe.jpg', color: '#22C55E' },
+      { id: 'mixberry', name: 'Mixberry', nameTh: 'มิกซ์เบอร์รี่', image: '/images/products/marbo/m-switch-15k/mixberry.webp', color: '#C026D3' },
+      { id: 'mango-passion', name: 'Mango Passion', nameTh: 'มะม่วงเสาวรส', image: '/images/products/marbo/m-switch-15k/mango-passion.webp', color: '#FACC15', isAvailable: false },
+      { id: 'peach-strawberry', name: 'Peach Strawberry', nameTh: 'พีชสตรอว์เบอร์รี่', image: '/images/products/marbo/m-switch-15k/peach-strawberry.webp', color: '#FB7185', isAvailable: false },
+      { id: 'pink-berry', name: 'Pink Berry', nameTh: 'พิงค์เบอร์รี่', image: '/images/products/marbo/m-switch-15k/pink-berry.webp', color: '#EC4899', isAvailable: false },
+      { id: 'strawberry', name: 'Strawberry', nameTh: 'สตรอว์เบอร์รี่', image: '/images/products/marbo/m-switch-15k/strawberry.webp', color: '#F43F5E', isAvailable: false },
     ],
   },
   {

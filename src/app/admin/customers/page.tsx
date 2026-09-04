@@ -6,7 +6,7 @@ import { Users, UserPlus, Search } from "lucide-react";
 
 interface Customer {
   id: number;
-  full_name: string;
+  full_name: string | null;
   phone: string;
   line_id: string | null;
   email: string | null;
@@ -44,8 +44,8 @@ export default function AdminCustomersPage() {
   const filteredCustomers = customers.filter((customer) => {
     const query = searchQuery.toLowerCase();
     return (
-      customer.full_name.toLowerCase().includes(query) ||
-      customer.phone.includes(query) ||
+      (customer.full_name?.toLowerCase().includes(query) ?? false) ||
+      (customer.phone?.includes(query) ?? false) ||
       (customer.line_id?.toLowerCase().includes(query) ?? false)
     );
   });
@@ -156,7 +156,7 @@ export default function AdminCustomersPage() {
                 {filteredCustomers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-white/5">
                     <td className="px-4 py-3 text-sm text-white">
-                      {customer.full_name}
+                      {customer.full_name || "ไม่ระบุชื่อ"}
                     </td>
                     <td className="px-4 py-3 text-sm text-white">
                       {customer.phone}
@@ -165,7 +165,7 @@ export default function AdminCustomersPage() {
                       {customer.line_id || "-"}
                     </td>
                     <td className="px-4 py-3 text-sm text-white">
-                      {customer.province}
+                      {customer.province || "-"}
                     </td>
                     <td className="px-4 py-3 text-center text-sm font-medium text-acid-lime">
                       {customer.total_orders}

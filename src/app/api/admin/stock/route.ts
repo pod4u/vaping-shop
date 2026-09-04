@@ -9,7 +9,7 @@ async function readStock() {
     .select(`
       id, stock_quantity, price, sale_price, image_url,
       flavor:flavors(slug, name, name_th, color),
-      product:products(id, name, name_th, puff_count, brand:brands(slug, name, name_th, color))
+      product:products(id, name, name_th, puff_count, category:categories(slug, name, name_th), brand:brands(slug, name, name_th, color))
     `)
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
@@ -20,11 +20,21 @@ async function readStock() {
     const product = Array.isArray(variant.product) ? variant.product[0] : variant.product;
     const brand = Array.isArray(product?.brand) ? product.brand[0] : product?.brand;
     const flavor = Array.isArray(variant.flavor) ? variant.flavor[0] : variant.flavor;
+    const category = Array.isArray(product?.category) ? product.category[0] : product?.category;
     if (!product || !brand || !flavor) continue;
     if (!brands.has(brand.slug)) brands.set(brand.slug, { id: brand.slug, name: brand.name, nameTh: brand.name_th, color: brand.color, products: new Map() });
     const brandRow = brands.get(brand.slug);
     if (!brandRow.products.has(product.id)) {
-      brandRow.products.set(product.id, { id: product.id, name: product.name, nameTh: product.name_th, price: Number(variant.price), salePrice: variant.sale_price == null ? null : Number(variant.sale_price), puffCount: product.puff_count, flavors: [] });
+      brandRow.products.set(product.id, { 
+        id: product.id, 
+        name: product.name, 
+        nameTh: product.name_th, 
+        price: Number(variant.price), 
+        salePrice: variant.sale_price == null ? null : Number(variant.sale_price), 
+        puffCount: product.puff_count, 
+        category: category ? { id: category.slug, name: category.name, nameTh: category.name_th } : null,
+        flavors: [] 
+      });
     }
     brandRow.products.get(product.id).flavors.push({ id: flavor.slug, variantId: variant.id, name: flavor.name, nameTh: flavor.name_th, color: flavor.color, image: variant.image_url, stock: variant.stock_quantity });
   }

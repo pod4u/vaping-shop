@@ -7,6 +7,9 @@ import { createClient } from "@supabase/supabase-js";
 
 const projectRoot = process.cwd();
 const require = createRequire(import.meta.url);
+const brandArgIndex = process.argv.indexOf("--brand");
+const requestedBrandId = brandArgIndex >= 0 ? process.argv[brandArgIndex + 1] : null;
+if (brandArgIndex >= 0 && !requestedBrandId) throw new Error("--brand requires a brand id");
 
 async function loadEnv(filePath) {
   const text = await fs.readFile(filePath, "utf8");
@@ -30,7 +33,8 @@ async function loadBrands() {
 const catalogMeta = {
   alfa: { brandName: "ALFA", brandNameTh: "อัลฟา", model: "Duo Mesh 20K", modelTh: "ดูโอเมช 20K", category: "disposable-pod", price: 400 },
   eskobar: { brandName: "ESKO BAR", brandNameTh: "เอสโกบาร์", model: "Switch 20K", modelTh: "สวิตช์ 20K", category: "disposable-pod", price: 480 },
-  marbo: { brandName: "MARBO", brandNameTh: "มาร์โบ", model: "M BAR 9K", modelTh: "เอ็มบาร์ 9K", category: "disposable-pod", price: 390 },
+  marbo: { brandSlug: "marbo", brandName: "MARBO", brandNameTh: "มาร์โบ", model: "M BAR 9K", modelTh: "เอ็มบาร์ 9K", category: "disposable-pod", price: 390 },
+  msw: { brandSlug: "marbo", brandName: "MARBO", brandNameTh: "มาร์โบ", model: "M SWITCH 15K", modelTh: "หัวเปลี่ยน MSW 15K", category: "flavor-pod", price: 390 },
   mbar: { brandName: "M BAR", brandNameTh: "เอ็มบาร์", model: "10K", modelTh: "10K", category: "disposable-pod", price: 350 },
   mood: { brandName: "MOOOD", brandNameTh: "มูด", model: "Monster Series 14K", modelTh: "มอนสเตอร์ซีรีส์ 14K", category: "disposable-pod", price: 350 },
   relx: { brandName: "RELX", brandNameTh: "รีแล็กซ์", model: "Pod Pro 2", modelTh: "พอดโปร 2", category: "flavor-pod", price: 200 },
@@ -54,6 +58,7 @@ function aliasesFor(brand, meta, flavor, nicotine) {
   const nicotineAliases = nicotine ? [`${flavor.name} ${nicotine}%`, `${flavor.nameTh} ${nicotine}%`, `${flavor.nameTh} น.${nicotine}`, `${flavor.nameTh} น${nicotine}`] : [];
   const common = {
     marbo: ["marbo m switch", "msw", "หัวเปลี่ยน msw", "มาโบ", "มาร์โบ"],
+    msw: ["marbo m switch", "m switch", "msw", "หัวเปลี่ยน msw", "หัวพอต msw", "มาโบ", "มาร์โบ"],
     mood: ["mood", "moood", "มูด", "มู๊ด", "หมูด"],
     alfa: ["alfa", "alpha", "อัลฟา"],
     vplus: ["vplus", "v-plus", "v plus", "วีพลัส"],
@@ -83,7 +88,9 @@ if (!supabaseUrl || !serviceRoleKey) throw new Error("Supabase environment varia
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
-const brands = await loadBrands();
+const allBrands = await loadBrands();
+const brands = requestedBrandId ? allBrands.filter((brand) => brand.id === requestedBrandId) : allBrands;
+if (requestedBrandId && brands.length === 0) throw new Error(`Unknown brand id: ${requestedBrandId}`);
 const stockData = JSON.parse(await fs.readFile(path.join(projectRoot, "src/data/stock.json"), "utf8"));
 const initialStock = new Map();
 for (const stockBrand of stockData.brands || []) {
@@ -122,22 +129,25 @@ let uploaded = 0;
 let variantCount = 0;
 for (let brandIndex = 0; brandIndex < brands.length; brandIndex += 1) {
   const brand = brands[brandIndex];
+  const catalogBrandIndex = allBrands.findIndex((item) => item.id === brand.id);
   const meta = catalogMeta[brand.id];
   if (!meta) throw new Error(`Missing catalog metadata for ${brand.id}`);
+  const canonicalBrand = allBrands.find((item) => item.id === (meta.brandSlug || brand.id)) || brand;
+  const canonicalBrandIndex = allBrands.findIndex((item) => item.id === canonicalBrand.id);
 
   const { data: brandRow, error: brandError } = await supabase.from("brands").upsert({
-    slug: brand.id,
+    slug: meta.brandSlug || brand.id,
     name: meta.brandName,
     name_th: meta.brandNameTh,
-    description: brand.description,
-    color: brand.color,
-    banner_url: brand.banner || null,
-    sort_order: brandIndex + 1,
+    description: canonicalBrand.description,
+    color: canonicalBrand.color,
+    banner_url: canonicalBrand.banner || null,
+    sort_order: canonicalBrandIndex + 1,
     is_active: true,
   }, { onConflict: "slug" }).select("id").single();
   if (brandError) throw brandError;
 
-  const productKey = `${brand.id}-${slugify(meta.model)}`;
+  const productKey = `${meta.brandSlug || brand.id}-${slugify(meta.model)}`;
   const { data: productRow, error: productError } = await supabase.from("products").upsert({
     product_key: productKey,
     sku: productKey.toUpperCase(),
@@ -150,7 +160,7 @@ for (let brandIndex = 0; brandIndex < brands.length; brandIndex += 1) {
     price: meta.price,
     sale_price: null,
     puff_count: brand.puffCount || 0,
-    sort_order: brandIndex + 1,
+    sort_order: catalogBrandIndex + 1,
     is_active: true,
   }, { onConflict: "product_key" }).select("id").single();
   if (productError) throw productError;
@@ -197,7 +207,7 @@ for (let brandIndex = 0; brandIndex < brands.length; brandIndex += 1) {
       image_alt_en: `${meta.brandName} ${meta.model} - ${flavor.name}`,
       image_alt_th: `${meta.brandNameTh} ${meta.modelTh} - ${flavor.nameTh}`,
       stock_quantity: existingVariant?.stock_quantity ?? initialStock.get(`${brand.id}:${flavor.id}`) ?? 0,
-      is_available: true,
+      is_available: flavor.isAvailable ?? true,
       is_active: true,
       sort_order: flavorIndex + 1,
     }, { onConflict: "variant_key" }).select("id").single();

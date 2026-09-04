@@ -42,6 +42,7 @@ interface ProductStock {
   price: number;
   salePrice: number | null;
   puffCount: number | null;
+  category: { id: string; name: string; nameTh: string } | null;
   flavors: FlavorStock[];
 }
 
@@ -67,6 +68,7 @@ export default function AdminStockPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -179,6 +181,25 @@ export default function AdminStockPage() {
   const totalStock = stockData.reduce((sum, b) => sum + b.products.reduce((s, p) => s + p.flavors.reduce((fs, f) => fs + f.stock, 0), 0), 0);
   const availableFlavors = stockData.reduce((sum, b) => sum + b.products.reduce((s, p) => s + p.flavors.filter(f => f.stock > 0).length, 0), 0);
 
+  // Get unique categories from data
+  const categories = Array.from(
+    new Map(
+      stockData
+        .flatMap(b => b.products)
+        .filter(p => p.category)
+        .map(p => [p.category!.id, p.category!])
+    ).values()
+  );
+
+  // Filter data by brand and category
+  const filteredData = stockData
+    .filter(brand => !selectedBrand || brand.id === selectedBrand)
+    .map(brand => ({
+      ...brand,
+      products: brand.products.filter(product => !selectedCategory || product.category?.id === selectedCategory)
+    }))
+    .filter(brand => brand.products.length > 0);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full min-h-[400px]">
@@ -289,35 +310,71 @@ export default function AdminStockPage() {
         </div>
       )}
 
-      {/* Brand Filter */}
-      <div className="flex gap-2 flex-wrap">
-        <Button
-          variant={selectedBrand === null ? "default" : "outline"}
-          onClick={() => setSelectedBrand(null)}
-          className={selectedBrand === null ? "bg-acid-lime text-brand-void" : "border-white/20 text-white/70"}
-        >
-          ทั้งหมด ({totalFlavors})
-        </Button>
-        {stockData.map(brand => {
-          const brandFlavorCount = brand.products.reduce((s, p) => s + p.flavors.length, 0);
-          return (
-            <Button
-              key={brand.id}
-              variant={selectedBrand === brand.id ? "default" : "outline"}
-              onClick={() => setSelectedBrand(brand.id)}
-              style={selectedBrand === brand.id ? { backgroundColor: brand.color || '#7928ca' } : {}}
-              className={selectedBrand === brand.id ? "text-white" : "border-white/20 text-white/70"}
+      {/* Category & Brand Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        {/* Category Filter */}
+        <div className="flex-1">
+          <label className="text-white/50 text-xs mb-2 block">หมวดหมู่</label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                !selectedCategory
+                  ? 'bg-acid-lime text-brand-void'
+                  : 'bg-white/10 text-white/60 hover:bg-white/20'
+              }`}
             >
-              {brand.nameTh || brand.name} ({brandFlavorCount})
-            </Button>
-          );
-        })}
+              ทั้งหมด
+            </button>
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  selectedCategory === cat.id
+                    ? 'bg-acid-lime text-brand-void'
+                    : 'bg-white/10 text-white/60 hover:bg-white/20'
+                }`}
+              >
+                {cat.nameTh}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Brand Filter */}
+        <div className="flex-1">
+          <label className="text-white/50 text-xs mb-2 block">แบรนด์</label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedBrand(null)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                !selectedBrand
+                  ? 'bg-vapor-violet text-white'
+                  : 'bg-white/10 text-white/60 hover:bg-white/20'
+              }`}
+            >
+              ทั้งหมด
+            </button>
+            {stockData.map(brand => (
+              <button
+                key={brand.id}
+                onClick={() => setSelectedBrand(brand.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  selectedBrand === brand.id
+                    ? 'bg-vapor-violet text-white'
+                    : 'bg-white/10 text-white/60 hover:bg-white/20'
+                }`}
+              >
+                {brand.name}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Stock Table */}
-      {stockData
-        .filter(brand => !selectedBrand || brand.id === selectedBrand)
-        .map(brand => (
+      {filteredData.map(brand => (
         <Card key={brand.id} className="bg-white/5 border-white/10">
           <CardHeader>
             <div className="flex items-center gap-3">
@@ -330,7 +387,7 @@ export default function AdminStockPage() {
               <div>
                 <CardTitle className="text-white">{brand.name}</CardTitle>
                 <p className="text-sm text-white/50">
-                  {brand.nameTh} • {brand.products.length} สินค้า • {brand.products.reduce((s, p) => s + p.flavors.length, 0)} variants
+                  {brand.products.length} รุ่นสินค้า • {brand.products.reduce((s, p) => s + p.flavors.length, 0)} variants
                 </p>
               </div>
             </div>
@@ -341,7 +398,14 @@ export default function AdminStockPage() {
               <div key={product.id} className="mb-6 last:mb-0">
                 <div className="flex items-center justify-between mb-3 px-2">
                   <div>
-                    <h4 className="text-white font-bold">{product.nameTh || product.name}</h4>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="text-white font-bold">{product.nameTh || product.name}</h4>
+                      {product.category && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-acid-lime/20 text-acid-lime">
+                          {product.category.nameTh}
+                        </span>
+                      )}
+                    </div>
                     {product.puffCount && (
                       <span className="text-white/40 text-xs">{(product.puffCount / 1000)}K Puffs</span>
                     )}

@@ -197,10 +197,19 @@ export async function searchFlavors(query: string) {
 
 export interface Customer {
   id: number
+  full_name: string
   phone: string
-  name: string | null
-  line_user_id: string | null
+  line_id: string | null
   email: string | null
+  address: string
+  district: string | null
+  sub_district: string
+  province: string
+  postal_code: string | null
+  total_orders: number
+  total_spent: number
+  last_order_date: string | null
+  is_active: boolean
   created_at: string
 }
 
@@ -241,9 +250,14 @@ export interface OrderItem {
 
 export async function createCustomer(data: {
   phone: string
-  name?: string
-  line_user_id?: string
+  full_name: string
+  line_id?: string
   email?: string
+  address: string
+  district?: string
+  sub_district: string
+  province: string
+  postal_code?: string
 }) {
   const { data: customer, error } = await getServerSupabase()
     .from('customers')
@@ -270,9 +284,14 @@ export async function registerCustomer(data: {
     .from('customers')
     .insert({
       phone: data.phone,
-      name: data.full_name,
-      line_user_id: data.line_id || null,
+      full_name: data.full_name,
+      line_id: data.line_id || null,
       email: data.email || null,
+      address: data.address,
+      district: data.district || null,
+      sub_district: data.sub_district,
+      province: data.province,
+      postal_code: data.postal_code || null,
     })
     .select()
     .single();
@@ -313,7 +332,7 @@ export async function getCustomerByLineUserId(lineUserId: string) {
   const { data, error } = await getServerSupabase()
     .from('customers')
     .select('*')
-    .eq('line_user_id', lineUserId)
+    .eq('line_id', lineUserId)
     .single();
 
   if (error && error.code !== 'PGRST116') throw error;
