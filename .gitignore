@@ -23,11 +23,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # Local env files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env*
+!.env.example
 
 # Vercel
 .vercel
@@ -48,6 +45,5 @@ Thumbs.db
 # Qwen
 .qwen/
 
-# Large files
-*.node
-.env*
+# Logs
+*.log
