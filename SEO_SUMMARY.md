@@ -1,7 +1,7 @@
 # SEO Foundation — สรุปการทำงาน
 
 > วันที่: 2026-09-06
-> สถานะ: ✅ Build 47/47 — Content SEO Cluster ผ่านการตรวจสอบ — พร้อม Production Deploy
+> สถานะ: ✅ Build 47/47 — Content SEO Cluster ผ่านการตรวจสอบ — Production Deployed
 
 ---
 
@@ -334,7 +334,7 @@ getAggregatedProductBySlug()      → เดียว
 
 ## 14. Finalize & Deploy Preview
 
-### Commit
+### SEO Foundation Commit (รอบก่อน)
 ```
 Hash:    12d6ee2
 Message: feat: add SEO foundation
@@ -407,7 +407,8 @@ SEO smoke tests และ HTTP status ที่รายงานด้านล
 - Deployment configuration follow-up: Preview ยังขาด `ADMIN_SESSION_SECRET`
 
 ### สถานะ
-- ✅ Production deployment: Ready — `https://vaping-shop-lkwiaraqw-pod4u.vercel.app` (created `2026-09-06 03:33:55 +07`)
+- ✅ Content SEO release: push ไป `main` และ Git integration deploy อัตโนมัติ
+- ✅ Production deployment: Ready — ตรวจผ่านโดเมนหลัก จึงไม่ผูกเอกสารกับ immutable deployment URL ที่เปลี่ยนทุกครั้ง
 - ✅ Production custom domain: Active — `https://www.pod4u.store`
 - ✅ Preview deployment: Ready แต่มี Vercel Authentication
 - ✅ SEO production smoke test: Passed
