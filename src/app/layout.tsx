@@ -12,22 +12,24 @@ const prompt = Prompt({
 
 export const metadata: Metadata = baseMetadata({
   title: {
-    default: "Pod4U - ร้านขายพอด ราคาส่ง ครบ จบในที่เดียว",
+    default: "Pod4U - พอต พอด และพอตใช้แล้วทิ้ง",
     template: `%s | Pod4U`,
   },
   description:
-    "ร้านขายพอดเปลี่ยนหัว และพอดใช้แล้วทิ้ง ราคาส่ง ของแท้ 100% ส่งฟรีทั่วประเทศเมื่อซื้อครบ 800฿ สั่งผ่าน LINE @994tiktt",
+    "รวมข้อมูลพอต พอด พอตใช้แล้วทิ้ง และพอดเปลี่ยนหัว พร้อมหน้าสินค้า MARBO, M BAR และรุ่นยอดนิยมที่อัปเดตจากสต็อกจริง",
+  alternates: { canonical: APP_URL },
   openGraph: {
     type: "website",
     locale: "th_TH",
     siteName: "Pod4U",
-    title: "Pod4U - ร้านขายพอด ราคาส่ง",
-    description: "ร้านขายพอดเปลี่ยนหัว และพอดใช้แล้วทิ้ง ราคาส่ง ของแท้ 100%",
+    url: APP_URL,
+    title: "Pod4U - พอต พอด และพอตใช้แล้วทิ้ง",
+    description: "รวมข้อมูลพอต พอด พอตใช้แล้วทิ้ง และรุ่นยอดนิยม พร้อมรายละเอียดสินค้าและสต็อกล่าสุด",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pod4U - ร้านขายพอด ราคาส่ง",
-    description: "ร้านขายพอดเปลี่ยนหัว และพอดใช้แล้วทิ้ง ราคาส่ง ของแท้ 100%",
+    title: "Pod4U - พอต พอด และพอตใช้แล้วทิ้ง",
+    description: "รวมข้อมูลพอต พอด พอตใช้แล้วทิ้ง และรุ่นยอดนิยม พร้อมรายละเอียดสินค้าและสต็อกล่าสุด",
   },
 });
 
@@ -35,7 +37,7 @@ const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Store",
   name: "Pod4U",
-  description: "ร้านขายพอดเปลี่ยนหัว และพอดใช้แล้วทิ้ง ราคาส่ง ของแท้ 100%",
+  description: "รวมข้อมูลพอต พอด พอตใช้แล้วทิ้ง และพอดเปลี่ยนหัว พร้อมรายละเอียดสินค้าที่อัปเดตจากสต็อก",
   url: APP_URL,
   telephone: "",
   sameAs: [],

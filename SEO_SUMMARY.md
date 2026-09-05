@@ -1,7 +1,7 @@
 # SEO Foundation — สรุปการทำงาน
 
 > วันที่: 2026-09-06
-> สถานะ: ✅ Build 43/43 — ผ่าน Critical Bug Fix — พร้อม Deploy
+> สถานะ: ✅ Build 47/47 — Content SEO Cluster ผ่านการตรวจสอบ — พร้อม Production Deploy
 
 ---
 
@@ -132,7 +132,7 @@
 | 9 | safeJsonLd | ✅ ทุก JSON-LD |
 | 10 | Revalidation | ✅ 3600s (product/category/sitemap) |
 | 11 | Deployment Checklist | ✅ ในเอกสารนี้ |
-| 12 | Build + Verify | ✅ 44/44, exit 0 |
+| 12 | Build + Verify | ✅ 47/47, exit 0 |
 
 ---
 
@@ -144,8 +144,8 @@
 | 2 | Guard no active variants — ห้าม Infinity | ✅ `variantPrices.length > 0 ? Math.min(...) : 0` + JSON-LD omit AggregateOffer |
 | 3 | `/products?category=x` → noindex, follow | ✅ `<meta name="robots" content="noindex, follow">` + canonical `/products` |
 | 4 | ลบ BrandPage legacy | ✅ `brand/[slug]/BrandPage.tsx` ถูกลบ |
-| 5 | Build + verify | ✅ 43/43 pages, exit 0 |
-| 6 | รายงานตรงผลจริง | ✅ 25 sitemap URLs, 7 brands, 8 products |
+| 5 | Build + verify | ✅ 47/47 pages, exit 0 |
+| 6 | รายงานตรงผลจริง | ✅ 29 sitemap URLs, 7 brands, 8 products |
 
 ### Verification Results
 ```
@@ -153,7 +153,7 @@ BAILOUT:              0
 Product cards HTML:   8 slugs
 UUID links:           0
 Infinity in HTML:     0
-Sitemap URLs:         25
+Sitemap URLs:         29
 Sitemap brands:       7 (Supabase)
 Sitemap register:     0
 noindex (query URL):  ✅ <meta name="robots" content="noindex, follow">
@@ -210,11 +210,11 @@ UUID links: 0
 
 ### Sitemap
 ```
-Total: 25 URLs
+Total: 29 URLs
 Brands: 7 entries (Supabase — active brands only)
 Products: 8 entries
 Categories: 2 entries
-Blog: 4 entries (listing + 3 posts)
+Blog: 8 entries (listing + 7 posts)
 Static: 4 entries (/, /products, /stock, /brands)
 Register: 0 entries
 ```
@@ -290,7 +290,7 @@ getAggregatedProductBySlug()      → เดียว
 ✓ Compiled successfully
 ✓ Linting and checking validity of types
 ✓ Collecting page data
-✓ Generating static pages (43/43)
+✓ Generating static pages (47/47)
 
 ○  (Static)   prerendered as static content
 ●  (SSG)      prerendered as static HTML
@@ -302,7 +302,113 @@ getAggregatedProductBySlug()      → เดียว
 /brands          ○  Static (Supabase)
 /brands/[slug]   ●  SSG (from Supabase)
 /blog            ○  Static
-/blog/[slug]     ●  SSG (3 posts)
+/blog/[slug]     ●  SSG (7 posts)
 /sitemap.xml     ○  Auto (revalidate 3600s)
 /robots.txt      ○  Auto
 ```
+
+---
+
+## 13. Content SEO Cluster — พอต / พอด / MARBO / M BAR
+
+### Landing Pages
+- หน้าแรกและหน้ารวมสินค้าใช้คำว่า `พอต` และ `พอด` อย่างเป็นธรรมชาติ
+- Category `disposable-pod` ครอบคลุม `พอตใช้แล้วทิ้ง`, `พอตใช้ทิ้ง`, `พอตดูดทิ้ง`, 9K, 10K และ 20K
+- Brand MARBO และ M BAR รองรับรูปแบบค้นหา `มาโบ`, `มาร์โบ`, `mbar`
+- Product MARBO M BAR 9K และ M BAR 10K มี title, description, FAQ และ internal links เฉพาะคำค้น
+
+### บทความใหม่ 4 บทความ
+- `/blog/marbo-9k-flavors`
+- `/blog/mbar-10k-flavors`
+- `/blog/marbo-9k-vs-mbar-10k`
+- `/blog/pod-pod-thai-spelling-guide`
+
+### Technical Content Checks
+- Blog รวม 7 บทความ และเรียงบทความล่าสุดก่อน
+- เพิ่ม author, updated date, related links และ FAQPage JSON-LD
+- URL บทความเก่า `/blog/why-choose-our-shop` redirect 308 ไปบทความข้อมูลที่ตรวจสอบได้
+- FAQ ที่กล่าวถึงจำนวนรสชาติอ่านจาก active variants ไม่ hardcode
+- `git diff --check`, `tsc --noEmit` และ production build ผ่าน
+
+---
+
+## 14. Finalize & Deploy Preview
+
+### Commit
+```
+Hash:    12d6ee2
+Message: feat: add SEO foundation
+Files:   45 changed, 2631 insertions, 1565 deletions
+Branch:  main → github.com/pod4u/vaping-shop
+```
+
+### Pre-Deploy Checks
+```
+git diff --check:    exit 0 ✅
+tsc --noEmit:        exit 0 ✅
+npm run build:       47/47 pages ✅
+.env.local staged:   No (in .gitignore) ✅
+```
+
+### Environment Variables
+| Variable | Production | Preview |
+|----------|:----------:|:-------:|
+| `NEXT_PUBLIC_APP_URL` | ✅ | ✅ |
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | ✅ |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | ✅ |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | ✅ |
+| `ADMIN_PASSWORD` | ✅ | ✅ |
+| `ADMIN_SESSION_SECRET` | ✅ | — |
+
+**Preview ขาด 1 ตัว: `ADMIN_SESSION_SECRET`**
+
+> ไม่มีการแสดงค่าของ secret ในรายงานนี้
+
+### Preview URL
+Preview deployment สำเร็จ แต่ถูกป้องกันด้วย Vercel Authentication และตอบ 302 ไป Vercel SSO จึงไม่ได้ใช้ Preview URL สำหรับ public smoke test
+
+- URL: `https://vaping-shop-15tuwv2rd-pod4u.vercel.app`
+- Created: `2026-09-06 03:34:34 +07`
+- Status: Ready
+
+### HTTP Status — Production URL (9 Routes)
+
+SEO smoke tests และ HTTP status ที่รายงานด้านล่างเป็นผลจาก Production URL `https://www.pod4u.store` ซึ่งตอบ 200 ไม่ใช่ผลจาก Preview URL
+
+| Route | Status |
+|-------|--------|
+| `/` | 200 ✅ |
+| `/products` | 200 ✅ |
+| `/products/alfa-duo-mesh-20k` | 200 ✅ |
+| `/products/marbo-m-bar-9k` | 200 ✅ |
+| `/categories/disposable-pod` | 200 ✅ |
+| `/brands/alfa` | 200 ✅ |
+| `/blog` | 200 ✅ |
+| `/robots.txt` | 200 ✅ |
+| `/sitemap.xml` | 200 ✅ |
+
+### SEO Verification (Production)
+| Check | Result |
+|-------|--------|
+| BAILOUT_TO_CLIENT_SIDE_RENDERING | 0 ✅ |
+| Product links in initial HTML | 8 slugs ✅ |
+| UUID links | 0 ✅ |
+| ALFA JSON-LD | AggregateOffer low:400/high:400 ✅ |
+| MARBO JSON-LD | AggregateOffer low:390/high:390 ✅ |
+| Infinity in HTML | 0 ✅ |
+| noindex (query URL) | `<meta name="robots" content="noindex, follow">` ✅ |
+| canonical (query URL) | `https://www.pod4u.store/products` ✅ |
+| Sitemap URLs | 29 (ไม่มี /register) ✅ |
+| robots.txt | Disallow: /admin, /api, /register ✅ |
+| UUID → slug redirect | 308 ✅ |
+
+### ปัญหาที่ยังเหลือ
+- SEO blocker: ไม่มี
+- Deployment configuration follow-up: Preview ยังขาด `ADMIN_SESSION_SECRET`
+
+### สถานะ
+- ✅ Production deployment: Ready — `https://vaping-shop-lkwiaraqw-pod4u.vercel.app` (created `2026-09-06 03:33:55 +07`)
+- ✅ Production custom domain: Active — `https://www.pod4u.store`
+- ✅ Preview deployment: Ready แต่มี Vercel Authentication
+- ✅ SEO production smoke test: Passed
+- ไม่ต้องรอยืนยัน deploy Production เพราะ Git integration deploy ให้อัตโนมัติแล้ว

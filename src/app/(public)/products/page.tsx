@@ -17,12 +17,12 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const canonical = getCanonical("/products");
 
   return {
-    title: "สินค้าทั้งหมด - พอดใช้แล้วทิ้ง พอดเปลี่ยนหัว",
-    description: "รวมสินค้าพอดทุกแบรนด์ ทุกหมวดหมู่ ของแท้ 100% ราคาส่ง พร้อมส่งทั่วไทย",
+    title: "พอตและพอดทั้งหมด - พอตใช้ทิ้ง พอดเปลี่ยนหัว",
+    description: "รวมพอต พอด พอตใช้ทิ้ง และพอดเปลี่ยนหัวทุกแบรนด์ พร้อมค้นหา MARBO, M BAR และรุ่น 9K 10K 20K",
     alternates: { canonical },
     openGraph: {
-      title: "สินค้าทั้งหมด",
-      description: "รวมสินค้าพอดทุกแบรนด์ ของแท้ 100% ราคาส่ง",
+      title: "พอตและพอดทั้งหมด",
+      description: "รวมพอต พอด พอตใช้ทิ้ง และพอดเปลี่ยนหัวทุกแบรนด์ พร้อมรายละเอียดสินค้าและสต็อกล่าสุด",
       url: canonical,
       type: "website",
       siteName: "Pod4U",
@@ -61,9 +61,11 @@ export default async function ProductsPage({ searchParams }: PageProps) {
         <div className="mb-6 text-left">
           <div className="text-acid-lime text-xs font-mono tracking-widest uppercase mb-2">EXPLORE ALL</div>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white mb-2">
-            สินค้าทั้งหมด
+            พอตและพอดทั้งหมด
           </h1>
-          <p className="text-white/50 text-sm">เลือกสรรสินค้าคุณภาพเยี่ยม ครบทุกประเภท พร้อมส่งทันที</p>
+          <p className="text-white/60 text-sm max-w-3xl leading-relaxed">
+            รวมพอต พอด พอตใช้ทิ้ง และพอดเปลี่ยนหัวจากหลายแบรนด์ ค้นหาตามชื่อรุ่น ชื่อแบรนด์ หรือจำนวนพัฟได้จากรายการด้านล่าง
+          </p>
         </div>
 
         <div className="mb-10">

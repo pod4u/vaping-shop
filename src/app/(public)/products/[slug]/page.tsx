@@ -89,6 +89,34 @@ async function getProductBySlug(slug: string): Promise<ProductData | null> {
 
 export const revalidate = 3600; // Revalidate every hour for stock/price freshness
 
+function getProductSeoName(product: ProductData) {
+  if (product.slug === "marbo-m-bar-9k") return "MARBO M BAR 9K (มาโบ 9K / มาร์โบ 9K)";
+  if (product.slug === "mbar-10k") return "M BAR 10K (mbar / มาโบ 10K)";
+  return product.name_th || product.name;
+}
+
+function getProductFaqs(product: ProductData) {
+  const seoName = getProductSeoName(product);
+  const puffText = product.puff_count
+    ? `${Number(product.puff_count).toLocaleString()} พัฟตามข้อมูลที่ผู้ผลิตระบุ โดยจำนวนใช้งานจริงอาจต่างกันตามลักษณะการใช้งาน`
+    : "โปรดตรวจรายละเอียดของรุ่นและข้อมูลจากผู้ผลิตในหน้าสินค้า";
+
+  return [
+    {
+      question: `${seoName} มีกี่พัฟ?`,
+      answer: puffText,
+    },
+    {
+      question: `${seoName} มีรสชาติอะไรบ้าง?`,
+      answer: `หน้านี้แสดงรสชาติที่เปิดใช้งานในระบบล่าสุดจำนวน ${product.variants.length} ตัวเลือก รายการอาจเปลี่ยนได้เมื่อข้อมูลสินค้าหรือสต็อกอัปเดต`,
+    },
+    {
+      question: `จะดูราคาและสถานะของ ${seoName} ได้อย่างไร?`,
+      answer: "ตรวจราคาเริ่มต้นและสถานะพร้อมส่งจากข้อมูลบนหน้าสินค้านี้ แล้วเลือกรสชาติเพื่อดูตัวเลือกที่เปิดใช้งานล่าสุด",
+    },
+  ];
+}
+
 export async function generateStaticParams() {
   const supabase = getServerSupabase();
   const { data } = await supabase
@@ -103,8 +131,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!product) return { title: "ไม่พบสินค้า" };
 
   const hasActiveVariants = product.variants.length > 0;
-  const title = `${product.name_th || product.name} - ${product.brand?.name || ""}`;
-  const description = product.description || `${product.brand?.name || ""} ${product.name_th || product.name} พอดแท้ 100% พร้อมส่ง`;
+  const seoName = getProductSeoName(product);
+  const title = `${seoName} - ${product.brand?.name || ""}`;
+  const description = product.slug === "marbo-m-bar-9k"
+    ? "ข้อมูล MARBO M BAR 9K หรือมาโบ 9K พอตใช้ทิ้ง 9,000 พัฟ พร้อมรสชาติ ราคา และสถานะสต็อกล่าสุด"
+    : product.slug === "mbar-10k"
+      ? "ข้อมูล M BAR 10K, mbar หรือมาโบ 10K พอตใช้ทิ้ง 10,000 พัฟ พร้อมรสชาติ ราคา และสถานะสต็อกล่าสุด"
+      : product.description || `${product.brand?.name || ""} ${product.name_th || product.name} พร้อมรายละเอียดและสถานะล่าสุด`;
   const canonical = getCanonical(`/products/${product.slug}`);
   const imageUrl = product.image_url || `${APP_URL}/images/og-default.svg`;
 
@@ -155,7 +188,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
   const category = categories.find((c) => c.id === product.category?.slug) || null;
   const displayName = product.name_th || product.name;
+  const seoName = getProductSeoName(product);
   const brandName = product.brand?.name_th || product.brand?.name || "";
+  const productFaqs = getProductFaqs(product);
+  const isMarboTarget = product.slug === "marbo-m-bar-9k" || product.slug === "mbar-10k";
 
   // JSON-LD Product Schema
   const variantPrices = product.variants.map((v) => v.price);
@@ -195,6 +231,16 @@ export default async function ProductPage({ params }: { params: { slug: string }
     ],
   };
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: productFaqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
+    })),
+  };
+
   return (
     <>
       <script
@@ -204,6 +250,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }}
       />
 
       <div className="pt-28 pb-16 min-h-screen">
@@ -255,7 +305,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
               )}
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-2 tracking-tight leading-tight">
-                {displayName}
+                {seoName}
               </h1>
               <p className="text-white/50 text-sm mb-4">{brandName}</p>
 
@@ -349,6 +399,39 @@ export default async function ProductPage({ params }: { params: { slug: string }
               </a>
             </div>
           </div>
+
+          <section className="grid gap-8 lg:grid-cols-[1.2fr_1fr]" aria-labelledby="product-guide">
+            <div className="navy-card rounded-2xl border border-white/10 p-6 sm:p-8">
+              <h2 id="product-guide" className="text-2xl font-black text-white mb-4">
+                ข้อมูล {seoName}
+              </h2>
+              <p className="text-white/70 leading-relaxed mb-4">
+                {product.description || `${displayName} เป็นหนึ่งในสินค้าที่เปิดใช้งานอยู่ในแคตตาล็อก Pod4U`}
+              </p>
+              <p className="text-white/70 leading-relaxed mb-6">
+                รุ่นนี้ระบุจำนวนพัฟโดยประมาณ {product.puff_count ? Number(product.puff_count).toLocaleString() : "ตามข้อมูลผู้ผลิต"} พัฟ และมีรสชาติที่เปิดใช้งานในระบบขณะนี้ {product.variants.length} ตัวเลือก จำนวนพัฟและระยะเวลาใช้งานจริงอาจต่างกันตามรูปแบบการใช้งาน
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {isMarboTarget && (
+                  <>
+                    <Link href="/brands/marbo" className="text-acid-lime font-semibold hover:underline">รวมข้อมูล MARBO และมาโบ</Link>
+                    <Link href="/blog/marbo-9k-vs-mbar-10k" className="text-acid-lime font-semibold hover:underline">เปรียบเทียบ MARBO 9K กับ M BAR 10K</Link>
+                  </>
+                )}
+                <Link href="/categories/disposable-pod" className="text-acid-lime font-semibold hover:underline">ดูหมวดพอตใช้ทิ้ง</Link>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h2 className="text-2xl font-black text-white">คำถามที่พบบ่อย</h2>
+              {productFaqs.map((faq) => (
+                <details key={faq.question} className="navy-card rounded-xl border border-white/10 p-5">
+                  <summary className="cursor-pointer font-bold text-white">{faq.question}</summary>
+                  <p className="mt-3 text-sm leading-relaxed text-white/70">{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
     </>

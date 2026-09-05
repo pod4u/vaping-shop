@@ -31,8 +31,8 @@ export default function HeroVideoNavy() {
             <span className="text-white/80 text-sm font-medium tracking-wide">POD4U</span>
           </div>
 
-          {/* Main Title - Glowing White/Blue Gradient */}
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight mb-4 leading-[1.1]">
+          {/* Main Title - descriptive Thai H1 for users and search engines */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-4 leading-[1.1]">
             <span 
               className="block drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]"
               style={{
@@ -43,7 +43,7 @@ export default function HeroVideoNavy() {
                 textShadow: '0 0 40px rgba(255,255,255,0.3)',
               }}
             >
-              Pod4U
+              พอต พอด
             </span>
             <span 
               className="block mt-1 drop-shadow-[0_0_25px_rgba(147,197,253,0.5)]"
@@ -55,13 +55,13 @@ export default function HeroVideoNavy() {
                 textShadow: '0 0 35px rgba(147,197,253,0.3)',
               }}
             >
-              SHOP
+              และพอตใช้แล้วทิ้ง
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-white/80 text-lg sm:text-xl max-w-lg mb-8 leading-relaxed">
-            {storeConfig.tagline}
+            Pod4U รวมข้อมูลพอตและพอดหลากหลายรุ่น พร้อมหน้าสินค้า MARBO, M BAR และแบรนด์ยอดนิยมที่อัปเดตตามสต็อก
           </p>
 
           {/* CTA Buttons */}

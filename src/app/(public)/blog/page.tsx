@@ -4,13 +4,15 @@ import { blogPosts } from "@/data/blog";
 import { APP_URL, getCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "บทความและความรู้เกี่ยวกับพอด",
-  description: "รวมบทความ ความรู้ และเทคนิคเกี่ยวกับพอดไฟฟ้า จาก Pod4U",
+  title: "บทความพอต พอด MARBO และ M BAR",
+  description: "รวมบทความพอตและพอด ข้อมูล MARBO มาโบ M BAR รุ่น 9K 10K พร้อมคำอธิบายหมวดพอตใช้ทิ้งจาก Pod4U",
   alternates: { canonical: getCanonical("/blog") },
   openGraph: { title: "บทความและความรู้", description: "รวมบทความเกี่ยวกับพอดไฟฟ้า", url: getCanonical("/blog"), siteName: "Pod4U", locale: "th_TH" },
 };
 
 export default function BlogPage() {
+  const sortedPosts = [...blogPosts].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+
   return (
     <div className="pt-28 pb-16 min-h-screen">
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -23,13 +25,13 @@ export default function BlogPage() {
 
         {/* Header */}
         <header className="mb-10">
-          <h1 className="text-3xl sm:text-4xl font-black text-white mb-3">บทความและความรู้</h1>
-          <p className="text-white/60 text-base">รวมความรู้ เทคนิค และข่าวสารเกี่ยวกับพอดไฟฟ้า</p>
+          <h1 className="text-3xl sm:text-4xl font-black text-white mb-3">บทความพอต พอด MARBO และ M BAR</h1>
+          <p className="text-white/60 text-base max-w-3xl leading-relaxed">รวมคำอธิบายชื่อสินค้า วิธีอ่านข้อมูลรุ่น รสชาติที่อัปเดต และบทความเปรียบเทียบเพื่อช่วยค้นข้อมูลแต่ละหน้าได้ตรงขึ้น</p>
         </header>
 
         {/* Posts */}
         <div className="space-y-6">
-          {blogPosts.map((post) => (
+          {sortedPosts.map((post) => (
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}

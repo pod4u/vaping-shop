@@ -37,13 +37,31 @@ export async function generateStaticParams() {
 
 export const revalidate = 3600;
 
+const disposableFaqs = [
+  {
+    question: "พอตใช้ทิ้ง พอตใช้แล้วทิ้ง และพอดใช้แล้วทิ้ง คือสินค้าแบบเดียวกันหรือไม่?",
+    answer: "โดยทั่วไปเป็นคำค้นที่ใช้เรียกอุปกรณ์ประเภท disposable pod เหมือนกัน ต่างกันที่การสะกดและภาษาที่ผู้ค้นคุ้นเคย หน้านี้จึงใช้คำเหล่านี้ร่วมกันโดยหมายถึงหมวดสินค้าเดียวกัน",
+  },
+  {
+    question: "ตัวเลข 9K, 10K หรือ 20K หมายถึงอะไร?",
+    answer: "ตัวเลขบนชื่อรุ่นเป็นค่าจำนวนพัฟที่ผู้ผลิตระบุโดยประมาณ การใช้งานจริงอาจแตกต่างตามความยาวและความถี่ในการใช้งาน",
+  },
+  {
+    question: "จะตรวจรสชาติและสต็อกล่าสุดได้จากที่ไหน?",
+    answer: "เปิดหน้าสินค้าของรุ่นที่สนใจเพื่อดูรสชาติที่เปิดใช้งาน ราคา และสถานะสต็อกล่าสุดของแต่ละตัวเลือก",
+  },
+];
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const category = await getCategoryBySlug(params.slug);
   if (!category) return { title: "ไม่พบหมวดหมู่" };
 
   const name = category.name_th || category.name;
-  const title = `${name}`;
-  const description = category.description || `รวมสินค้า${name} ทุกแบรนด์ ของแท้ 100% พร้อมส่ง`;
+  const isDisposable = category.slug === "disposable-pod";
+  const title = isDisposable ? "พอตใช้ทิ้ง พอตใช้แล้วทิ้ง และพอดใช้แล้วทิ้ง" : `${name}`;
+  const description = isDisposable
+    ? "รวมข้อมูลพอตใช้ทิ้ง พอตใช้แล้วทิ้ง และพอดใช้แล้วทิ้ง พร้อมเปรียบเทียบรุ่น 9K 10K 15K และ 20K จากสินค้าที่มีจริง"
+    : category.description || `รวมสินค้า${name} ทุกแบรนด์ พร้อมดูรายละเอียดและสถานะล่าสุด`;
   const canonical = getCanonical(`/categories/${category.slug}`);
 
   return {
@@ -62,6 +80,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
 
   const products = await getAggregatedProductsByCategory(category.slug);
   const displayName = category.name_th || category.name;
+  const isDisposable = category.slug === "disposable-pod";
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -73,9 +92,24 @@ export default async function CategoryPage({ params }: { params: { slug: string 
     ],
   };
 
+  const faqJsonLd = isDisposable
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: disposableFaqs.map((faq) => ({
+          "@type": "Question",
+          name: faq.question,
+          acceptedAnswer: { "@type": "Answer", text: faq.answer },
+        })),
+      }
+    : null;
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
+      {faqJsonLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
+      )}
       <div className="pt-28 pb-16 min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-mono text-white/50 mb-6">
@@ -89,7 +123,9 @@ export default async function CategoryPage({ params }: { params: { slug: string 
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-3">
               <span className="text-3xl">{category.icon}</span>
-              <h1 className="text-3xl sm:text-4xl font-black text-white">{displayName}</h1>
+              <h1 className="text-3xl sm:text-4xl font-black text-white">
+                {isDisposable ? "พอตใช้ทิ้งและพอดใช้แล้วทิ้ง" : displayName}
+              </h1>
             </div>
             {category.description && (
               <p className="text-white/60 text-base max-w-2xl">{category.description}</p>
@@ -98,6 +134,37 @@ export default async function CategoryPage({ params }: { params: { slug: string 
           </header>
 
           <ProductGridServer products={products} emptyMessage="ยังไม่มีสินค้าในหมวดนี้" />
+
+          {isDisposable && (
+            <section className="mt-16 grid gap-8 lg:grid-cols-[1.2fr_1fr]" aria-labelledby="disposable-guide">
+              <div className="navy-card rounded-2xl border border-white/10 p-6 sm:p-8">
+                <h2 id="disposable-guide" className="text-2xl font-black text-white mb-4">
+                  พอตใช้ทิ้งคืออะไร?
+                </h2>
+                <p className="text-white/70 leading-relaxed mb-4">
+                  พอตใช้ทิ้ง หรือที่ค้นกันว่า พอตใช้แล้วทิ้ง พอดใช้แล้วทิ้ง และดูดทิ้ง เป็นชื่อเรียกหมวด disposable pod ที่ออกแบบมาเป็นชุดพร้อมใช้งาน เมื่อเลือกสินค้าให้ดูชื่อรุ่น จำนวนพัฟโดยประมาณ และตัวเลือกรสชาติที่ยังเปิดใช้งานอยู่
+                </p>
+                <p className="text-white/70 leading-relaxed mb-6">
+                  รุ่นในหมวดนี้มีตั้งแต่ 9K, 10K, 15K ไปจนถึง 20K ตามข้อมูลที่ผู้ผลิตระบุ ตัวเลขดังกล่าวไม่ใช่การรับประกันจำนวนครั้งใช้งานจริง เพราะขึ้นอยู่กับลักษณะการใช้งานของแต่ละคน
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link href="/brands/marbo" className="text-acid-lime font-semibold hover:underline">ดูข้อมูล MARBO และมาโบ</Link>
+                  <Link href="/products/marbo-m-bar-9k" className="text-acid-lime font-semibold hover:underline">ดู MARBO M BAR 9K</Link>
+                  <Link href="/products/mbar-10k" className="text-acid-lime font-semibold hover:underline">ดู M BAR 10K</Link>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-2xl font-black text-white">คำถามที่พบบ่อย</h2>
+                {disposableFaqs.map((faq) => (
+                  <details key={faq.question} className="navy-card rounded-xl border border-white/10 p-5">
+                    <summary className="cursor-pointer font-bold text-white">{faq.question}</summary>
+                    <p className="mt-3 text-sm leading-relaxed text-white/70">{faq.answer}</p>
+                  </details>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </>
