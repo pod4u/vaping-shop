@@ -10,7 +10,7 @@ export async function GET() {
       .select(`
         id, stock_quantity, price, sale_price, image_url,
         flavor:flavors(id, slug, name, name_th, color),
-        product:products(id, name, name_th, puff_count, brand:brands(id, slug, name, name_th, color, banner_url))
+        product:products(id, name, name_th, puff_count, category:categories(slug, name, name_th), brand:brands(id, slug, name, name_th, color, banner_url))
       `)
       .eq("is_active", true)
       .eq("is_available", true)
@@ -23,6 +23,7 @@ export async function GET() {
       const product = Array.isArray(variant.product) ? variant.product[0] : variant.product;
       const brand = Array.isArray(product?.brand) ? product.brand[0] : product?.brand;
       const flavor = Array.isArray(variant.flavor) ? variant.flavor[0] : variant.flavor;
+      const category = Array.isArray(product?.category) ? product.category[0] : product?.category;
       if (!product || !brand || !flavor) continue;
       if (!grouped.has(brand.slug)) {
         grouped.set(brand.slug, {
@@ -40,6 +41,7 @@ export async function GET() {
           sale_price: variant.sale_price == null ? null : Number(variant.sale_price),
           puff_count: product.puff_count,
           image_url: variant.image_url,
+          category: category ? { slug: category.slug, name: category.name, name_th: category.name_th } : null,
           availableFlavors: [],
         });
       }

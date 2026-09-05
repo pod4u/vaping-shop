@@ -9,8 +9,8 @@ export default function FreeShippingBannerNavy() {
           <div className="absolute inset-0 bg-gradient-to-r from-acid-lime/15 via-green-500/10 to-acid-lime/15 pointer-events-none"></div>
 
           {/* Animated Badge */}
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse shadow-lg">
-            🔥 โปรเดือนกันยายน!
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-acid-lime text-navy-deep text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+            🚚 ส่งฟรีทั้งเดือน!
           </div>
 
           {/* Content */}
@@ -25,10 +25,10 @@ export default function FreeShippingBannerNavy() {
               {/* Title */}
               <div>
                 <h3 className="text-white font-black text-xl sm:text-2xl mb-1">
-                  ซื้อ 3 ชิ้น <span className="text-acid-lime">ส่งฟรี!</span>
+                  ซื้อครบ <span className="text-acid-lime">800฿</span> ส่งฟรี!
                 </h3>
                 <p className="text-white/60 text-sm sm:text-base">
-                  เฉพาะ <span className="text-acid-lime font-bold">พอดใช้แล้วทิ้ง</span> (Disposable)
+                  ทุกออเดอร์ <span className="text-acid-lime font-bold">ไม่มีขั้นต่ำ</span> จัดส่งทั่วไทย
                 </p>
               </div>
             </div>
@@ -39,24 +39,24 @@ export default function FreeShippingBannerNavy() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 text-white/80 text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-acid-lime"></span>
-                  สั่งซื้อพอดใช้แล้วทิ้ง 3 ชิ้นขึ้นไป = ส่งฟรีทันที
+                  สั่งซื้อครบ 800฿ = ส่งฟรีทันที ทั่วไทย
                 </div>
                 <div className="flex items-center gap-2 text-white/50 text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-white/30"></span>
-                  รายการอื่น (พอดเปลี่ยนหัว, อะไหล่) ไม่ร่วมโปรโมชั่น
+                  ต่ำกว่า 800฿ ค่าส่ง 50฿
                 </div>
                 <div className="flex items-center gap-2 text-white/50 text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-white/30"></span>
-                  โปรโมชั่นถึง 30 กันยายน 2569 เท่านั้น
+                  จัดส่งผ่าน EMS / Flash / Kerry 1-3 วัน
                 </div>
               </div>
 
               {/* CTA */}
               <Link
-                href="/products?category=disposable-pod"
+                href="/stock"
                 className="flex items-center gap-2 bg-gradient-to-r from-acid-lime to-[#a3e635] text-navy-deep px-6 py-3 rounded-full text-sm font-bold hover:shadow-acid transition-all whitespace-nowrap"
               >
-                เลือกพอดใช้แล้วทิ้งเลย
+                ดูสินค้าพร้อมส่ง
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>

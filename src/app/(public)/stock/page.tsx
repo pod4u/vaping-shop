@@ -25,6 +25,7 @@ interface Product {
   sale_price: number | null;
   puff_count: number | null;
   image_url: string | null;
+  category: { slug: string; name: string; name_th: string | null } | null;
   availableFlavors: AvailableFlavor[];
 }
 
@@ -52,6 +53,7 @@ export default function StockPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStock();
@@ -194,10 +196,27 @@ export default function StockPage() {
     );
   });
 
-  // Filter by brand if selected
-  const filteredFlavors = selectedBrand 
-    ? allFlavors.filter(f => f.brand.id === selectedBrand)
-    : allFlavors;
+  // Extract unique categories
+  const categories = new Map<string, { slug: string; name: string; name_th: string | null; count: number }>();
+  allFlavors.forEach(item => {
+    if (item.product.category) {
+      const cat = item.product.category;
+      if (!categories.has(cat.slug)) {
+        categories.set(cat.slug, { slug: cat.slug, name: cat.name, name_th: cat.name_th, count: 0 });
+      }
+      categories.get(cat.slug)!.count++;
+    }
+  });
+  const sortedCategories = [...categories.values()].sort((a, b) =>
+    (a.name || a.name_th || '').localeCompare(b.name || b.name_th || '', 'en', { sensitivity: 'base' })
+  );
+
+  // Filter by brand and category if selected
+  const filteredFlavors = allFlavors.filter(f => {
+    if (selectedBrand && f.brand.id !== selectedBrand) return false;
+    if (selectedCategory && (!f.product.category || f.product.category.slug !== selectedCategory)) return false;
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-navy-deep">
@@ -226,14 +245,18 @@ export default function StockPage() {
             </div>
           </div>
           <p className="text-white/50 text-sm">
-            {totalFlavors} รายการ • {totalProducts} สินค้า • 7 แบรนด์
+            {filteredFlavors.length !== totalFlavors
+              ? `${filteredFlavors.length} จาก ${totalFlavors} รายการ`
+              : `${totalFlavors} รายการ`}
+            {' • '}{totalProducts} สินค้า
           </p>
         </div>
       </section>
 
-      {/* Brand Filter Tabs */}
+      {/* Brand & Category Filter Tabs */}
       <section className="sticky top-20 z-40 bg-navy-deep/95 backdrop-blur-xl border-b border-navy-border">
-        <div className="max-w-4xl mx-auto px-4 py-3">
+        <div className="max-w-4xl mx-auto px-4 py-3 space-y-2">
+          {/* Brand Filter */}
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
             <button
               onClick={() => setSelectedBrand(null)}
@@ -243,7 +266,7 @@ export default function StockPage() {
                   : 'bg-navy-surface text-white/70 hover:bg-white/10'
               }`}
             >
-              ทั้งหมด ({totalFlavors})
+              ทุกแบรนด์
             </button>
             {sortedBrands.map(b => {
               const count = b.products.reduce((s, p) => s + p.availableFlavors.length, 0);
@@ -263,6 +286,34 @@ export default function StockPage() {
               );
             })}
           </div>
+          {/* Category Filter */}
+          {sortedCategories.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                  selectedCategory === null
+                    ? 'bg-white/20 text-white'
+                    : 'bg-navy-surface/50 text-white/50 hover:bg-white/10'
+                }`}
+              >
+                ทุกประเภท
+              </button>
+              {sortedCategories.map(cat => (
+                <button
+                  key={cat.slug}
+                  onClick={() => setSelectedCategory(cat.slug)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                    selectedCategory === cat.slug
+                      ? 'bg-vapor-violet text-white'
+                      : 'bg-navy-surface/50 text-white/50 hover:bg-white/10'
+                  }`}
+                >
+                  {cat.name_th || cat.name} ({cat.count})
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -312,6 +363,11 @@ export default function StockPage() {
                       {item.flavor.flavor.name}
                     </p>
                   )}
+                  {item.product.category && (
+                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-vapor-violet/20 text-vapor-violet text-[10px] font-medium">
+                      {item.product.category.name_th || item.product.category.name}
+                    </span>
+                  )}
                 </div>
 
                 {/* Price */}
@@ -354,12 +410,6 @@ export default function StockPage() {
           </p>
         </div>
       </footer>
-
-      {/* Hide scrollbar style */}
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </div>
   );
 }

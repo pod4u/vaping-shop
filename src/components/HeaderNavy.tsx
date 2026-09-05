@@ -131,6 +131,13 @@ export default function HeaderNavy() {
               </div>
 
               <Link
+                href="/stock"
+                className="text-white/80 hover:text-white transition-colors font-medium text-sm tracking-wide relative group"
+              >
+                สินค้าพร้อมส่ง
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
+              </Link>
+              <Link
                 href="/products"
                 className="text-white/80 hover:text-white transition-colors font-medium text-sm tracking-wide relative group"
               >
@@ -232,6 +239,9 @@ export default function HeaderNavy() {
                 </Link>
                 <Link href="/products" className="text-white/80 hover:text-white py-2.5 px-4 rounded-xl transition-all hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>
                   สินค้าทั้งหมด
+                </Link>
+                <Link href="/stock" className="text-white/80 hover:text-white py-2.5 px-4 rounded-xl transition-all hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>
+                  สินค้าพร้อมส่ง
                 </Link>
                 <Link href="/register" className="text-acid-lime hover:text-white py-2.5 px-4 rounded-xl transition-all hover:bg-white/5 font-bold" onClick={() => setIsMenuOpen(false)}>
                   สมัครสมาชิก

@@ -147,6 +147,7 @@ export const brands: Brand[] = [
       { id: 'watermelon-strawberry', name: 'Watermelon Strawberry', nameTh: 'แตงโมสตรอว์เบอร์รี่', image: '/images/products/vplus/16k/watermelon-strawberry.jpg', color: '#EF4444' },
       { id: 'kyoho-grape', name: 'Kyoho Grape', nameTh: 'องุ่นเคียวโฮ', image: '/images/products/vplus/16k/kyoho-grape.jpg', color: '#7C3AED' },
       { id: 'grape-alt', name: 'Grape', nameTh: 'องุ่นยาว', image: '/images/products/vplus/16k/grape-alt.jpg', color: '#9333EA' },
+      { id: 'double-apple-shisha', name: 'Double Apple Shisha', nameTh: 'ดับเบิ้ลแอปเปิ้ลชิชา', image: '/images/products/vplus/16k/double-apple-shisha.jpg', color: '#84CC16' },
     ],
   },
   {
@@ -184,6 +185,9 @@ export const brands: Brand[] = [
       { id: 'grape', name: 'Grape', nameTh: 'องุ่น', image: '/images/products/mbar/m-bar-10k/grape.webp', color: '#9333EA' },
       { id: 'pink-berry', name: 'Pink Berry', nameTh: 'พิงค์เบอร์รี่', image: '/images/products/mbar/m-bar-10k/pink-berry.webp', color: '#EC4899' },
       { id: 'kyoho-grape', name: 'Kyoho Grape', nameTh: 'องุ่นเคียวโฮ', image: '/images/products/mbar/m-bar-10k/kyoho-grape.webp', color: '#7C3AED' },
+      { id: 'blue-ice', name: 'Blue Ice', nameTh: 'บลูไอซ์', image: '/images/products/mbar/m-bar-10k/blue-ice.webp', color: '#3B82F6' },
+      { id: 'matcha-latte', name: 'Matcha Latte', nameTh: 'มัทฉะลาเต้', image: '/images/products/mbar/m-bar-10k/matcha-latte.webp', color: '#22C55E' },
+      { id: 'yellow-mint', name: 'Yellow Mint', nameTh: 'เยลโล่มิ้นท์', image: '/images/products/mbar/m-bar-10k/yellow-mint.webp', color: '#EAB308' },
     ],
   },
   {
