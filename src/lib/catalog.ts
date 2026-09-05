@@ -45,6 +45,8 @@ function toProduct(row: any): Product {
     name: `${product?.name ?? ""} - ${flavor?.name ?? ""}`,
     nameTh: `${product?.name_th ?? ""} - ${flavor?.name_th ?? ""}`,
     category: category?.slug ?? "disposable-pod",
+    slug: product?.slug,
+    brandSlug: brand?.slug,
     price: currentPrice,
     originalPrice,
     image: row.image_url,

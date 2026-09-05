@@ -1,140 +1,83 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
-import { brands } from "@/lib/brands";
+import { getServerSupabase } from "@/lib/supabase";
+import { getCanonical } from "@/lib/seo";
 
-export default function BrandsPage() {
+export const metadata: Metadata = {
+  title: "แบรนด์ทั้งหมด",
+  description: "รวมแบรนด์พอดทุกแบรนด์ ของแท้ 100% พร้อมส่งทั่วไทย",
+  alternates: { canonical: getCanonical("/brands") },
+  openGraph: { title: "แบรนด์ทั้งหมด", description: "รวมแบรนด์พอดทุกแบรนด์", url: getCanonical("/brands"), siteName: "Pod4U", locale: "th_TH" },
+};
+
+export const revalidate = 3600;
+
+interface BrandRow {
+  slug: string;
+  name: string;
+  name_th: string | null;
+  description: string | null;
+  color: string | null;
+}
+
+export default async function BrandsPage() {
+  const supabase = getServerSupabase();
+  const { data: brands } = await supabase
+    .from("brands")
+    .select("slug, name, name_th, description, color")
+    .eq("is_active", true)
+    .order("sort_order");
+
+  const brandList: BrandRow[] = (brands || []).map((b: any) => ({
+    slug: b.slug,
+    name: b.name,
+    name_th: b.name_th,
+    description: b.description,
+    color: b.color,
+  }));
+
   return (
-    <div className="min-h-screen bg-brand-void">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-brand-void/80 backdrop-blur-xl border-b border-brand-border">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-vapor-violet/20 border border-vapor-violet/50 flex items-center justify-center group-hover:border-acid-lime transition-all">
-                <span className="text-xl">💨</span>
-              </div>
-              <span className="text-xl font-black text-white">
-                Pod<span className="text-acid-lime">4U</span>
-              </span>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="pt-28 pb-16 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <header className="mb-10">
+          <div className="text-acid-lime text-xs font-mono tracking-widest uppercase mb-2">ALL BRANDS</div>
+          <h1 className="text-3xl sm:text-4xl font-black text-white mb-3">เลือกแบรนด์ที่คุณชอบ</h1>
+          <p className="text-white/50 text-base">รวมแบรนด์พอดใช้แล้วทิ้งคุณภาพดี หลากหลายราคา หลากหลายระบบ</p>
+        </header>
 
-      {/* Hero */}
-      <section className="relative py-16 px-4 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-vapor-violet/20 rounded-full blur-[150px]"></div>
-          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-acid-lime/10 rounded-full blur-[120px]"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-surface border border-brand-border mb-6">
-            <span className="text-acid-lime text-xs font-mono tracking-wider uppercase">
-              ALL BRANDS
-            </span>
-          </div>
-
-          <h1 className="text-4xl md:text-6xl font-black text-white mb-4">
-            เลือก <span className="text-acid-lime">แบรนด์</span> ที่คุณชอบ
-          </h1>
-          <p className="text-lg text-white/50 max-w-2xl mx-auto">
-            รวมแบรนด์พอดใช้แล้วทิ้งคุณภาพดี หลากหลายราคา หลากหลายระบบ
-          </p>
-        </div>
-      </section>
-
-      {/* Brands Grid */}
-      <section className="py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {brands.map((brand, index) => (
-              <Link
-                key={brand.id}
-                href={`/brand/${brand.slug}`}
-                className="group block animate-slide-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="vapor-card rounded-2xl overflow-hidden h-full card-tilt relative">
-                  {/* Brand color accent */}
-                  <div
-                    className="absolute top-0 left-0 right-0 h-1"
-                    style={{ backgroundColor: brand.color }}
-                  ></div>
-
-                  {/* Background glow on hover */}
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{ background: `radial-gradient(circle at center, ${brand.color}15 0%, transparent 70%)` }}
-                  ></div>
-
-                  <div className="p-6">
-                    {/* Brand Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h2 className="text-xl font-black text-white group-hover:text-acid-lime transition-colors">
-                          {brand.name}
-                        </h2>
-                        <p className="text-white/60 text-sm">{brand.nameTh}</p>
-                      </div>
-                      
-                      {brand.puffCount > 0 && (
-                        <div
-                          className="px-3 py-1 rounded-full text-xs font-bold text-white"
-                          style={{ backgroundColor: `${brand.color}30` }}
-                        >
-                          {brand.puffCount >= 1000 ? `${brand.puffCount / 1000}K` : brand.puffCount} Puffs
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-white/50 text-sm mb-4 line-clamp-2">
-                      {brand.description}
-                    </p>
-
-                    {/* Flavors Preview */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {brand.flavors.slice(0, 5).map((flavor) => (
-                        <span
-                          key={flavor.id}
-                          className="px-2 py-1 rounded text-xs text-white/70"
-                          style={{ backgroundColor: `${flavor.color || '#fff'}20` }}
-                        >
-                          {flavor.nameTh}
-                        </span>
-                      ))}
-                      {brand.flavors.length > 5 && (
-                        <span className="px-2 py-1 rounded text-xs text-white/40 bg-white/5">
-                          +{brand.flavors.length - 5} รสชาติ
-                        </span>
-                      )}
-                    </div>
-
-                    {/* View More */}
-                    <div className="flex items-center gap-2 text-acid-lime text-sm font-medium group-hover:gap-3 transition-all">
-                      <span>ดูรายละเอียด</span>
-                      <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {brandList.map((brand) => (
+            <Link
+              key={brand.slug}
+              href={`/brands/${brand.slug}`}
+              className="group block"
+            >
+              <div className="navy-card rounded-2xl overflow-hidden h-full relative">
+                {brand.color && (
+                  <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: brand.color }} />
+                )}
+                <div className="p-6">
+                  <h2 className="text-xl font-black text-white group-hover:text-acid-lime transition-colors">
+                    {brand.name}
+                  </h2>
+                  {brand.name_th && (
+                    <p className="text-white/60 text-sm">{brand.name_th}</p>
+                  )}
+                  {brand.description && (
+                    <p className="text-white/50 text-sm mt-3 line-clamp-2">{brand.description}</p>
+                  )}
+                  <div className="flex items-center gap-2 text-acid-lime text-sm font-medium mt-4 group-hover:gap-3 transition-all">
+                    <span>ดูรายละเอียด</span>
+                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
+              </div>
+            </Link>
+          ))}
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-12 px-4 border-t border-brand-border">
-        <div className="max-w-7xl mx-auto text-center">
-          <Link href="/" className="text-acid-lime text-sm hover:underline">
-            ← กลับหน้าร้าน
-          </Link>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }

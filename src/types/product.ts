@@ -13,6 +13,8 @@ export interface Product {
   isFeatured: boolean;
   sku?: string;
   variantKey?: string;
+  slug?: string;
+  brandSlug?: string;
 }
 
 export type Category = {

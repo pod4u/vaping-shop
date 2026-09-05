@@ -6,4 +6,5 @@ export interface BlogPost {
   date: string;
   category: string;
   slug: string;
+  content?: string;
 }

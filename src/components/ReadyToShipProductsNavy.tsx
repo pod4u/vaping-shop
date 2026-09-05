@@ -15,6 +15,7 @@ interface FlavorWithStock {
   image: string;
   stock: number;
   price: number;
+  productSlug?: string;
 }
 
 export default function ReadyToShipProductsNavy() {
@@ -53,9 +54,10 @@ export default function ReadyToShipProductsNavy() {
                   name: flavorData.flavor?.name || flavorData.id,
                   nameTh: flavorData.flavor?.name_th || flavorData.id,
                   color: flavorData.flavor?.color || '#6B7280',
-                  image: flavorData.flavor?.image || '/images/placeholder.png',
+                  image: flavorData.flavor?.image || '/images/placeholder.svg',
                   stock,
-                  price: product.price || getPrice(brandId)
+                  price: product.price || getPrice(brandId),
+                  productSlug: product.slug,
                 });
               }
             });
@@ -139,7 +141,7 @@ export default function ReadyToShipProductsNavy() {
           {products.map((product) => (
             <Link
               key={`${product.brandId}-${product.id}`}
-              href={`/products/${product.id}`}
+              href={product.productSlug ? `/products/${product.productSlug}` : `/products`}
               className="group navy-card rounded-xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-acid h-full flex flex-col"
             >
               {/* Product Image */}
@@ -152,7 +154,7 @@ export default function ReadyToShipProductsNavy() {
                   alt={product.name}
                   className="w-full h-full object-contain transition-transform group-hover:scale-110"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/images/placeholder.png';
+                    (e.target as HTMLImageElement).src = '/images/placeholder.svg';
                   }}
                 />
 

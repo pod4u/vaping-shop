@@ -42,7 +42,7 @@ export default function FooterNavy() {
               {categories.map((cat) => (
                 <li key={cat.id}>
                   <Link
-                    href={`/products?category=${cat.id}`}
+                    href={`/categories/${cat.id}`}
                     className="text-white/50 hover:text-white transition-colors text-sm flex items-center gap-2 group"
                   >
                     <span className="text-xs group-hover:text-white transition-colors">{cat.icon}</span>

@@ -74,7 +74,7 @@ export default function BestSellersNavy() {
           {bestSellers.map((product) => (
             <Link
               key={product.id}
-              href={`/products/${product.id}`}
+              href="/products"
               className="vapor-card rounded-2xl overflow-hidden border border-navy-border hover:border-white/40 transition-all duration-300 group"
             >
               {/* Rank Badge */}

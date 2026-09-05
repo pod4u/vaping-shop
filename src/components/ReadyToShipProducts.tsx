@@ -55,7 +55,7 @@ export default function ReadyToShipProducts() {
                   name: flavorData.flavor?.name || flavorData.id,
                   nameTh: flavorData.flavor?.name_th || flavorData.id,
                   color: flavorData.flavor?.color || '#6B7280',
-                  image: flavorData.flavor?.image || '/images/placeholder.png',
+                  image: flavorData.flavor?.image || '/images/placeholder.svg',
                   stock,
                   price: product.price || getPrice(brandId)
                 });
@@ -128,7 +128,7 @@ export default function ReadyToShipProducts() {
           {products.map((product) => (
             <Link
               key={`${product.brandId}-${product.id}`}
-              href={`/brand/${product.brandId}`}
+              href={`/brands/${product.brandId}`}
               className="group vapor-card rounded-xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-acid"
             >
               {/* Product Image */}
@@ -141,7 +141,7 @@ export default function ReadyToShipProducts() {
                   alt={product.name}
                   className="w-full h-full object-contain transition-transform group-hover:scale-110"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/images/placeholder.png';
+                    (e.target as HTMLImageElement).src = '/images/placeholder.svg';
                   }}
                 />
 

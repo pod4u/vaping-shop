@@ -8,8 +8,9 @@ interface ProductCardNavyProps {
 }
 
 export default function ProductCardNavy({ product }: ProductCardNavyProps) {
+  const href = product.slug ? `/products/${product.slug}` : `/products`;
   return (
-    <Link href={`/products/${product.id}`} className="group block">
+    <Link href={href} className="group block">
       <div className="navy-card rounded-2xl overflow-hidden group-hover:border-acid-lime/50 transition-all duration-300 h-full flex flex-col relative gradient-border-animated-navy">
         {/* Animated glow overlay on hover */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">

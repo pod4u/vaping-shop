@@ -9,7 +9,7 @@ interface ProductCardHybridProps {
 
 export default function ProductCardHybrid({ product }: ProductCardHybridProps) {
   return (
-    <Link href={`/products/${product.id}`} className="group block">
+    <Link href={product.slug ? `/products/${product.slug}` : `/products`} className="group block">
       <div className="hybrid-card rounded-2xl overflow-hidden group-hover:border-hybrid-glow-bright/50 transition-all duration-300 h-full flex flex-col relative gradient-border-animated-hybrid">
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-hybrid-glow/20 rounded-full blur-[60px]"></div>

@@ -103,7 +103,7 @@ export default function HeaderNavy() {
                       {categories.map((cat) => (
                         <Link
                           key={cat.id}
-                          href={`/products?category=${cat.id}`}
+                          href={`/categories/${cat.id}`}
                           className="flex items-center gap-3.5 px-4 py-3 rounded-xl hover:bg-navy-surface-hover transition-all group relative"
                         >
                           <span className="text-xl p-2 rounded-lg bg-navy/20 border border-navy-border group-hover:border-white/40 group-hover:shadow-lg group-hover:shadow-white/10 transition-all">{cat.icon}</span>
@@ -249,7 +249,7 @@ export default function HeaderNavy() {
                 {categories.map((cat) => (
                   <Link
                     key={cat.id}
-                    href={`/products?category=${cat.id}`}
+                    href={`/categories/${cat.id}`}
                     className="text-white/60 hover:text-white py-2 pl-8 px-4 rounded-xl transition-all text-sm flex items-center gap-2 hover:bg-white/5"
                     onClick={() => setIsMenuOpen(false)}
                   >

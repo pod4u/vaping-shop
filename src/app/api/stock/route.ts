@@ -10,7 +10,7 @@ export async function GET() {
       .select(`
         id, stock_quantity, price, sale_price, image_url,
         flavor:flavors(id, slug, name, name_th, color),
-        product:products(id, name, name_th, puff_count, category:categories(slug, name, name_th), brand:brands(id, slug, name, name_th, color, banner_url))
+        product:products(id, slug, name, name_th, puff_count, category:categories(slug, name, name_th), brand:brands(id, slug, name, name_th, color, banner_url))
       `)
       .eq("is_active", true)
       .eq("is_available", true)
@@ -35,6 +35,7 @@ export async function GET() {
       if (!brandGroup.products.has(product.id)) {
         brandGroup.products.set(product.id, {
           id: product.id,
+          slug: product.slug,
           name: product.name,
           name_th: product.name_th,
           price: Number(variant.price),

@@ -28,7 +28,7 @@ export default function CategoriesHybrid() {
           {categories.map((cat, index) => (
             <Link
               key={cat.id}
-              href={`/products?category=${cat.id}`}
+              href={`/categories/${cat.id}`}
               className="group"
               style={{ animationDelay: `${index * 0.05}s` }}
             >

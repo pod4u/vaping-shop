@@ -53,7 +53,7 @@ export default function ReadyToShipProductsHybrid() {
                   name: flavorData.flavor?.name || flavorData.id,
                   nameTh: flavorData.flavor?.name_th || flavorData.id,
                   color: flavorData.flavor?.color || '#6B7280',
-                  image: flavorData.flavor?.image || '/images/placeholder.png',
+                  image: flavorData.flavor?.image || '/images/placeholder.svg',
                   stock,
                   price: product.price || getPrice(brandId)
                 });
@@ -123,7 +123,7 @@ export default function ReadyToShipProductsHybrid() {
           {products.map((product) => (
             <Link
               key={`${product.brandId}-${product.id}`}
-              href={`/brand/${product.brandId}`}
+              href={`/brands/${product.brandId}`}
               className="group hybrid-card rounded-xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(37,99,235,0.3)]"
             >
               <div
@@ -135,7 +135,7 @@ export default function ReadyToShipProductsHybrid() {
                   alt={product.name}
                   className="w-full h-full object-contain transition-transform group-hover:scale-110"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/images/placeholder.png';
+                    (e.target as HTMLImageElement).src = '/images/placeholder.svg';
                   }}
                 />
 

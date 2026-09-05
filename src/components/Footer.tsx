@@ -42,7 +42,7 @@ export default function Footer() {
               {categories.map((cat) => (
                 <li key={cat.id}>
                   <Link
-                    href={`/products?category=${cat.id}`}
+                    href={`/categories/${cat.id}`}
                     className="text-white/50 hover:text-acid-lime transition-colors text-sm flex items-center gap-2 group"
                   >
                     <span className="text-xs group-hover:text-acid-lime transition-colors">{cat.icon}</span>
