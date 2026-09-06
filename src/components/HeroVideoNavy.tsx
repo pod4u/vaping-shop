@@ -31,9 +31,9 @@ export default function HeroVideoNavy() {
             <span className="text-white/80 text-sm font-medium tracking-wide">POD4U</span>
           </div>
 
-          {/* Main Title - descriptive Thai H1 for users and search engines */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-4 leading-[1.1]">
-            <span 
+          {/* Main Title */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-2 leading-[1.1]">
+            <span
               className="block drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]"
               style={{
                 background: 'linear-gradient(135deg, #ffffff 0%, #93c5fd 50%, #ffffff 100%)',
@@ -43,9 +43,9 @@ export default function HeroVideoNavy() {
                 textShadow: '0 0 40px rgba(255,255,255,0.3)',
               }}
             >
-              พอต พอด
+              พอตครบทุกแบบ
             </span>
-            <span 
+            <span
               className="block mt-1 drop-shadow-[0_0_25px_rgba(147,197,253,0.5)]"
               style={{
                 background: 'linear-gradient(135deg, #93c5fd 0%, #ffffff 50%, #93c5fd 100%)',
@@ -55,13 +55,18 @@ export default function HeroVideoNavy() {
                 textShadow: '0 0 35px rgba(147,197,253,0.3)',
               }}
             >
-              และพอตใช้แล้วทิ้ง
+              พร้อมส่ง
             </span>
           </h1>
 
+          {/* English subtitle */}
+          <p className="text-white/50 text-sm font-mono tracking-widest uppercase mb-4">
+            POD SYSTEMS &amp; DISPOSABLE PODS
+          </p>
+
           {/* Subtitle */}
           <p className="text-white/80 text-lg sm:text-xl max-w-lg mb-8 leading-relaxed">
-            Pod4U รวมข้อมูลพอตและพอดหลากหลายรุ่น พร้อมหน้าสินค้า MARBO, M BAR และแบรนด์ยอดนิยมที่อัปเดตตามสต็อก
+            รวมพอตใช้แล้วทิ้งและพอดเปลี่ยนหัวจากแบรนด์ยอดนิยม อัปเดตสต็อกจริง พร้อมรายละเอียดครบทุกตัวเลือก
           </p>
 
           {/* CTA Buttons */}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { bilingualPrimary, bilingualPrimaryThai, bilingualName, bilingualNameThai } from "@/lib/bilingual";
 
 interface Flavor {
   id: string;
@@ -14,6 +15,8 @@ interface Flavor {
 interface AvailableFlavor {
   id: string;
   stock_quantity: number;
+  price: number | null;
+  sale_price: number | null;
   flavor: Flavor;
 }
 
@@ -22,7 +25,7 @@ interface Product {
   slug: string | null;
   name: string;
   name_th: string | null;
-  price: number;
+  price: number | null;
   sale_price: number | null;
   puff_count: number | null;
   image_url: string | null;
@@ -271,6 +274,7 @@ export default function StockPage() {
             </button>
             {sortedBrands.map(b => {
               const count = b.products.reduce((s, p) => s + p.availableFlavors.length, 0);
+              const brandDisplay = bilingualName(b.brand.name, b.brand.name_th);
               return (
                 <button
                   key={b.brand.id}
@@ -282,7 +286,7 @@ export default function StockPage() {
                   }`}
                   style={selectedBrand === b.brand.id ? { backgroundColor: b.brand.color || '#7928ca' } : {}}
                 >
-                  {b.brand.name || b.brand.name_th} ({count})
+                  {brandDisplay} ({count})
                 </button>
               );
             })}
@@ -310,7 +314,7 @@ export default function StockPage() {
                       : 'bg-navy-surface/50 text-white/50 hover:bg-white/10'
                   }`}
                 >
-                  {cat.name_th || cat.name} ({cat.count})
+                  {bilingualNameThai(cat.name_th, cat.name)} ({cat.count})
                 </button>
               ))}
             </div>
@@ -322,7 +326,9 @@ export default function StockPage() {
       <section className="py-6 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {filteredFlavors.map((item) => (
+            {filteredFlavors.map((item) => {
+              const displayPrice = item.flavor.sale_price ?? item.flavor.price;
+              return (
               <Link
                 key={`${item.product.id}-${item.flavor.id}`}
                 href={item.product.slug ? `/products/${item.product.slug}` : `/products`}
@@ -333,7 +339,7 @@ export default function StockPage() {
                   {item.flavor.flavor.image ? (
                     <img
                       src={item.flavor.flavor.image}
-                      alt={item.flavor.flavor.name_th || item.flavor.flavor.name || ''}
+                      alt={bilingualPrimaryThai(item.flavor.flavor.name_th, item.flavor.flavor.name).primary || ''}
                       className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
@@ -341,7 +347,7 @@ export default function StockPage() {
                       className="w-full h-full flex items-center justify-center text-2xl font-bold text-white/30"
                       style={{ backgroundColor: item.flavor.flavor.color ? `${item.flavor.flavor.color}20` : 'transparent' }}
                     >
-                      {item.flavor.flavor.name_th?.charAt(0) || item.flavor.flavor.name?.charAt(0) || '?'}
+                      {bilingualPrimaryThai(item.flavor.flavor.name_th, item.flavor.flavor.name).primary?.charAt(0) || '?'}
                     </div>
                   )}
                   
@@ -354,31 +360,38 @@ export default function StockPage() {
                 {/* Flavor Name */}
                 <div className="space-y-0.5">
                   <p className="text-white text-sm font-medium truncate">
-                    {item.flavor.flavor.name_th || item.flavor.flavor.name}
+                    {bilingualPrimaryThai(item.flavor.flavor.name_th, item.flavor.flavor.name).primary}
                   </p>
-                  <p className="text-white/40 text-xs truncate">
-                    {item.brand.name || item.brand.name_th}
-                  </p>
-                  {item.flavor.flavor.name_th && item.flavor.flavor.name && (
-                    <p className="text-white/30 text-[10px] truncate">
-                      {item.flavor.flavor.name}
+                  {bilingualPrimaryThai(item.flavor.flavor.name_th, item.flavor.flavor.name).secondary && (
+                    <p className="text-white/40 text-xs truncate">
+                      {bilingualPrimaryThai(item.flavor.flavor.name_th, item.flavor.flavor.name).secondary}
                     </p>
                   )}
+                  <p className="text-white/40 text-xs truncate">
+                    {bilingualName(item.brand.name, item.brand.name_th)}
+                  </p>
                   {item.product.category && (
                     <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-vapor-violet/20 text-vapor-violet text-[10px] font-medium">
-                      {item.product.category.name_th || item.product.category.name}
+                      {bilingualNameThai(item.product.category.name_th, item.product.category.name)}
                     </span>
                   )}
                 </div>
 
                 {/* Price */}
                 <div className="mt-auto pt-2 border-t border-navy-border/50">
-                  <p className="text-acid-lime text-sm font-bold">
-                    ฿{formatPrice(item.product.sale_price || item.product.price)}
-                  </p>
+                  {displayPrice !== null ? (
+                    <p className="text-acid-lime text-sm font-bold">
+                      ฿{formatPrice(displayPrice)}
+                    </p>
+                  ) : (
+                    <p className="text-white/50 text-sm">
+                      สอบถามราคา
+                    </p>
+                  )}
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

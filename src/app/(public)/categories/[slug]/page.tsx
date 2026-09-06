@@ -5,6 +5,7 @@ import { getServerSupabase } from "@/lib/supabase";
 import { APP_URL, getCanonical, safeJsonLd } from "@/lib/seo";
 import { getAggregatedProductsByCategory } from "@/lib/catalog-aggregate";
 import ProductGridServer from "@/components/ProductGridServer";
+import { bilingualNameThai, bilingualPrimaryThai } from "@/lib/bilingual";
 
 interface CategoryData {
   slug: string;
@@ -39,8 +40,8 @@ export const revalidate = 3600;
 
 const disposableFaqs = [
   {
-    question: "พอตใช้ทิ้ง พอตใช้แล้วทิ้ง และพอดใช้แล้วทิ้ง คือสินค้าแบบเดียวกันหรือไม่?",
-    answer: "โดยทั่วไปเป็นคำค้นที่ใช้เรียกอุปกรณ์ประเภท disposable pod เหมือนกัน ต่างกันที่การสะกดและภาษาที่ผู้ค้นคุ้นเคย หน้านี้จึงใช้คำเหล่านี้ร่วมกันโดยหมายถึงหมวดสินค้าเดียวกัน",
+    question: "พอตใช้ทิ้ง คือสินค้าแบบใด?",
+    answer: "พอตใช้ทิ้ง หรือที่ค้นกันว่า พอตใช้แล้วทิ้ง พอดใช้แล้วทิ้ง และดูดทิ้ง เป็นอุปกรณ์ประเภท disposable pod ที่ออกแบบมาเป็นชุดพร้อมใช้งาน เมื่อเลือกสินค้าให้ดูชื่อรุ่น จำนวนพัฟโดยประมาณ และตัวเลือกรสชาติที่ยังเปิดใช้งานอยู่",
   },
   {
     question: "ตัวเลข 9K, 10K หรือ 20K หมายถึงอะไร?",
@@ -56,12 +57,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const category = await getCategoryBySlug(params.slug);
   if (!category) return { title: "ไม่พบหมวดหมู่" };
 
-  const name = category.name_th || category.name;
   const isDisposable = category.slug === "disposable-pod";
-  const title = isDisposable ? "พอตใช้ทิ้ง พอตใช้แล้วทิ้ง และพอดใช้แล้วทิ้ง" : `${name}`;
+  const title = isDisposable
+    ? "พอตใช้ทิ้ง - Disposable Pods"
+    : `${category.name_th || category.name}`;
   const description = isDisposable
-    ? "รวมข้อมูลพอตใช้ทิ้ง พอตใช้แล้วทิ้ง และพอดใช้แล้วทิ้ง พร้อมเปรียบเทียบรุ่น 9K 10K 15K และ 20K จากสินค้าที่มีจริง"
-    : category.description || `รวมสินค้า${name} ทุกแบรนด์ พร้อมดูรายละเอียดและสถานะล่าสุด`;
+    ? "รวมพอตใช้แล้วทิ้งและพอดใช้แล้วทิ้งจากแบรนด์ยอดนิยม พร้อมเปรียบเทียบรุ่น 9K 10K 15K และ 20K จากสินค้าที่มีจริง"
+    : category.description || `รวมสินค้า${category.name_th || category.name} ทุกแบรนด์ พร้อมดูรายละเอียดและสถานะล่าสุด`;
   const canonical = getCanonical(`/categories/${category.slug}`);
 
   return {
@@ -79,7 +81,6 @@ export default async function CategoryPage({ params }: { params: { slug: string 
   if (!category) notFound();
 
   const products = await getAggregatedProductsByCategory(category.slug);
-  const displayName = category.name_th || category.name;
   const isDisposable = category.slug === "disposable-pod";
 
   const breadcrumbJsonLd = {
@@ -88,7 +89,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "หน้าแรก", item: APP_URL },
       { "@type": "ListItem", position: 2, name: "สินค้า", item: `${APP_URL}/products` },
-      { "@type": "ListItem", position: 3, name: displayName, item: getCanonical(`/categories/${category.slug}`) },
+      { "@type": "ListItem", position: 3, name: bilingualNameThai(category.name_th, category.name), item: getCanonical(`/categories/${category.slug}`) },
     ],
   };
 
@@ -117,16 +118,19 @@ export default async function CategoryPage({ params }: { params: { slug: string 
             <span>/</span>
             <Link href="/products" className="hover:text-acid-lime transition-colors">สินค้า</Link>
             <span>/</span>
-            <span className="text-acid-lime font-bold">{displayName}</span>
+            <span className="text-acid-lime font-bold">{bilingualNameThai(category.name_th, category.name)}</span>
           </nav>
 
           <header className="mb-10">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-2">
               <span className="text-3xl">{category.icon}</span>
               <h1 className="text-3xl sm:text-4xl font-black text-white">
-                {isDisposable ? "พอตใช้ทิ้งและพอดใช้แล้วทิ้ง" : displayName}
+                {bilingualPrimaryThai(category.name_th, category.name).primary}
               </h1>
             </div>
+            <p className="text-white/50 text-sm font-mono tracking-widest uppercase mb-3">
+              {bilingualPrimaryThai(category.name_th, category.name).secondary || category.name}
+            </p>
             {category.description && (
               <p className="text-white/60 text-base max-w-2xl">{category.description}</p>
             )}
@@ -148,9 +152,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
                   รุ่นในหมวดนี้มีตั้งแต่ 9K, 10K, 15K ไปจนถึง 20K ตามข้อมูลที่ผู้ผลิตระบุ ตัวเลขดังกล่าวไม่ใช่การรับประกันจำนวนครั้งใช้งานจริง เพราะขึ้นอยู่กับลักษณะการใช้งานของแต่ละคน
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  <Link href="/brands/marbo" className="text-acid-lime font-semibold hover:underline">ดูข้อมูล MARBO และมาโบ</Link>
-                  <Link href="/products/marbo-m-bar-9k" className="text-acid-lime font-semibold hover:underline">ดู MARBO M BAR 9K</Link>
-                  <Link href="/products/mbar-10k" className="text-acid-lime font-semibold hover:underline">ดู M BAR 10K</Link>
+                  <Link href="/products?category=disposable-pod" className="text-acid-lime font-semibold hover:underline">ดูสินค้าพอตใช้ทิ้งทั้งหมด</Link>
                 </div>
               </div>
 

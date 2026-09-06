@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getServerSupabase } from "@/lib/supabase";
 import { APP_URL, getCanonical, safeJsonLd } from "@/lib/seo";
-import { storeConfig, categories } from "@/lib/config";
+import { storeConfig } from "@/lib/config";
+import { bilingualPrimary, bilingualPrimaryThai, bilingualName, bilingualNameThai, formatPuffs } from "@/lib/bilingual";
 
 interface ProductVariant {
   id: string;
@@ -87,31 +88,57 @@ async function getProductBySlug(slug: string): Promise<ProductData | null> {
   } as ProductData;
 }
 
-export const revalidate = 3600; // Revalidate every hour for stock/price freshness
+export const revalidate = 3600;
 
-function getProductSeoName(product: ProductData) {
-  if (product.slug === "marbo-m-bar-9k") return "MARBO M BAR 9K (มาโบ 9K / มาร์โบ 9K)";
-  if (product.slug === "mbar-10k") return "M BAR 10K (mbar / มาโบ 10K)";
-  return product.name_th || product.name;
+function isMarboProduct(slug: string): boolean {
+  return slug === "marbo-m-bar-9k" || slug === "mbar-10k";
 }
 
 function getProductFaqs(product: ProductData) {
-  const seoName = getProductSeoName(product);
+  const displayName = bilingualName(product.name, product.name_th);
   const puffText = product.puff_count
     ? `${Number(product.puff_count).toLocaleString()} พัฟตามข้อมูลที่ผู้ผลิตระบุ โดยจำนวนใช้งานจริงอาจต่างกันตามลักษณะการใช้งาน`
     : "โปรดตรวจรายละเอียดของรุ่นและข้อมูลจากผู้ผลิตในหน้าสินค้า";
 
+  if (isMarboProduct(product.slug)) {
+    const is9k = product.slug === "marbo-m-bar-9k";
+    const modelLabel = is9k ? "MARBO M BAR 9K" : "M BAR 10K";
+    const altNames = is9k
+      ? "มาโบ 9K, มาร์โบ 9K, MARBO 9K"
+      : "มาโบ 10K, เอ็มบาร์ 10K, mbar 10k";
+    const otherModel = is9k ? "M BAR 10K" : "MARBO M BAR 9K";
+
+    return [
+      {
+        question: `${modelLabel} มีกี่พัฟ?`,
+        answer: `${Number(product.puff_count || 0).toLocaleString()} พัฟตามข้อมูลที่ผู้ผลิตระบุ โดยจำนวนใช้งานจริงอาจต่างกันตามลักษณะการใช้งาน`,
+      },
+      {
+        question: `${modelLabel} กับ ${altNames.split(", ")[0]} คือรุ่นเดียวกันหรือไม่?`,
+        answer: `ใช่ ${modelLabel} คือรุ่นเดียวกับที่ค้นกันในชื่อ ${altNames} ต่างกันที่การสะกดและรูปแบบคำค้น`,
+      },
+      {
+        question: `${displayName} มีรสชาติอะไรบ้าง?`,
+        answer: `หน้านี้แสดงรสชาติที่เปิดใช้งานในระบบล่าสุดจำนวน ${product.variants.length} ตัวเลือก รายการอาจเปลี่ยนได้เมื่อข้อมูลสินค้าหรือสต็อกอัปเดต`,
+      },
+      {
+        question: `จะเปรียบเทียบ ${modelLabel} กับ ${otherModel} ได้อย่างไร?`,
+        answer: `เปิดหน้าสินค้าทั้งสองรุ่นเพื่อดูรายละเอียดจำนวนพัฟ รสชาติ ราคา และสถานะสต็อกล่าสุด หรืออ่านบทความเปรียบเทียบเพื่อสรุปข้อมูลพื้นฐาน`,
+      },
+    ];
+  }
+
   return [
     {
-      question: `${seoName} มีกี่พัฟ?`,
+      question: `${displayName} มีกี่พัฟ?`,
       answer: puffText,
     },
     {
-      question: `${seoName} มีรสชาติอะไรบ้าง?`,
+      question: `${displayName} มีรสชาติอะไรบ้าง?`,
       answer: `หน้านี้แสดงรสชาติที่เปิดใช้งานในระบบล่าสุดจำนวน ${product.variants.length} ตัวเลือก รายการอาจเปลี่ยนได้เมื่อข้อมูลสินค้าหรือสต็อกอัปเดต`,
     },
     {
-      question: `จะดูราคาและสถานะของ ${seoName} ได้อย่างไร?`,
+      question: `จะดูราคาและสถานะของ ${displayName} ได้อย่างไร?`,
       answer: "ตรวจราคาเริ่มต้นและสถานะพร้อมส่งจากข้อมูลบนหน้าสินค้านี้ แล้วเลือกรสชาติเพื่อดูตัวเลือกที่เปิดใช้งานล่าสุด",
     },
   ];
@@ -131,13 +158,30 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!product) return { title: "ไม่พบสินค้า" };
 
   const hasActiveVariants = product.variants.length > 0;
-  const seoName = getProductSeoName(product);
-  const title = `${seoName} - ${product.brand?.name || ""}`;
-  const description = product.slug === "marbo-m-bar-9k"
-    ? "ข้อมูล MARBO M BAR 9K หรือมาโบ 9K พอตใช้ทิ้ง 9,000 พัฟ พร้อมรสชาติ ราคา และสถานะสต็อกล่าสุด"
-    : product.slug === "mbar-10k"
-      ? "ข้อมูล M BAR 10K, mbar หรือมาโบ 10K พอตใช้ทิ้ง 10,000 พัฟ พร้อมรสชาติ ราคา และสถานะสต็อกล่าสุด"
-      : product.description || `${product.brand?.name || ""} ${product.name_th || product.name} พร้อมรายละเอียดและสถานะล่าสุด`;
+  const displayName = bilingualName(product.name, product.name_th);
+  const brandDisplay = bilingualName(product.brand?.name, product.brand?.name_th);
+  const isMarbo = isMarboProduct(product.slug);
+
+  // Check if product name already contains brand name (case-insensitive)
+  const productNameLower = product.name?.toLowerCase() || "";
+  const brandNameLower = product.brand?.name?.toLowerCase() || "";
+  const brandInProductName = brandNameLower && productNameLower.startsWith(brandNameLower);
+
+  let title: string;
+  let description: string;
+
+  if (isMarbo && product.slug === "marbo-m-bar-9k") {
+    title = "MARBO M BAR 9K - มาโบ 9K มาร์โบ";
+    description = "MARBO M BAR 9K หรือที่ค้นกันว่า มาโบ 9K มาร์โบ 9K MARBO 9K พร้อมรายละเอียดรสชาติและสถานะสต็อกล่าสุด";
+  } else if (isMarbo && product.slug === "mbar-10k") {
+    title = "M BAR 10K - mbar มาโบ 10K เอ็มบาร์";
+    description = "M BAR 10K หรือที่ค้นกันว่า mbar 10k มาโบ 10K เอ็มบาร์ 10K พร้อมรายละเอียดรสชาติและสถานะสต็อกล่าสุด";
+  } else {
+    // Don't add brand to title if it's already in the product name
+    title = brandInProductName ? displayName : `${displayName} - ${brandDisplay}`;
+    description = product.description || `${brandDisplay} ${displayName} พร้อมรายละเอียดและสถานะล่าสุด`;
+  }
+
   const canonical = getCanonical(`/products/${product.slug}`);
   const imageUrl = product.image_url || `${APP_URL}/images/og-default.svg`;
 
@@ -167,7 +211,6 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {
-  // Handle legacy UUID URLs — redirect to canonical slug
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (uuidPattern.test(params.slug)) {
     const supabase = getServerSupabase();
@@ -186,12 +229,13 @@ export default async function ProductPage({ params }: { params: { slug: string }
   const product = await getProductBySlug(params.slug);
   if (!product) notFound();
 
-  const category = categories.find((c) => c.id === product.category?.slug) || null;
-  const displayName = product.name_th || product.name;
-  const seoName = getProductSeoName(product);
-  const brandName = product.brand?.name_th || product.brand?.name || "";
+  const { primary: namePrimary, secondary: nameSecondary } = bilingualPrimary(product.name, product.name_th);
+  const brandDisplay = bilingualPrimary(product.brand?.name, product.brand?.name_th);
+  const puffFormatted = formatPuffs(product.puff_count);
   const productFaqs = getProductFaqs(product);
-  const isMarboTarget = product.slug === "marbo-m-bar-9k" || product.slug === "mbar-10k";
+
+  const displayNameFull = bilingualName(product.name, product.name_th);
+  const brandNameFull = bilingualName(product.brand?.name, product.brand?.name_th);
 
   // JSON-LD Product Schema
   const variantPrices = product.variants.map((v) => v.price);
@@ -199,9 +243,9 @@ export default async function ProductPage({ params }: { params: { slug: string }
   const productJsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: displayName,
-    description: product.description || displayName,
-    brand: { "@type": "Brand", name: brandName },
+    name: product.name, // Canonical English name only
+    description: product.description || displayNameFull,
+    brand: { "@type": "Brand", name: product.brand?.name }, // Canonical English brand name only
   };
   if (hasActiveVariants) {
     productJsonLd.offers = {
@@ -225,9 +269,9 @@ export default async function ProductPage({ params }: { params: { slug: string }
       { "@type": "ListItem", position: 1, name: "หน้าแรก", item: APP_URL },
       { "@type": "ListItem", position: 2, name: "สินค้า", item: `${APP_URL}/products` },
       ...(product.category
-        ? [{ "@type": "ListItem", position: 3, name: product.category.name_th || product.category.name, item: `${APP_URL}/categories/${product.category.slug}` }]
+        ? [{ "@type": "ListItem", position: 3, name: bilingualNameThai(product.category.name_th, product.category.name), item: `${APP_URL}/categories/${product.category.slug}` }]
         : []),
-      { "@type": "ListItem", position: product.category ? 4 : 3, name: displayName, item: getCanonical(`/products/${product.slug}`) },
+      { "@type": "ListItem", position: product.category ? 4 : 3, name: displayNameFull, item: getCanonical(`/products/${product.slug}`) },
     ],
   };
 
@@ -267,12 +311,12 @@ export default async function ProductPage({ params }: { params: { slug: string }
               <>
                 <span>/</span>
                 <Link href={`/categories/${product.category.slug}`} className="hover:text-acid-lime transition-colors">
-                  {product.category.name_th || product.category.name}
+                  {bilingualNameThai(product.category.name_th, product.category.name)}
                 </Link>
               </>
             )}
             <span>/</span>
-            <span className="text-acid-lime font-bold">{displayName}</span>
+            <span className="text-acid-lime font-bold">{namePrimary}</span>
           </nav>
 
           {/* Product Main */}
@@ -282,7 +326,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
               <div className="relative aspect-square vapor-card rounded-3xl overflow-hidden border border-brand-border bg-brand-void/80 flex items-center justify-center">
                 <img
                   src={product.image_url || "https://placehold.co/600x600/120d20/5b13ec?text=Pod4U"}
-                  alt={`${displayName} ${brandName}`}
+                  alt={`${namePrimary} ${brandDisplay.primary}`}
                   className="w-full h-full object-cover"
                   width={600}
                   height={600}
@@ -297,17 +341,33 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
             {/* Info */}
             <div className="flex flex-col justify-center">
-              {category && (
+              {/* Category + Type Label */}
+              {product.category && (
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-brand-surface border border-brand-border w-fit mb-4">
-                  <span>{category.icon}</span>
-                  <span className="text-acid-lime text-xs font-mono font-bold uppercase">{category.nameTh}</span>
+                  <span>{product.category.icon}</span>
+                  <span className="text-acid-lime text-xs font-mono font-bold uppercase">
+                    {bilingualPrimaryThai(product.category.name_th, product.category.name).primary}
+                  </span>
+                  <span className="text-white/30 text-xs">·</span>
+                  <span className="text-white/50 text-xs font-mono uppercase">
+                    {bilingualPrimaryThai(product.category.name_th, product.category.name).secondary || product.category.name}
+                  </span>
                 </div>
               )}
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-2 tracking-tight leading-tight">
-                {seoName}
+              {/* Product Name — English primary */}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-1 tracking-tight leading-tight">
+                {namePrimary}
               </h1>
-              <p className="text-white/50 text-sm mb-4">{brandName}</p>
+              {nameSecondary && (
+                <p className="text-white/60 text-lg mb-2">{nameSecondary}</p>
+              )}
+
+              {/* Brand */}
+              <p className="text-white/50 text-sm mb-4">
+                {brandDisplay.primary}
+                {brandDisplay.secondary ? ` · ${brandDisplay.secondary}` : ""}
+              </p>
 
               {product.description && (
                 <p className="text-white/70 text-base mb-6 leading-relaxed">{product.description}</p>
@@ -315,14 +375,16 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
               {/* Specs */}
               <div className="flex flex-wrap gap-2 mb-6">
-                {product.puff_count && (
+                {puffFormatted && (
                   <span className="px-3 py-1.5 rounded-lg bg-brand-surface border border-brand-border text-white/80 text-xs">
-                    {Number(product.puff_count).toLocaleString()} Puffs
+                    {puffFormatted} PUFFS
                   </span>
                 )}
-                <span className="px-3 py-1.5 rounded-lg bg-brand-surface border border-brand-border text-white/80 text-xs">
-                  {product.variants.length} รสชาติ
-                </span>
+                {product.variants.length > 0 && (
+                  <span className="px-3 py-1.5 rounded-lg bg-brand-surface border border-brand-border text-white/80 text-xs">
+                    {product.variants.length} รสชาติ
+                  </span>
+                )}
               </div>
 
               {/* Price */}
@@ -347,28 +409,36 @@ export default async function ProductPage({ params }: { params: { slug: string }
               )}
 
               {/* Flavors */}
-              <div className="mb-8">
-                <h2 className="text-white font-bold text-sm uppercase font-mono tracking-wider mb-3">
-                  รสชาติที่มี ({product.variants.length})
-                </h2>
-                <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-2">
-                  {product.variants.map((variant) => (
-                    <div
-                      key={variant.id}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-brand-surface/50 border border-brand-border/50 text-xs"
-                    >
-                      <div
-                        className="w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: variant.flavor_color }}
-                      />
-                      <span className="text-white/80">{variant.flavor_name_th || variant.flavor_name}</span>
-                      {variant.is_available && variant.stock_quantity > 0 && (
-                        <span className="text-acid-lime text-[10px] font-mono">({variant.stock_quantity})</span>
-                      )}
-                    </div>
-                  ))}
+              {product.variants.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-white font-bold text-sm uppercase font-mono tracking-wider mb-3">
+                    รสชาติที่มี ({product.variants.length})
+                  </h2>
+                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-2">
+                    {product.variants.map((variant) => {
+                      const flavorDisplay = bilingualPrimaryThai(variant.flavor_name_th, variant.flavor_name);
+                      return (
+                        <div
+                          key={variant.id}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-brand-surface/50 border border-brand-border/50 text-xs"
+                        >
+                          <div
+                            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: variant.flavor_color }}
+                          />
+                          <span className="text-white/80">{flavorDisplay.primary}</span>
+                          {flavorDisplay.secondary && (
+                            <span className="text-white/40">({flavorDisplay.secondary})</span>
+                          )}
+                          {variant.is_available && variant.stock_quantity > 0 && (
+                            <span className="text-acid-lime text-[10px] font-mono">({variant.stock_quantity})</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Stock Status */}
               <div className="mb-8">
@@ -403,23 +473,52 @@ export default async function ProductPage({ params }: { params: { slug: string }
           <section className="grid gap-8 lg:grid-cols-[1.2fr_1fr]" aria-labelledby="product-guide">
             <div className="navy-card rounded-2xl border border-white/10 p-6 sm:p-8">
               <h2 id="product-guide" className="text-2xl font-black text-white mb-4">
-                ข้อมูล {seoName}
+                ข้อมูล {displayNameFull}
               </h2>
-              <p className="text-white/70 leading-relaxed mb-4">
-                {product.description || `${displayName} เป็นหนึ่งในสินค้าที่เปิดใช้งานอยู่ในแคตตาล็อก Pod4U`}
-              </p>
-              <p className="text-white/70 leading-relaxed mb-6">
-                รุ่นนี้ระบุจำนวนพัฟโดยประมาณ {product.puff_count ? Number(product.puff_count).toLocaleString() : "ตามข้อมูลผู้ผลิต"} พัฟ และมีรสชาติที่เปิดใช้งานในระบบขณะนี้ {product.variants.length} ตัวเลือก จำนวนพัฟและระยะเวลาใช้งานจริงอาจต่างกันตามรูปแบบการใช้งาน
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {isMarboTarget && (
-                  <>
-                    <Link href="/brands/marbo" className="text-acid-lime font-semibold hover:underline">รวมข้อมูล MARBO และมาโบ</Link>
-                    <Link href="/blog/marbo-9k-vs-mbar-10k" className="text-acid-lime font-semibold hover:underline">เปรียบเทียบ MARBO 9K กับ M BAR 10K</Link>
-                  </>
-                )}
-                <Link href="/categories/disposable-pod" className="text-acid-lime font-semibold hover:underline">ดูหมวดพอตใช้ทิ้ง</Link>
-              </div>
+              {isMarboProduct(product.slug) ? (
+                <>
+                  <p className="text-white/70 leading-relaxed mb-4">
+                    {product.slug === "marbo-m-bar-9k"
+                      ? "ผู้ค้นอาจใช้คำว่า MARBO M BAR 9K, มาโบ 9K, มาร์โบ 9K หรือ MARBO 9K เพื่อค้นหารุ่นนี้ เป็นพอตใช้แล้วทิ้งที่ระบุจำนวนพัฟประมาณ 9,000 พัฟตามข้อมูลผู้ผลิต"
+                      : "ผู้ค้นอาจใช้คำว่า M BAR 10K, mbar 10k, มาโบ 10K หรือ เอ็มบาร์ 10K เพื่อค้นหารุ่นนี้ เป็นพอตใช้แล้วทิ้งที่ระบุจำนวนพัฟประมาณ 10,000 พัฟตามข้อมูลผู้ผลิต"}
+                  </p>
+                  <p className="text-white/70 leading-relaxed mb-6">
+                    รุ่นนี้มีรสชาติที่เปิดใช้งานในระบบขณะนี้ {product.variants.length} ตัวเลือก จำนวนพัฟและระยะเวลาใช้งานจริงอาจต่างกันตามรูปแบบการใช้งาน
+                  </p>
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    <Link href={`/brands/${product.brand?.slug}`} className="text-acid-lime font-semibold hover:underline">
+                      ดูแบรนด์ {brandDisplay.primary}
+                    </Link>
+                    <span className="text-white/20">|</span>
+                    <Link href={product.slug === "marbo-m-bar-9k" ? "/products/mbar-10k" : "/products/marbo-m-bar-9k"} className="text-acid-lime font-semibold hover:underline">
+                      {product.slug === "marbo-m-bar-9k" ? "M BAR 10K" : "MARBO M BAR 9K"}
+                    </Link>
+                    <span className="text-white/20">|</span>
+                    <Link href="/blog/marbo-9k-vs-mbar-10k" className="text-acid-lime font-semibold hover:underline">
+                      เปรียบเทียบ MARBO 9K กับ M BAR 10K
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-white/70 leading-relaxed mb-4">
+                    {product.description || `${displayNameFull} เป็นหนึ่งในสินค้าที่เปิดใช้งานอยู่ในแคตตาล็อก Pod4U`}
+                  </p>
+                  <p className="text-white/70 leading-relaxed mb-6">
+                    รุ่นนี้ระบุจำนวนพัฟโดยประมาณ {puffFormatted || "ตามข้อมูลผู้ผลิต"} พัฟ และมีรสชาติที่เปิดใช้งานในระบบขณะนี้ {product.variants.length} ตัวเลือก จำนวนพัฟและระยะเวลาใช้งานจริงอาจต่างกันตามรูปแบบการใช้งาน
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {product.category && (
+                      <Link href={`/categories/${product.category.slug}`} className="text-acid-lime font-semibold hover:underline">
+                        ดูหมวด{bilingualNameThai(product.category.name_th, product.category.name)}
+                      </Link>
+                    )}
+                    <Link href={`/brands/${product.brand?.slug}`} className="text-acid-lime font-semibold hover:underline">
+                      ดูแบรนด์ {brandDisplay.primary}
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="space-y-4">

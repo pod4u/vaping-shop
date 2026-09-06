@@ -2,19 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { bilingualPrimaryThai, bilingualName } from "@/lib/bilingual";
 
 interface FlavorWithStock {
   id: string;
   brandId: string;
   brandName: string;
-  brandNameTh: string;
+  brandNameTh: string | null;
   brandColor: string;
   name: string;
   nameTh: string;
   color: string;
   image: string;
   stock: number;
-  price: number;
+  price: number | null;
   productSlug?: string;
 }
 
@@ -45,6 +46,9 @@ export default function ReadyToShipProductsNavy() {
               const stock = flavorData.stock_quantity || 0;
 
               if (stock > 0) {
+                // Use variant-level price only, no fallback to product or 0
+                const price = flavorData.sale_price ?? flavorData.price ?? null;
+
                 readyProducts.push({
                   id: flavorData.id,
                   brandId,
@@ -56,7 +60,7 @@ export default function ReadyToShipProductsNavy() {
                   color: flavorData.flavor?.color || '#6B7280',
                   image: flavorData.flavor?.image || '/images/placeholder.svg',
                   stock,
-                  price: product.price || getPrice(brandId),
+                  price,
                   productSlug: product.slug,
                 });
               }
@@ -85,14 +89,6 @@ export default function ReadyToShipProductsNavy() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getPrice = (brandId: string): number => {
-    const prices: Record<string, number> = {
-      alfa: 450, marbo: 250, msw: 390, mood: 290, vplus: 380,
-      eskobar: 480, mbar: 350, relx: 450
-    };
-    return prices[brandId] || 350;
   };
 
   if (isLoading) {
@@ -172,20 +168,30 @@ export default function ReadyToShipProductsNavy() {
                     style={{ backgroundColor: product.color }}
                   />
                   <span className="text-white/60 text-xs font-semibold tracking-wide truncate min-w-0">
-                    {product.brandName || product.brandNameTh}
+                    {bilingualName(product.brandName, product.brandNameTh)}
                   </span>
                 </div>
 
-                <h3 className="text-white font-bold text-sm sm:text-base mb-1 truncate">
-                  {product.nameTh}
+                <h3 className="text-white font-bold text-sm sm:text-base mb-0.5 truncate">
+                  {bilingualPrimaryThai(product.nameTh, product.name).primary}
                 </h3>
-                <p className="text-white/50 text-xs truncate">{product.name}</p>
+                {bilingualPrimaryThai(product.nameTh, product.name).secondary && (
+                  <p className="text-white/50 text-xs truncate">
+                    {bilingualPrimaryThai(product.nameTh, product.name).secondary}
+                  </p>
+                )}
 
                 {/* Price */}
                 <div className="mt-auto pt-3 flex flex-col min-[390px]:flex-row min-[390px]:items-center justify-between gap-2">
-                  <div className="text-acid-lime font-black">
-                    ฿{product.price}
-                  </div>
+                  {product.price !== null ? (
+                    <div className="text-acid-lime font-black">
+                      ฿{product.price}
+                    </div>
+                  ) : (
+                    <div className="text-white/50 text-sm">
+                      สอบถามราคา
+                    </div>
+                  )}
                   <div className="flex items-center gap-1.5 text-xs text-acid-lime font-mono bg-acid-lime/10 px-2.5 py-1 rounded-full">
                     <span className="w-1.5 h-1.5 rounded-full bg-acid-lime animate-pulse"></span>
                     พร้อมส่ง

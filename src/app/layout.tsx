@@ -12,24 +12,24 @@ const prompt = Prompt({
 
 export const metadata: Metadata = baseMetadata({
   title: {
-    default: "Pod4U - พอต พอด และพอตใช้แล้วทิ้ง",
+    default: "Pod4U - พอตครบทุกแบบ พร้อมส่ง",
     template: `%s | Pod4U`,
   },
   description:
-    "รวมข้อมูลพอต พอด พอตใช้แล้วทิ้ง และพอดเปลี่ยนหัว พร้อมหน้าสินค้า MARBO, M BAR และรุ่นยอดนิยมที่อัปเดตจากสต็อกจริง",
+    "รวมพอตใช้แล้วทิ้งและพอดเปลี่ยนหัวจากแบรนด์ยอดนิยม MARBO, ALFA, M BAR อัปเดตสต็อกจริง พร้อมรายละเอียดทุกรุ่นและรสชาติ",
   alternates: { canonical: APP_URL },
   openGraph: {
     type: "website",
     locale: "th_TH",
     siteName: "Pod4U",
     url: APP_URL,
-    title: "Pod4U - พอต พอด และพอตใช้แล้วทิ้ง",
-    description: "รวมข้อมูลพอต พอด พอตใช้แล้วทิ้ง และรุ่นยอดนิยม พร้อมรายละเอียดสินค้าและสต็อกล่าสุด",
+    title: "Pod4U - พอตครบทุกแบบ พร้อมส่ง",
+    description: "รวมพอตใช้แล้วทิ้งและพอดเปลี่ยนหัวจากแบรนด์ยอดนิยม อัปเดตสต็อกจริง พร้อมรายละเอียดครบทุกรุ่น",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pod4U - พอต พอด และพอตใช้แล้วทิ้ง",
-    description: "รวมข้อมูลพอต พอด พอตใช้แล้วทิ้ง และรุ่นยอดนิยม พร้อมรายละเอียดสินค้าและสต็อกล่าสุด",
+    title: "Pod4U - พอตครบทุกแบบ พร้อมส่ง",
+    description: "รวมพอตใช้แล้วทิ้งและพอดเปลี่ยนหัวจากแบรนด์ยอดนิยม อัปเดตสต็อกจริง พร้อมรายละเอียดครบทุกรุ่น",
   },
 });
 
@@ -37,10 +37,8 @@ const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Store",
   name: "Pod4U",
-  description: "รวมข้อมูลพอต พอด พอตใช้แล้วทิ้ง และพอดเปลี่ยนหัว พร้อมรายละเอียดสินค้าที่อัปเดตจากสต็อก",
+  description: "รวมพอตใช้แล้วทิ้งและพอดเปลี่ยนหัวจากแบรนด์ยอดนิยม อัปเดตสต็อกจริง พร้อมรายละเอียดครบทุกรุ่น",
   url: APP_URL,
-  telephone: "",
-  sameAs: [],
   address: {
     "@type": "PostalAddress",
     addressCountry: "TH",

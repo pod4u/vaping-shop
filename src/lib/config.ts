@@ -2,17 +2,17 @@
 export const storeConfig = {
   // Store Information
   storeName: "Pod4U",
-  tagline: "ร้านขายพอดเปลี่ยนหัว และพอดใช้แล้วทิ้ง ราคาส่ง ครบ จบในที่เดียว",
-  
+  tagline: "ร้านขายพอตเปลี่ยนหัว และพอตใช้แล้วทิ้ง ราคาส่ง ครบ จบในที่เดียว",
+
   // Contact
   lineId: "@994tiktt", // LINE Official Account
   lineLink: "https://lin.ee/RU5qNLj", // LINE QR Code Link
   phone: "08X-XXX-XXXX", // TODO: Replace with your phone
-  
+
   // Service
   freeShippingMin: 800,
   serviceHours: "24 ชั่วโมง",
-  
+
   // Social Links (optional)
   facebook: "",
   instagram: "",
@@ -23,15 +23,15 @@ export const categories = [
   {
     id: "disposable-pod",
     name: "DISPOSABLE POD",
-    nameTh: "พอดใช้แล้วทิ้ง",
-    description: "พอดใช้แล้วทิ้ง สะดวก พกพาง่าย",
+    nameTh: "พอตใช้แล้วทิ้ง",
+    description: "พอตใช้แล้วทิ้ง สะดวก พกพาง่าย",
     icon: "💨",
   },
   {
     id: "flavor-pod",
     name: "FLAVOR POD",
-    nameTh: "หัวน้ำยา หัวพอด",
-    description: "หัวพอดรสชาติหลากหลาย",
+    nameTh: "หัวน้ำยา หัวพอต",
+    description: "หัวพอตรสชาติหลากหลาย",
     icon: "🍒",
   },
 ] as const;

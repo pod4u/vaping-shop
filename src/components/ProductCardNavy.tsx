@@ -61,10 +61,13 @@ export default function ProductCardNavy({ product }: ProductCardNavyProps) {
         {/* Content */}
         <div className="p-5 flex-1 flex flex-col justify-between relative">
           <div>
-            <h3 className="text-white font-bold text-base mb-1.5 line-clamp-1 group-hover:text-acid-lime transition-colors duration-300">
+            <h3 className="text-white font-bold text-base mb-0.5 line-clamp-1 group-hover:text-acid-lime transition-colors duration-300">
               {product.name}
             </h3>
-            <p className="text-white/50 text-xs line-clamp-2 leading-relaxed mb-4 group-hover:text-white/60 transition-colors">{product.description}</p>
+            {product.nameTh && product.nameTh !== product.name && (
+              <p className="text-white/50 text-xs line-clamp-1 mb-1">{product.nameTh}</p>
+            )}
+            <p className="text-white/40 text-xs line-clamp-2 leading-relaxed mb-4 group-hover:text-white/60 transition-colors">{product.description}</p>
           </div>
 
           <div className="flex items-end justify-between pt-3 border-t border-navy-border/60">
