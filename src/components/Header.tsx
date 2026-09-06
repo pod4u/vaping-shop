@@ -60,7 +60,7 @@ export default function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8">
+            <nav className="hidden lg:flex shrink-0 items-center gap-5 whitespace-nowrap xl:gap-8">
               <Link
                 href="/"
                 className="text-white/80 hover:text-acid-lime transition-colors font-medium text-sm tracking-wide relative group"
@@ -128,6 +128,13 @@ export default function Header() {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-acid-lime group-hover:w-full transition-all duration-300"></span>
               </Link>
               <Link
+                href="/blog"
+                className="text-white/80 hover:text-acid-lime transition-colors font-medium text-sm tracking-wide relative group"
+              >
+                บทความ
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-acid-lime group-hover:w-full transition-all duration-300"></span>
+              </Link>
+              <Link
                 href="/#about"
                 className="text-white/80 hover:text-acid-lime transition-colors font-medium text-sm tracking-wide relative group"
               >
@@ -173,6 +180,9 @@ export default function Header() {
                 </Link>
                 <Link href="/products" className="text-white/80 hover:text-acid-lime py-2.5 px-4 rounded-xl transition-all hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>
                   สินค้าทั้งหมด
+                </Link>
+                <Link href="/blog" className="text-white/80 hover:text-acid-lime py-2.5 px-4 rounded-xl transition-all hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>
+                  บทความ
                 </Link>
                 {categories.map((cat) => (
                   <Link

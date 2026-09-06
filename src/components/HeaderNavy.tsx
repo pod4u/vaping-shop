@@ -71,7 +71,7 @@ export default function HeaderNavy() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8">
+            <nav className="hidden lg:flex shrink-0 items-center gap-3 whitespace-nowrap xl:gap-5">
               <Link
                 href="/"
                 className="text-white/80 hover:text-white transition-colors font-medium text-sm tracking-wide relative group"
@@ -145,6 +145,13 @@ export default function HeaderNavy() {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
               </Link>
               <Link
+                href="/blog"
+                className="text-white/80 hover:text-white transition-colors font-medium text-sm tracking-wide relative group"
+              >
+                บทความ
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
+              </Link>
+              <Link
                 href="/#about"
                 className="text-white/80 hover:text-white transition-colors font-medium text-sm tracking-wide relative group"
               >
@@ -168,7 +175,7 @@ export default function HeaderNavy() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="ค้นหาสินค้า..."
-                  className="w-48 xl:w-64 px-4 py-2 pl-10 rounded-full bg-navy-surface/50 border border-navy-border text-white text-sm placeholder:text-white/40 focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/20 transition-all"
+                  className="w-36 xl:w-48 px-4 py-2 pl-10 rounded-full bg-navy-surface/50 border border-navy-border text-white text-sm placeholder:text-white/40 focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/20 transition-all"
                 />
                 <svg
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40"
@@ -186,7 +193,7 @@ export default function HeaderNavy() {
               href={storeConfig.lineLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-acid-lime to-[#a3e635] text-navy-deep px-5 py-2.5 rounded-full text-sm font-bold transition-all hover:shadow-acid hover:scale-105"
+              className="hidden shrink-0 items-center gap-2 whitespace-nowrap bg-gradient-to-r from-acid-lime to-[#a3e635] px-4 py-2.5 text-sm font-bold text-navy-deep transition-all hover:scale-105 hover:shadow-acid sm:flex xl:px-5"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 5.58 2 10c0 2.12.92 4.04 2.42 5.44L3 22l6.4-3.2c.84.13 1.71.2 2.6.2 5.52 0 10-3.58 10-8s-4.48-8-10-8z"/>
@@ -242,6 +249,9 @@ export default function HeaderNavy() {
                 </Link>
                 <Link href="/stock" className="text-white/80 hover:text-white py-2.5 px-4 rounded-xl transition-all hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>
                   สินค้าพร้อมส่ง
+                </Link>
+                <Link href="/blog" className="text-white/80 hover:text-white py-2.5 px-4 rounded-xl transition-all hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>
+                  บทความ
                 </Link>
                 <Link href="/register" className="text-acid-lime hover:text-white py-2.5 px-4 rounded-xl transition-all hover:bg-white/5 font-bold" onClick={() => setIsMenuOpen(false)}>
                   สมัครสมาชิก

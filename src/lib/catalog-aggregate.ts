@@ -29,6 +29,8 @@ export interface AggregatedProduct {
   flavor_names: string[];
   /** Unique flavor names (Thai) for search */
   flavor_names_th: string[];
+  /** Bilingual flavor pairs for human-facing product summaries */
+  flavors: Array<{ name: string; name_th: string | null }>;
 }
 
 /**
@@ -226,6 +228,7 @@ export async function getAggregatedProducts(): Promise<AggregatedProduct[]> {
         variant_count: 1,
         flavor_names: flavor.name ? [flavor.name] : [],
         flavor_names_th: flavor.name_th ? [flavor.name_th] : [],
+        flavors: [{ name: flavor.name, name_th: flavor.name_th }],
       });
     } else {
       const agg = map.get(product.slug)!;
@@ -250,6 +253,7 @@ export async function getAggregatedProducts(): Promise<AggregatedProduct[]> {
       if (flavor.name_th) {
         agg.flavor_names_th.push(flavor.name_th);
       }
+      agg.flavors.push({ name: flavor.name, name_th: flavor.name_th });
     }
   }
 
@@ -257,6 +261,13 @@ export async function getAggregatedProducts(): Promise<AggregatedProduct[]> {
   for (const agg of map.values()) {
     agg.flavor_names = dedupeStrings(agg.flavor_names);
     agg.flavor_names_th = dedupeStrings(agg.flavor_names_th);
+    const seenFlavors = new Set<string>();
+    agg.flavors = agg.flavors.filter((flavor) => {
+      const key = normalizeSearch(flavor.name || flavor.name_th || "");
+      if (!key || seenFlavors.has(key)) return false;
+      seenFlavors.add(key);
+      return true;
+    });
   }
 
   return [...map.values()].sort((a, b) =>

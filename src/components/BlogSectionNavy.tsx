@@ -1,5 +1,4 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
 import { blogPosts } from "../data/blog";
 
@@ -14,7 +13,7 @@ export default function BlogSectionNavy() {
               บทความน่ารู้
             </h2>
           </div>
-          <p className="text-white/50 text-sm mt-2 sm:mt-0 font-normal">ความรู้และข่าวสารล่าสุดเกี่ยวกับพอดไฟฟ้า</p>
+          <p className="text-white/50 text-sm mt-2 sm:mt-0 font-normal">คู่มือเลือกดูรุ่น รสชาติ และการดูแลอุปกรณ์</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -22,13 +21,12 @@ export default function BlogSectionNavy() {
             <Link key={post.id} href={`/blog/${post.slug}`} className="group block h-full">
               <div className="navy-card rounded-2xl overflow-hidden hover:border-acid-lime/50 transition-all duration-300 h-full flex flex-col">
                 <div className="aspect-video overflow-hidden bg-navy-deep relative">
-                  <img
+                  <Image
                     src={post.image}
-                    alt={post.title}
+                    alt={post.imageAlt}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "https://placehold.co/600x400/0f172a/3b82f6?text=Blog";
-                    }}
                   />
                   <div className="absolute top-3 left-3 bg-navy-surface/90 backdrop-blur-md border border-navy-border text-acid-lime text-xs font-mono font-bold px-2.5 py-1 rounded-md uppercase">
                     {post.category}

@@ -1,9 +1,14 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { blogPosts, getBlogPostBySlug } from "@/data/blog";
+import { getAggregatedProducts } from "@/lib/catalog-aggregate";
+import { bilingualName, bilingualPrimaryThai, formatPuffs } from "@/lib/bilingual";
 import { APP_URL, getCanonical, safeJsonLd } from "@/lib/seo";
 import type { ReactNode } from "react";
+
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   return blogPosts.map((p) => ({ slug: p.slug }));
@@ -20,18 +25,45 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     title,
     description: post.excerpt,
     alternates: { canonical },
-    openGraph: { title, description: post.excerpt, url: canonical, type: "article", siteName: "Pod4U", locale: "th_TH" },
-    twitter: { card: "summary_large_image", title, description: post.excerpt },
+    openGraph: {
+      title,
+      description: post.excerpt,
+      url: canonical,
+      type: "article",
+      siteName: "Pod4U",
+      locale: "th_TH",
+      publishedTime: post.date,
+      modifiedTime: post.updatedAt || post.date,
+      images: [{ url: getCanonical(post.image), alt: post.imageAlt }],
+    },
+    twitter: { card: "summary_large_image", title, description: post.excerpt, images: [getCanonical(post.image)] },
   };
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+function formatArticleDate(date: string) {
+  return new Intl.DateTimeFormat("th-TH", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Bangkok",
+  }).format(new Date(`${date}T00:00:00+07:00`));
+}
+
+function estimateReadingTime(content: string) {
+  return Math.max(3, Math.ceil(content.replace(/[#*|\-]/g, "").length / 700));
+}
+
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   if (params.slug === "why-choose-our-shop") {
     permanentRedirect("/blog/check-online-pod-shop-information");
   }
 
   const post = getBlogPostBySlug(params.slug);
   if (!post) notFound();
+
+  const productSnapshots = post.productSlugs?.length
+    ? (await getAggregatedProducts()).filter((product) => post.productSlugs?.includes(product.slug))
+    : [];
 
   // BlogPosting JSON-LD
   const jsonLd = {
@@ -43,6 +75,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     dateModified: post.updatedAt || post.date,
     author: { "@type": "Organization", name: post.author || "กองบรรณาธิการ Pod4U" },
     publisher: { "@type": "Organization", name: "Pod4U", url: APP_URL },
+    image: getCanonical(post.image),
     url: getCanonical(`/blog/${post.slug}`),
   };
 
@@ -115,7 +148,17 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         nodes.push(<ul key={`list-${i}`} className="my-4 list-disc space-y-2 pl-6 text-sm text-white/70">{items.map((item) => <li key={item}>{renderInline(item)}</li>)}</ul>);
         continue;
       }
-      if (line.trim()) nodes.push(<p key={i} className="text-white/70 text-sm leading-relaxed mb-3">{renderInline(line)}</p>);
+      if (/^\d+\.\s/.test(line)) {
+        const items: string[] = [];
+        while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+          items.push(lines[i].replace(/^\d+\.\s/, ""));
+          i++;
+        }
+        i--;
+        nodes.push(<ol key={`ordered-list-${i}`} className="my-4 list-decimal space-y-2 pl-6 text-base leading-7 text-white/75">{items.map((item) => <li key={item}>{renderInline(item)}</li>)}</ol>);
+        continue;
+      }
+      if (line.trim()) nodes.push(<p key={i} className="mb-4 text-base leading-8 text-white/75">{renderInline(line)}</p>);
     }
 
     return nodes;
@@ -140,16 +183,78 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           <header className="mb-8">
             <div className="flex items-center gap-2 mb-3">
               <span className="px-2 py-0.5 rounded bg-acid-lime/10 text-acid-lime text-[10px] font-mono uppercase">{post.category}</span>
-              <span className="text-white/30 text-xs">{post.date}</span>
-              <span className="text-white/30 text-xs">ตรวจข้อมูลโดย {post.author || "กองบรรณาธิการ Pod4U"}</span>
+              <time dateTime={post.updatedAt || post.date} className="text-white/40 text-xs">อัปเดต {formatArticleDate(post.updatedAt || post.date)}</time>
+              <span className="text-white/40 text-xs">อ่านประมาณ {estimateReadingTime(post.content || "")} นาที</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-black text-white mb-4">{post.title}</h1>
-            <p className="text-white/60 text-base">{post.excerpt}</p>
+            <p className="text-lg leading-8 text-white/70">{post.excerpt}</p>
+            <p className="mt-4 text-xs text-white/40">เรียบเรียงโดย {post.author || "ทีมเนื้อหา Pod4U"}</p>
           </header>
 
           {/* Content */}
           <article className="prose-custom">
+            <figure className="relative mb-10 aspect-[3/2] overflow-hidden rounded-3xl border border-white/10 bg-navy-deep/80 shadow-2xl shadow-black/20">
+              <Image
+                src={post.image}
+                alt={post.imageAlt}
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 768px"
+                className="object-cover"
+              />
+            </figure>
+
             {post.content ? renderContent(post.content) : <p className="text-white/50">ไม่มีเนื้อหา</p>}
+
+            {productSnapshots.length ? (
+              <section className="mt-12" aria-labelledby="live-product-data">
+                <div className="mb-5">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-acid-lime">Updated from catalog</p>
+                  <h2 id="live-product-data" className="text-2xl font-black text-white">ข้อมูลสินค้าล่าสุด</h2>
+                  <p className="mt-2 text-sm leading-6 text-white/55">ชื่อรส ราคา และสถานะด้านล่างอัปเดตตามแคตตาล็อก จึงไม่ต้องยึดข้อมูลเก่าที่เขียนค้างไว้ในบทความ</p>
+                </div>
+                <div className="space-y-5">
+                  {productSnapshots.map((product) => {
+                    const price = product.min_price === product.max_price
+                      ? `฿${product.min_price.toLocaleString()}`
+                      : `฿${product.min_price.toLocaleString()}–฿${product.max_price.toLocaleString()}`;
+                    return (
+                      <div key={product.slug} className="navy-card rounded-2xl border border-white/10 p-5 sm:p-6">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <h3 className="text-xl font-black text-white">{bilingualName(product.name, product.name_th)}</h3>
+                            <p className="mt-1 text-sm text-white/50">
+                              {formatPuffs(product.puff_count) ? `${formatPuffs(product.puff_count)} พัฟโดยประมาณ · ` : ""}
+                              {product.flavors.length} รสในรายการล่าสุด
+                            </p>
+                          </div>
+                          <div className="sm:text-right">
+                            <p className="text-lg font-black text-acid-lime">{price}</p>
+                            <p className={`text-xs font-semibold ${product.has_stock ? "text-emerald-400" : "text-white/45"}`}>
+                              {product.has_stock ? "มีตัวเลือกพร้อมส่ง" : "ตรวจสถานะกับร้านอีกครั้ง"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          {product.flavors.map((flavor) => {
+                            const label = bilingualPrimaryThai(flavor.name_th, flavor.name);
+                            return (
+                              <div key={`${product.slug}-${flavor.name}`} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
+                                <p className="text-sm font-semibold text-white/80">{label.primary}</p>
+                                {label.secondary && <p className="mt-0.5 text-xs text-white/40">{label.secondary}</p>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <Link href={`/products/${product.slug}`} className="mt-5 inline-flex items-center text-sm font-bold text-acid-lime hover:underline">
+                          ดูรายละเอียด ราคา และสต็อกของรุ่นนี้ →
+                        </Link>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
 
             {post.faqs?.length ? (
               <section className="mt-10" aria-labelledby="article-faq">

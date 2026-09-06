@@ -68,6 +68,11 @@ export default function FooterNavy() {
                 </Link>
               </li>
               <li>
+                <Link href="/blog" className="text-white/50 hover:text-white transition-colors text-sm">
+                  บทความและคู่มือ
+                </Link>
+              </li>
+              <li>
                 <Link href="/#about" className="text-white/50 hover:text-white transition-colors text-sm">
                   ทำไมต้องเลือกเรา
                 </Link>
