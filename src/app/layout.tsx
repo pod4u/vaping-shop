@@ -18,6 +18,9 @@ export const metadata: Metadata = baseMetadata({
   description:
     "รวมพอตใช้แล้วทิ้งและพอดเปลี่ยนหัวจากแบรนด์ยอดนิยม MARBO, ALFA, M BAR อัปเดตสต็อกจริง พร้อมรายละเอียดทุกรุ่นและรสชาติ",
   alternates: { canonical: APP_URL },
+  icons: {
+    icon: "/favicon.svg",
+  },
   openGraph: {
     type: "website",
     locale: "th_TH",
