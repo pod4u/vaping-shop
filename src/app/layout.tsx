@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Prompt } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { baseMetadata, APP_URL, safeJsonLd } from "@/lib/seo";
 
@@ -61,6 +62,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationJsonLd) }}
         />
         {children}
+        <Analytics />
       </body>
     </html>
   );
