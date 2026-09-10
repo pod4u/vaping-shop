@@ -17,7 +17,7 @@ function load(relative) {
   module.paths = Module._nodeModulePaths(dirname(filename));
   module.require = (id) => {
     if (id === "server-only") return {};
-    if (id === "@/lib/supabase") return { getServerSupabase: () => fakeDatabase };
+    if (id === "@/lib/supabase") return { getUncachedServerSupabase: () => fakeDatabase };
     if (id.startsWith("@/")) return load(`src/${id.slice(2)}.ts`);
     return require(id);
   };

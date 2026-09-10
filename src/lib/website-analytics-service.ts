@@ -1,5 +1,5 @@
 import "server-only";
-import { getServerSupabase } from "@/lib/supabase";
+import { getUncachedServerSupabase } from "@/lib/supabase";
 import { providerConfig, fetchHealthReport, fetchSearchReport, fetchTrafficReport, safeAnalyticsError } from "@/lib/website-analytics-providers";
 import type {
   AnalyticsDashboard, AnalyticsSource, HealthReport, PeriodDays, SearchReport, SourceView, SyncOutcome, SyncRun, TrafficReport,
@@ -34,7 +34,7 @@ export async function getAnalyticsDashboard(days: PeriodDays): Promise<Analytics
   let runs: SyncRun[] = [];
   let storageError: string | null = null;
   try {
-    const db = getServerSupabase();
+    const db = getUncachedServerSupabase();
     const [reports, history] = await Promise.all([
       db.from("website_analytics_snapshots").select("source,scope_key,period_days,fetched_at,payload").in("period_days", [0, days]),
       db.from("website_analytics_runs").select("id,started_at,finished_at,status,outcomes").order("started_at", { ascending: false }).limit(20),
@@ -57,7 +57,7 @@ export class AnalyticsSyncError extends Error {
 }
 
 export async function syncWebsiteAnalytics() {
-  const db = getServerSupabase();
+  const db = getUncachedServerSupabase();
   const { data: runId, error: acquireError } = await db.rpc("acquire_website_analytics_sync");
   if (acquireError) throw new AnalyticsSyncError(storageMessage, 503);
   if (!runId) throw new AnalyticsSyncError("มีงานกำลังซิงก์หรือเพิ่งซิงก์ไป กรุณารออย่างน้อย 60 วินาที", 429);

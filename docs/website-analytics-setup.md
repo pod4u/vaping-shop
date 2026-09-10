@@ -6,14 +6,15 @@
 
 ## สถานะงาน ณ 2026-09-10
 
-- มีหน้า Dashboard, API อ่านสถิติ, ปุ่มซิงก์, cron วันละครั้ง และไฟล์ migration
-- เริ่มจากทำหน้าและคู่มือก่อน ต่อมาผู้ใช้ยืนยันให้ตั้ง credentials ผ่าน Chrome จริง; apply migration แล้ว แต่ยังไม่ deploy งาน Dashboard ชุดนี้
+- มีหน้า Dashboard, API อ่านสถิติ, ปุ่มซิงก์, cron วันละครั้ง และ migration ที่ deploy ขึ้น Production แล้ว
 - บันทึก Production: `ANALYTICS_VERCEL_TOKEN` (Secret, จำกัด vaping-shop, หมดอายุ 2026-12-09), `ANALYTICS_VERCEL_PROJECT_ID`, `ANALYTICS_VERCEL_TEAM_ID`, `GSC_PROPERTY`, `GSC_SERVICE_ACCOUNT_EMAIL` แล้ว ตรวจจากรายการ Environment Variables และข้อความบันทึกสำเร็จ
 - เปิด Search Console API ใน Google Cloud project `gen-lang-client-0851745083` แล้ว สร้าง `pod4u-search-console-reader@gen-lang-client-0851745083.iam.gserviceaccount.com` โดยไม่เพิ่ม project-level roles และยืนยันสิทธิ์ Restricted บน `sc-domain:pod4u.store` แล้ว
 - สร้าง JSON key ของบัญชีบริการแล้ว (key ID `968c70ad350c800ee1803ed147682224a59781ce`) และผู้ใช้บันทึก `GSC_SERVICE_ACCOUNT_PRIVATE_KEY` เป็น Production Secret แล้ว ไม่ส่งคีย์ผ่านแชตหรือ repository
-- สร้าง `CRON_SECRET` แบบสุ่ม 96 ตัวอักษรและบันทึกเป็น Production Secret แล้ว โดยใช้ร่วมกับ cron เดิมตามการตั้งค่าของแอป ยังไม่ได้ทดสอบ API ด้วย credentials ใหม่หรือซิงก์ข้อมูลจริง การตั้ง Environment Variables มีผลกับ deployment ใหม่เท่านั้น
+- สร้าง `CRON_SECRET` แบบสุ่ม 96 ตัวอักษรและบันทึกเป็น Production Secret แล้ว โดยใช้ร่วมกับ cron เดิมตามการตั้งค่าของแอป
 - นำ migration `website_analytics_dashboard` ไปใช้กับ Production แล้ว ระบบบันทึก version `20260910162630`; ตรวจแล้วฟังก์ชันให้ EXECUTE เฉพาะ `service_role` และตารางปิดสิทธิ์ `anon`/`authenticated`
 - ทดสอบ Vercel API แบบ read-only ด้วยบัญชี CLI ได้จริง รูปแบบ totals/day/country ตรงกับ adapter
+- deploy Production สำเร็จ และทดสอบซิงก์จริงแล้วเมื่อ 2026-09-10: Google Search Console, Vercel Analytics และ health checks สำเร็จครบทั้งช่วง 7/28 วัน โดยไม่มีการเปิดเผย credentials
+- หลังทดสอบจริงพบว่า Next.js จำผลอ่าน snapshot ว่างก่อนซิงก์ จึงเปลี่ยนการอ่านและการซิงก์ให้ใช้ Supabase client แบบ `cache: no-store` เพื่อให้หน้า Dashboard เห็นข้อมูลล่าสุดเสมอ
 - API ของบัญชีที่ตรวจจำกัดข้อมูลย้อนหลัง 31 วัน: รายงาน 28 วันปัจจุบันอาจอ่านได้ แต่ 28 วันก่อนหน้าจะเกินช่วงที่อนุญาต ระบบเก็บรายงานปัจจุบันและแสดงว่าเทียบไม่ได้
 - อย่ารวมงาน warehouse ที่อยู่ระหว่างแก้เข้ากับการ commit/deploy ชุดนี้โดยไม่ตรวจ scope
 
@@ -119,7 +120,7 @@ Referrer แบบ Direct อาจมาจากแอปที่ไม่ส
 - Browser: 1440px / 390px ไม่ล้น, กราฟ 2 ชุด render ได้ด้วย fixture, เมนูมือถือปิดหลังเลือกหน้า, เปลี่ยน 7/28 วัน, ลิงก์ตั้งค่า และข้อความ error หลัง sync ถูกทดสอบแล้ว
 - Fixture ใช้เฉพาะการ intercept ใน browser test; ไม่ได้บันทึกลงฐานข้อมูลและไม่มีในหน้าจอใช้งานจริง
 - พบ 404 ของ `/_vercel/insights/script.js` จาก Analytics component เดิมเมื่อรัน production build ในเครื่อง (route นี้ให้บริการบน Vercel) ไม่มีข้อผิดพลาด JavaScript ของ Dashboard ที่ตรวจพบ
-- ยังไม่ได้ทดสอบ GSC จริง / การเขียน snapshot จริง / RLS และ lock ในฐานข้อมูล เพราะผู้ใช้เลือกทำหน้าและคู่มือก่อนโดยยังไม่มี keys และยังไม่ apply migration
+- ทดสอบ GSC และ Vercel ด้วย credentials จริงแล้ว, เขียน snapshot จริงสำเร็จ, ตรวจสิทธิ์ตาราง/RPC แล้วว่า `anon` และ `authenticated` ใช้ไม่ได้ ขณะที่ `service_role` ใช้ได้
 - ภาพหน้าจอสถานะจริงที่ยังไม่ตั้งค่า: `output/playwright/analytics-unconfigured-desktop.png`, `output/playwright/analytics-unconfigured-mobile.png`
 
 เอกสารอ้างอิง: [Google Search Analytics](https://developers.google.com/webmaster-tools/v1/searchanalytics/query), [Vercel Web Analytics API](https://vercel.com/docs/analytics/web-analytics-api), [Vercel aggregate API](https://vercel.com/docs/rest-api/web-analytics/aggregates-page-views), [Supabase Data API security](https://supabase.com/docs/guides/api/securing-your-api)
