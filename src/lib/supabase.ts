@@ -17,12 +17,11 @@ export const isSupabaseConfigured = () => {
   return process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 };
 
-// Server client with service role (admin access)
-export const getServerSupabase = () => {
+function createServerSupabase(disableFetchCache = false) {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!serviceRoleKey) {
-    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY');
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
   }
 
   return createClient(supabaseUrl, serviceRoleKey, {
@@ -30,8 +29,23 @@ export const getServerSupabase = () => {
       autoRefreshToken: false,
       persistSession: false,
     },
+    ...(disableFetchCache
+      ? {
+          global: {
+            fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+              fetch(input, { ...init, cache: 'no-store' }),
+          },
+        }
+      : {}),
   });
-};
+}
+
+// Server client with service role (admin access)
+export const getServerSupabase = () => createServerSupabase();
+
+// Mutating workflows must see the latest row immediately after an RPC/update.
+// Next.js can otherwise reuse a cached PostgREST GET within a production route.
+export const getUncachedServerSupabase = () => createServerSupabase(true);
 
 // ============================================
 // Helper Functions

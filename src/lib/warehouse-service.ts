@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getServerSupabase } from "@/lib/supabase";
+import { getUncachedServerSupabase } from "@/lib/supabase";
 
 export const WAREHOUSE_STATUSES = ["ready_to_pack", "packing", "packed", "problem", "shipped"] as const;
 export type WarehouseStatus = (typeof WAREHOUSE_STATUSES)[number];
@@ -30,7 +30,7 @@ export function parseWarehouseOrderId(value: string): string {
 }
 
 export async function listWarehouseOrders(status: WarehouseStatus | null) {
-  const client = getServerSupabase();
+  const client = getUncachedServerSupabase();
   let query = client.from("warehouse_fulfillments").select(LIST_SELECT);
   query = status ? query.eq("status", status) : query.neq("status", "cancelled");
 
@@ -56,7 +56,7 @@ export async function listWarehouseOrders(status: WarehouseStatus | null) {
 }
 
 export async function getWarehouseOrder(orderId: string) {
-  const client = getServerSupabase();
+  const client = getUncachedServerSupabase();
   const [jobResult, orderResult, itemsResult] = await Promise.all([
     client.from("warehouse_fulfillments").select("*").eq("order_id", orderId).maybeSingle(),
     client.from("orders")
@@ -82,7 +82,7 @@ export async function updateWarehouseFulfillment(input: {
   problemCode?: string | null;
   problemNote?: string | null;
 }) {
-  const { data, error } = await getServerSupabase().rpc("update_warehouse_fulfillment", {
+  const { data, error } = await getUncachedServerSupabase().rpc("update_warehouse_fulfillment", {
     p_order_id: input.orderId,
     p_action: input.action,
     p_actor: input.actor,
@@ -105,7 +105,7 @@ export async function shipWarehouseOrder(input: {
   if (!/^[A-Za-z0-9-]{6,50}$/u.test(input.trackingNumber.trim())) {
     throw new WarehouseInputError("เลขพัสดุต้องมี 6–50 ตัว และใช้เฉพาะตัวอักษร ตัวเลข หรือขีดกลาง");
   }
-  const { data, error } = await getServerSupabase().rpc("mark_warehouse_order_shipped", {
+  const { data, error } = await getUncachedServerSupabase().rpc("mark_warehouse_order_shipped", {
     p_order_id: input.orderId,
     p_carrier: input.carrier.trim(),
     p_tracking_number: input.trackingNumber.trim().toUpperCase(),

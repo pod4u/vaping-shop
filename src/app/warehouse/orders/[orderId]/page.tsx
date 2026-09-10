@@ -51,6 +51,7 @@ export default function WarehouseOrderPage() {
       const response = await fetch(`/api/warehouse/orders/${orderId}/action`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: name, problemCode, problemNote }) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "อัปเดตงานไม่สำเร็จ");
+      setJob((current) => current ? { ...current, status: result.status } : current);
       setSuccess(result.message); setShowProblem(false); await load();
     } catch (reason) { setError(reason instanceof Error ? reason.message : "อัปเดตงานไม่สำเร็จ"); }
     finally { setSaving(false); }
