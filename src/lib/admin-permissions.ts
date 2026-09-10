@@ -10,6 +10,7 @@ export type AdminRole = (typeof ADMIN_ROLES)[number];
 
 export const ADMIN_PERMISSIONS = [
   "dashboard.view",
+  "analytics.view",
   "orders.view",
   "orders.create",
   "orders.reserve",

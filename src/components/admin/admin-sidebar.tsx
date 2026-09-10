@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   FileSpreadsheet,
   Star,
+  Activity,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -22,6 +23,12 @@ const menuItems = [
     url: "/admin",
     icon: BarChart3,
     permission: "dashboard.view" as AdminPermission,
+  },
+  {
+    title: "สถิติเข้าเว็บ",
+    url: "/admin/analytics",
+    icon: Activity,
+    permission: "analytics.view" as AdminPermission,
   },
   {
     title: "สต็อกสินค้า",
@@ -61,7 +68,7 @@ const menuItems = [
   },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ mobileOpen = false, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [session, setSession] = useState<{
@@ -84,7 +91,7 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[280px] bg-brand-void border-r border-brand-border flex flex-col z-50">
+    <aside id="admin-navigation" className={`fixed left-0 top-0 h-screen w-[280px] bg-brand-void border-r border-brand-border flex-col z-50 ${mobileOpen ? "flex" : "hidden lg:flex"}`}>
       {/* Header */}
       <div className="p-4 border-b border-brand-border">
         <div className="flex items-center gap-3">
@@ -108,6 +115,7 @@ export function AdminSidebar() {
             <li key={item.title}>
               <Link
                 href={item.url}
+                onClick={onClose}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                   pathname === item.url
                     ? 'bg-acid-lime/20 text-acid-lime'
