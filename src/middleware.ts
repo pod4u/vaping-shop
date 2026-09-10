@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_COOKIE_NAME, getAdminSession } from '@/lib/admin-auth';
 import { roleHasPermission, type AdminPermission } from '@/lib/admin-permissions';
+import { getWarehouseSession, WAREHOUSE_COOKIE_NAME } from '@/lib/warehouse-auth';
 
 const PAGE_PERMISSIONS: Array<[string, AdminPermission]> = [
   ['/admin/settings', 'settings.view'],
@@ -13,6 +14,18 @@ const PAGE_PERMISSIONS: Array<[string, AdminPermission]> = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  const isWarehousePage = pathname.startsWith('/warehouse') && pathname !== '/warehouse/login';
+  const isWarehouseApi = pathname.startsWith('/api/warehouse') && pathname !== '/api/warehouse/auth';
+  if (isWarehousePage || isWarehouseApi) {
+    const session = await getWarehouseSession(request.cookies.get(WAREHOUSE_COOKIE_NAME)?.value);
+    if (!session) {
+      if (isWarehouseApi) {
+        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL('/warehouse/login', request.url));
+    }
+  }
 
   const isAdminPage = pathname.startsWith('/admin') && pathname !== '/admin/login';
   const isAdminApi = pathname.startsWith('/api/admin') && pathname !== '/api/admin/auth';
@@ -38,5 +51,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/warehouse/:path*', '/api/warehouse/:path*'],
 };
