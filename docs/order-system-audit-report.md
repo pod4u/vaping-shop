@@ -2176,3 +2176,46 @@ Executed the complete review reward lifecycle against the production Supabase sc
 - The proposed vision workflow, response rules, provider abstraction, cost controls, implementation triggers, and acceptance criteria are recorded in `docs/future-line-image-product-recognition.md`.
 - No AI image-recognition provider or new credential was added in this batch.
 - The current safe image hand-off and payment-slip behavior remains unchanged.
+
+## Warehouse Portal MVP — 2026-09-10
+
+**Status:** ✅ Production deployed and browser verified
+
+- Added a dedicated `/warehouse` portal and `/warehouse/login`; neither page is part of the Admin navigation or Admin session.
+- Added a separate server-only warehouse account configuration and signed `warehouse_session` cookie with a 12-hour lifetime.
+- Warehouse pages and APIs are protected independently in middleware. Admin credentials do not grant warehouse access, and warehouse credentials do not grant Admin access.
+- Only paid/confirmed orders enter the warehouse queue. Draft, unpaid, failed-payment, and cancelled orders are not presented as packable work.
+- Added the workflow `ready_to_pack → packing → packed → shipped`, plus a blocking `problem` state and controlled resume action.
+- Shipment is allowed only after packing. It reuses the canonical atomic order shipment function, updates Member tracking, and sends the LINE shipment message only on the first successful transition.
+- Warehouse UI exposes only packing and delivery data: order number, recipient, phone, address, SKU, product/flavour, quantity, carrier, and tracking number. It does not expose payment slips, bank details, discounts, reviews, customer history, stock administration, or settings.
+- Added row locking and idempotent transitions to prevent two devices from advancing the same job incorrectly.
+- Added server-side input validation, strict same-origin checks for cookie-authenticated mutations, RLS, and service-role-only database function access.
+
+### Files added or updated
+
+- `supabase/migrations/20260910151811_warehouse_fulfillment_portal.sql`
+- `src/lib/warehouse-auth.ts`
+- `src/lib/warehouse-api.ts`
+- `src/lib/warehouse-service.ts`
+- `src/middleware.ts`
+- `src/app/api/warehouse/**`
+- `src/app/warehouse/**`
+- `src/components/warehouse/WarehouseHeader.tsx`
+- `scripts/verify-warehouse-portal.mjs`
+- `.env.example`
+
+### Verification
+
+- `npm run test:warehouse`: PASS (12 static security/workflow checks)
+- `npx tsc --noEmit`: PASS
+- `npm run build`: PASS (54 routes)
+- Transaction + rollback migration test: PASS
+- Production Supabase migration: APPLIED to `puslxgriozubqlpoxrqo`
+- Post-apply verification: RLS enabled; `anon`/`authenticated` table access denied; function execution restricted to `service_role`; 2 existing confirmed/shipped orders backfilled.
+- Supabase security advisor: no new exposed-data warning. `rls_enabled_no_policy` is expected because this is a server-only table with all client roles revoked.
+- Production commit: `f813102` (`feat: add secure warehouse fulfillment portal`)
+- Vercel deployment: `dpl_8M42333MgEikdih2DxaNEt9hpjQ9` → `https://www.pod4u.store`
+- Production unauthenticated API check: PASS (`401`)
+- Production warehouse login: PASS
+- Production queue read: PASS (2 existing jobs; no order state changed)
+- Production browser verification: PASS for login redirect, warehouse dashboard, status counts, order items, SKU/quantity, recipient details, and action controls.
