@@ -135,7 +135,7 @@ export default function Benefits() {
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-black text-white mb-1">
-                  จัดส่งฟรีทันที เมื่อสั่งซื้อครบ <span className="text-acid-lime text-glow-acid">{storeConfig.freeShippingMin}฿</span>
+                  พอตดูดแล้วทิ้ง <span className="text-acid-lime text-glow-acid">{storeConfig.freeShippingDisposableMinQuantity} ชิ้นขึ้นไป</span> ส่งฟรี
                 </h3>
                 <p className="text-white/60 text-sm">พร้อมบริการแพ็กห่อกันกระแทกอย่างดี ส่งด่วนถึงมือปลอดภัย</p>
               </div>

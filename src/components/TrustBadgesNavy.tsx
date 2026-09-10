@@ -18,12 +18,12 @@ export default function TrustBadgesNavy() {
     {
       icon: "🔒",
       title: "ปลอดภัย 100%",
-      items: ["ข้อมูลปลอดภัย", "ส่งฟรี 800฿+"],
+      items: ["ข้อมูลปลอดภัย", "ดูดแล้วทิ้ง 3 ชิ้นส่งฟรี"],
     },
   ];
 
   return (
-    <section className="py-16 px-4 bg-navy-deep">
+    <section className="py-16 px-4 relative overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12">
@@ -31,7 +31,7 @@ export default function TrustBadgesNavy() {
             WHY CHOOSE US
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-white">
-            ทำไมต้องเลือก <span className="text-white-neon">เรา</span>
+            ทำไมต้องเลือก <span className="text-blue-400">เรา</span>
           </h2>
         </div>
 
@@ -40,20 +40,33 @@ export default function TrustBadgesNavy() {
           {badges.map((badge, index) => (
             <div
               key={index}
-              className="vapor-card rounded-2xl p-6 border border-navy-border text-center hover:border-white/40 transition-all duration-300 group"
+              className="navy-card rounded-2xl p-6 text-center transition-all duration-300 group relative overflow-hidden"
             >
-              {/* Icon */}
-              <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                {badge.icon}
+              {/* Top Curved Arc Dome Glow */}
+              <div 
+                className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-24 rounded-[100%] blur-[28px] opacity-30 group-hover:opacity-75 group-hover:scale-125 transition-all duration-500 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(ellipse at 50% 0%, rgba(138, 171, 255, 0.7) 0%, rgba(43, 95, 255, 0.3) 50%, transparent 80%)'
+                }}
+              ></div>
+
+              {/* Dual-Layer 3D Liquid Glass Squircle */}
+              <div className="glass-squircle-container w-16 h-16 mb-4">
+                <div className={`glass-squircle-back ${index % 2 === 1 ? 'lime' : ''}`}></div>
+                <div className="glass-squircle-front w-full h-full flex items-center justify-center text-3xl">
+                  <span className="relative z-10 drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] transform group-hover:scale-110 transition-transform duration-300">
+                    {badge.icon}
+                  </span>
+                </div>
               </div>
 
               {/* Title */}
-              <h3 className="text-white font-bold text-sm mb-3">
+              <h3 className="text-white font-bold text-sm mb-3 relative z-10 group-hover:text-acid-lime transition-colors">
                 {badge.title}
               </h3>
 
               {/* Items */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 relative z-10">
                 {badge.items.map((item, idx) => (
                   <div
                     key={idx}
@@ -81,3 +94,4 @@ export default function TrustBadgesNavy() {
     </section>
   );
 }
+

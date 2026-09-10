@@ -1,9 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/supabase";
+import { requireAdminApiPermission } from "@/lib/admin-api";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const unauthorized = await requireAdminApiPermission(request, "settings.view");
+  if (unauthorized) return unauthorized;
   let databaseConnected = false;
   let ordersStorageConnected = false;
 
@@ -31,10 +34,27 @@ export async function GET() {
       },
       line: {
         configured: Boolean(process.env.LINE_CHANNEL_ACCESS_TOKEN && process.env.LINE_CHANNEL_SECRET),
+        identityLinkingConfigured: Boolean(
+          process.env.LINE_CHANNEL_ACCESS_TOKEN
+          && process.env.LINE_CHANNEL_SECRET
+          && process.env.CUSTOMER_LINK_TOKEN_SECRET
+          && process.env.CUSTOMER_LINK_TOKEN_SECRET.length >= 32,
+        ),
       },
       orders: {
         connected: ordersStorageConnected,
         channel: "LINE",
+      },
+      stockImport: {
+        configured: Boolean(
+          process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
+          && process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+          && process.env.GOOGLE_STOCK_SPREADSHEET_ID
+          && process.env.CRON_SECRET,
+        ),
+        source: "Google Sheet",
+        schedule: "03:00 Asia/Bangkok",
+        autoApply: process.env.STOCK_IMPORT_AUTO_APPLY === "true",
       },
     },
     checkedAt: new Date().toISOString(),

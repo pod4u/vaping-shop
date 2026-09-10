@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, Boxes, Package, PackageCheck, Users } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import type { AdminPermission } from "@/lib/admin-permissions";
 
 interface FlavorStock {
   id: string;
@@ -50,18 +51,28 @@ export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData>({ brands: [], customers: [], lastUpdated: null });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [permissions, setPermissions] = useState<AdminPermission[]>([]);
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
-        const [stockResponse, customersResponse] = await Promise.all([
-          fetch("/api/admin/stock", { cache: "no-store" }),
-          fetch("/api/admin/customers", { cache: "no-store" }),
-        ]);
-        if (!stockResponse.ok || !customersResponse.ok) throw new Error("โหลดข้อมูลหลังบ้านไม่สำเร็จ");
+        const authResponse = await fetch("/api/admin/auth", { cache: "no-store" });
+        if (!authResponse.ok) throw new Error("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่");
+        const authResult = await authResponse.json();
+        const allowed: AdminPermission[] = authResult.session?.permissions ?? [];
+        setPermissions(allowed);
 
-        const [stockResult, customersResult] = await Promise.all([stockResponse.json(), customersResponse.json()]);
-        if (!stockResult.success) throw new Error(stockResult.error || "โหลดข้อมูลสต็อกไม่สำเร็จ");
+        const [stockResponse, customersResponse] = await Promise.all([
+          allowed.includes("stock.view") ? fetch("/api/admin/stock", { cache: "no-store" }) : null,
+          allowed.includes("customers.view") ? fetch("/api/admin/customers", { cache: "no-store" }) : null,
+        ]);
+        if (stockResponse && !stockResponse.ok) throw new Error("โหลดข้อมูลสต็อกไม่สำเร็จ");
+        if (customersResponse && !customersResponse.ok) throw new Error("โหลดข้อมูลลูกค้าไม่สำเร็จ");
+
+        const [stockResult, customersResult] = await Promise.all([
+          stockResponse ? stockResponse.json() : { success: true, data: [], lastUpdated: null },
+          customersResponse ? customersResponse.json() : { success: true, customers: [] },
+        ]);
 
         setData({
           brands: stockResult.data || [],
@@ -136,12 +147,14 @@ export default function AdminDashboard() {
   }, [data.brands]);
 
   const recentCustomers = data.customers.slice(0, 5);
+  const canViewStock = permissions.includes("stock.view");
+  const canViewCustomers = permissions.includes("customers.view");
   const statCards = [
-    { title: "สต็อกรวม", value: summary.totalStock.toLocaleString(), note: `${summary.availableVariants} รายการพร้อมส่ง`, icon: Package, color: "text-blue-400", bg: "bg-blue-500/20" },
-    { title: "รายการพร้อมส่ง", value: summary.availableVariants.toLocaleString(), note: `จาก ${summary.totalVariants.toLocaleString()} variants`, icon: PackageCheck, color: "text-acid-lime", bg: "bg-acid-lime/20" },
-    { title: "สินค้าเตือน", value: (summary.lowStock + summary.outOfStock).toLocaleString(), note: `${summary.lowStock} ใกล้หมด · ${summary.outOfStock} หมด`, icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/20" },
-    { title: "ลูกค้าในระบบ", value: data.customers.length.toLocaleString(), note: "ลงทะเบียนแล้ว", icon: Users, color: "text-vapor-violet", bg: "bg-vapor-violet/20" },
-  ];
+    { title: "สต็อกรวม", value: summary.totalStock.toLocaleString(), note: `${summary.availableVariants} รายการพร้อมส่ง`, icon: Package, color: "text-blue-400", bg: "bg-blue-500/20", visible: canViewStock },
+    { title: "รายการพร้อมส่ง", value: summary.availableVariants.toLocaleString(), note: `จาก ${summary.totalVariants.toLocaleString()} variants`, icon: PackageCheck, color: "text-acid-lime", bg: "bg-acid-lime/20", visible: canViewStock },
+    { title: "สินค้าเตือน", value: (summary.lowStock + summary.outOfStock).toLocaleString(), note: `${summary.lowStock} ใกล้หมด · ${summary.outOfStock} หมด`, icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/20", visible: canViewStock },
+    { title: "ลูกค้าในระบบ", value: data.customers.length.toLocaleString(), note: "ลงทะเบียนแล้ว", icon: Users, color: "text-vapor-violet", bg: "bg-vapor-violet/20", visible: canViewCustomers },
+  ].filter((card) => card.visible);
 
   if (isLoading) {
     return (
@@ -181,7 +194,7 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      {canViewStock && <div className="grid gap-6 lg:grid-cols-2">
         <Card className="border-white/10 bg-white/5">
           <CardHeader><CardTitle className="text-white">สัดส่วนสต็อกตามแบรนด์</CardTitle><CardDescription className="text-white/50">คำนวณจากจำนวนสินค้าที่มีอยู่จริง</CardDescription></CardHeader>
           <CardContent>
@@ -228,9 +241,10 @@ export default function AdminDashboard() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </div>}
 
       <div className="grid gap-6 lg:grid-cols-2">
+        {canViewCustomers && (
         <Card className="border-white/10 bg-white/5">
           <CardHeader className="flex flex-row items-center justify-between">
             <div><CardTitle className="text-white">ลูกค้าล่าสุด</CardTitle><CardDescription className="text-white/50">ข้อมูลที่ลงทะเบียนในระบบจริง</CardDescription></div>
@@ -249,7 +263,9 @@ export default function AdminDashboard() {
             )}
           </CardContent>
         </Card>
+        )}
 
+        {canViewStock && (
         <Card className="border-white/10 bg-white/5">
           <CardHeader><CardTitle className="text-white">แคตตาล็อกในระบบ</CardTitle><CardDescription className="text-white/50">{data.brands.length} แบรนด์ · {summary.totalProducts} รุ่น · {summary.totalVariants} variants</CardDescription></CardHeader>
           <CardContent className="space-y-2">
@@ -268,6 +284,7 @@ export default function AdminDashboard() {
             ))}
           </CardContent>
         </Card>
+        )}
       </div>
     </div>
   );

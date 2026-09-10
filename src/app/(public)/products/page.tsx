@@ -16,10 +16,12 @@ interface PageProps {
   }>;
 }
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
-  const params = await searchParams;
+  const params = (searchParams && typeof (searchParams as any).then === "function")
+    ? await searchParams
+    : ((searchParams as any) || {});
   const hasQuery = !!(params.category || params.brand || params.puffs || params.stock || params.sort || params.search);
   const canonical = getCanonical("/products");
 
@@ -92,7 +94,9 @@ function matchesSearch(product: Awaited<ReturnType<typeof getAggregatedProducts>
 }
 
 export default async function ProductsPage({ searchParams }: PageProps) {
-  const params = await searchParams;
+  const params = (searchParams && typeof (searchParams as any).then === "function")
+    ? await searchParams
+    : ((searchParams as any) || {});
   const categoryParam = params.category || null;
   const brandParam = params.brand || null;
   const puffsParam = params.puffs || null;

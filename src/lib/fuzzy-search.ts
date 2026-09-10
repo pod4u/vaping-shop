@@ -5,6 +5,8 @@ export interface ProductSearchResult {
   brandId: string;
   brandName: string;
   brandNameTh: string;
+  productName: string;
+  productNameTh: string;
   flavorId: string;
   flavorName: string;
   flavorNameTh: string;
@@ -19,7 +21,7 @@ export interface ProductSearchResult {
 const searchSelect = `
   id, nicotine_level, price, sale_price, image_url, stock_quantity,
   flavor:flavors(id, slug, name, name_th, color),
-  product:products(id, brand:brands(id, slug, name, name_th)),
+  product:products(id, name, name_th, brand:brands(id, slug, name, name_th)),
   aliases:product_aliases(alias, normalized_alias)
 `;
 
@@ -31,6 +33,10 @@ function normalizeQuery(text: string): string {
   return text.toLowerCase().normalize("NFKC").replace(/[่้๊๋์]/g, "").replace(/[^a-z0-9ก-๙]+/g, " ").trim();
 }
 
+function compactQuery(text: string): string {
+  return normalizeQuery(text).replace(/\s+/g, "");
+}
+
 function toSearchResult(row: any): ProductSearchResult {
   const product = relation<any>(row.product);
   const brand = relation<any>(product?.brand);
@@ -40,6 +46,8 @@ function toSearchResult(row: any): ProductSearchResult {
     brandId: brand?.slug,
     brandName: brand?.name,
     brandNameTh: brand?.name_th,
+    productName: product?.name,
+    productNameTh: product?.name_th,
     flavorId: flavor?.slug,
     flavorName: flavor?.name,
     flavorNameTh: flavor?.name_th,
@@ -65,17 +73,34 @@ function levenshteinDistance(a: string, b: string): number {
   return matrix[b.length][a.length];
 }
 
-function calculateScore(query: string, product: ProductSearchResult): number {
+export function calculateProductSearchScore(query: string, product: ProductSearchResult): number {
   let best = 0;
-  for (const rawAlias of product.aliases) {
-    const alias = normalizeQuery(rawAlias);
-    if (!alias) continue;
-    if (alias === query) return 100;
-    if (alias.includes(query) || query.includes(alias)) best = Math.max(best, 80);
-    const maxLength = Math.max(query.length, alias.length);
+  const candidates = [
+    { value: product.brandName, containsScore: 82 },
+    { value: product.brandNameTh, containsScore: 82 },
+    { value: product.productName, containsScore: 90 },
+    { value: product.productNameTh, containsScore: 90 },
+    { value: product.flavorName, containsScore: 94 },
+    { value: product.flavorNameTh, containsScore: 94 },
+    { value: `${product.brandName} ${product.productName} ${product.flavorName}`, containsScore: 98 },
+    { value: `${product.brandNameTh} ${product.productNameTh} ${product.flavorNameTh}`, containsScore: 98 },
+    ...product.aliases.map((value) => ({ value, containsScore: 97 })),
+  ].filter((candidate) => Boolean(candidate.value));
+  const compact = compactQuery(query);
+
+  for (const { value, containsScore } of candidates) {
+    const candidate = normalizeQuery(value);
+    const compactCandidate = compactQuery(value);
+    if (!candidate || !compactCandidate) continue;
+    if (compactCandidate === compact) return 100;
+    if (compact.includes(compactCandidate)) {
+      best = Math.max(best, compactCandidate.length >= 3 ? containsScore : Math.min(80, containsScore));
+    }
+    if (compactCandidate.includes(compact)) best = Math.max(best, 86);
+    const maxLength = Math.max(compact.length, compactCandidate.length);
     if (maxLength) {
-      const similarity = 1 - levenshteinDistance(query, alias) / maxLength;
-      if (similarity > 0.6) best = Math.max(best, Math.round(similarity * 70));
+      const similarity = 1 - levenshteinDistance(compact, compactCandidate) / maxLength;
+      if (similarity > 0.55) best = Math.max(best, Math.round(similarity * 78));
     }
   }
   return best;
@@ -93,7 +118,7 @@ export async function fuzzySearchProducts(query: string, limit = 5): Promise<Pro
   const normalized = normalizeQuery(query);
   const products = await loadProducts(false);
   return products
-    .map((product) => ({ product, score: calculateScore(normalized, product) }))
+    .map((product) => ({ product, score: calculateProductSearchScore(normalized, product) }))
     .filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score || b.product.stock - a.product.stock)
     .slice(0, limit)

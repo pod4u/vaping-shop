@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { blogPosts, getBlogPostBySlug } from "@/data/blog";
-import { getAggregatedProducts } from "@/lib/catalog-aggregate";
+import { getAggregatedProducts, type AggregatedProduct } from "@/lib/catalog-aggregate";
 import { bilingualName, bilingualPrimaryThai, formatPuffs } from "@/lib/bilingual";
 import { APP_URL, getCanonical, safeJsonLd } from "@/lib/seo";
 import type { ReactNode } from "react";
@@ -14,8 +14,11 @@ export async function generateStaticParams() {
   return blogPosts.map((p) => ({ slug: p.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = getBlogPostBySlug(params.slug);
+type PageParams = { slug: string };
+
+export async function generateMetadata({ params }: { params: PageParams | Promise<PageParams> }): Promise<Metadata> {
+  const resolvedParams: PageParams = await Promise.resolve(params);
+  const post = getBlogPostBySlug(resolvedParams.slug);
   if (!post) return { title: "ไม่พบบทความ" };
 
   const title = `${post.title}`;
@@ -53,17 +56,25 @@ function estimateReadingTime(content: string) {
   return Math.max(3, Math.ceil(content.replace(/[#*|\-]/g, "").length / 700));
 }
 
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  if (params.slug === "why-choose-our-shop") {
+export default async function BlogPostPage({ params }: { params: PageParams | Promise<PageParams> }) {
+  const resolvedParams: PageParams = await Promise.resolve(params);
+
+  if (resolvedParams.slug === "why-choose-our-shop") {
     permanentRedirect("/blog/check-online-pod-shop-information");
   }
 
-  const post = getBlogPostBySlug(params.slug);
+  const post = getBlogPostBySlug(resolvedParams.slug);
   if (!post) notFound();
 
-  const productSnapshots = post.productSlugs?.length
-    ? (await getAggregatedProducts()).filter((product) => post.productSlugs?.includes(product.slug))
-    : [];
+  let productSnapshots: AggregatedProduct[] = [];
+  if (post.productSlugs?.length) {
+    try {
+      const allAggregated = await getAggregatedProducts();
+      productSnapshots = allAggregated.filter((product) => post.productSlugs?.includes(product.slug));
+    } catch (e) {
+      console.warn("Failed to load product snapshots for blog post:", e);
+    }
+  }
 
   // BlogPosting JSON-LD
   const jsonLd = {

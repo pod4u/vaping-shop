@@ -9,40 +9,73 @@ import {
   LogOut,
   BarChart3,
   ShoppingCart,
+  FileSpreadsheet,
+  Star,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import type { AdminPermission, AdminRole } from "@/lib/admin-permissions";
 
 const menuItems = [
   {
     title: "Dashboard",
     url: "/admin",
     icon: BarChart3,
+    permission: "dashboard.view" as AdminPermission,
   },
   {
     title: "สต็อกสินค้า",
     url: "/admin/stock",
     icon: Package,
+    permission: "stock.view" as AdminPermission,
+  },
+  {
+    title: "นำเข้าสต็อก",
+    url: "/admin/stock/imports",
+    icon: FileSpreadsheet,
+    permission: "stock.manage" as AdminPermission,
   },
   {
     title: "ออเดอร์",
     url: "/admin/orders",
     icon: ShoppingCart,
+    permission: "orders.view" as AdminPermission,
   },
   {
     title: "ลูกค้า",
     url: "/admin/customers",
     icon: Users,
+    permission: "customers.view" as AdminPermission,
+  },
+  {
+    title: "รีวิว",
+    url: "/admin/reviews",
+    icon: Star,
+    permission: "reviews.moderate" as AdminPermission,
   },
   {
     title: "ตั้งค่า",
     url: "/admin/settings",
     icon: Settings,
+    permission: "settings.view" as AdminPermission,
   },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [session, setSession] = useState<{
+    accountId: string;
+    role: AdminRole;
+    permissions: AdminPermission[];
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/auth", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => setSession(result?.session ?? null))
+      .catch(() => setSession(null));
+  }, []);
 
   const handleLogout = async () => {
     await fetch('/api/admin/auth', { method: 'DELETE' });
@@ -60,7 +93,9 @@ export function AdminSidebar() {
           </div>
           <div>
             <h1 className="text-white font-bold">Admin Panel</h1>
-            <p className="text-xs text-white/50">Pod4U</p>
+            <p className="text-xs text-white/50">
+              {session ? `${session.accountId} · ${session.role}` : "Pod4U"}
+            </p>
           </div>
         </div>
       </div>
@@ -69,7 +104,7 @@ export function AdminSidebar() {
       <nav className="flex-1 p-4 overflow-y-auto">
         <p className="text-white/40 text-xs mb-3 px-2">เมนูหลัก</p>
         <ul className="space-y-1">
-          {menuItems.map((item) => (
+          {menuItems.filter((item) => !session || session.permissions.includes(item.permission)).map((item) => (
             <li key={item.title}>
               <Link
                 href={item.url}

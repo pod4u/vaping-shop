@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2500" height="843" viewBox="0 0 2500 843">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071426"/>
+      <stop offset="1" stop-color="#101d38"/>
+    </linearGradient>
+    <linearGradient id="primary" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c7ff3d"/>
+      <stop offset="1" stop-color="#8fe62e"/>
+    </linearGradient>
+    <style>
+      .thai { font-family: "Sukhumvit Set", "Thonburi", "Noto Sans Thai", sans-serif; font-weight: 700; }
+      .english { font-family: Arial, sans-serif; font-weight: 700; letter-spacing: 4px; }
+      .icon { fill: none; stroke: currentColor; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect width="2500" height="843" fill="url(#background)"/>
+
+  <g color="#081426">
+    <rect x="18" y="18" width="798" height="385" rx="38" fill="url(#primary)"/>
+    <g transform="translate(343 72)" class="icon">
+      <path d="M0 18h30l21 102h128l26-72H56"/>
+      <circle cx="75" cy="155" r="13"/>
+      <circle cx="166" cy="155" r="13"/>
+    </g>
+    <text x="417" y="286" text-anchor="middle" font-size="58" class="thai" fill="#081426">สั่งซื้อสินค้า</text>
+    <text x="417" y="340" text-anchor="middle" font-size="25" class="english" fill="#28410e">SHOP NOW</text>
+  </g>
+
+  <g color="#c7ff3d">
+    <rect x="852" y="18" width="798" height="385" rx="38" fill="#14233f" stroke="#26395e" stroke-width="3"/>
+    <g transform="translate(1168 73)" class="icon">
+      <circle cx="83" cy="51" r="42"/>
+      <path d="M10 155c10-43 34-64 73-64s63 21 73 64"/>
+      <path d="M163 67h70M198 32v70"/>
+    </g>
+    <text x="1251" y="286" text-anchor="middle" font-size="54" class="thai" fill="#ffffff">สมัคร/เชื่อมสมาชิก</text>
+    <text x="1251" y="340" text-anchor="middle" font-size="25" class="english" fill="#91a1bd">MEMBERSHIP</text>
+  </g>
+
+  <g color="#c7ff3d">
+    <rect x="1684" y="18" width="798" height="385" rx="38" fill="#14233f" stroke="#26395e" stroke-width="3"/>
+    <g transform="translate(1994 70)" class="icon">
+      <rect x="0" y="18" width="178" height="128" rx="18"/>
+      <path d="M0 62h178M42 18V0M136 18V0M39 102h42M101 102h39"/>
+    </g>
+    <text x="2083" y="286" text-anchor="middle" font-size="56" class="thai" fill="#ffffff">เช็กสถานะออเดอร์</text>
+    <text x="2083" y="340" text-anchor="middle" font-size="25" class="english" fill="#91a1bd">ORDER STATUS</text>
+  </g>
+
+  <g color="#c7ff3d">
+    <rect x="18" y="439" width="798" height="386" rx="38" fill="#14233f" stroke="#26395e" stroke-width="3"/>
+    <g transform="translate(342 492)" class="icon">
+      <circle cx="75" cy="75" r="68"/>
+      <path d="M61 61c0-17 10-29 28-29 17 0 28 10 28 25 0 17-12 22-25 31-9 6-13 13-13 24M79 139h1"/>
+    </g>
+    <text x="417" y="707" text-anchor="middle" font-size="58" class="thai" fill="#ffffff">วิธีสั่งซื้อ</text>
+    <text x="417" y="761" text-anchor="middle" font-size="25" class="english" fill="#91a1bd">HOW TO ORDER</text>
+  </g>
+
+  <g color="#c7ff3d">
+    <rect x="852" y="439" width="798" height="386" rx="38" fill="#14233f" stroke="#26395e" stroke-width="3"/>
+    <g transform="translate(1162 497)" class="icon">
+      <path d="M12 8h176c20 0 32 13 32 32v73c0 19-12 32-32 32h-82l-53 40 13-40H12c-20 0-32-13-32-32V40C-20 21-8 8 12 8z"/>
+      <path d="M35 75h130"/>
+    </g>
+    <text x="1251" y="707" text-anchor="middle" font-size="58" class="thai" fill="#ffffff">ติดต่อแอดมิน</text>
+    <text x="1251" y="761" text-anchor="middle" font-size="25" class="english" fill="#91a1bd">CONTACT US</text>
+  </g>
+
+  <g color="#c7ff3d">
+    <rect x="1684" y="439" width="798" height="386" rx="38" fill="#14233f" stroke="#26395e" stroke-width="3"/>
+    <g transform="translate(1995 491)" class="icon">
+      <path d="M7 92c0-45 36-82 82-82s82 37 82 82-36 82-82 82c-13 0-25-3-36-8L8 185l12-38C12 132 7 113 7 92z"/>
+      <path d="M52 92h74M102 55l37 37-37 37"/>
+    </g>
+    <text x="2083" y="707" text-anchor="middle" font-size="58" class="thai" fill="#ffffff">LINE สำรอง</text>
+    <text x="2083" y="761" text-anchor="middle" font-size="25" class="english" fill="#91a1bd">BACKUP LINE</text>
+  </g>
+</svg>

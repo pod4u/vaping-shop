@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Prompt } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { baseMetadata, APP_URL, safeJsonLd } from "@/lib/seo";
 

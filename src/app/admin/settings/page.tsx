@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, CheckCircle2, Database, KeyRound, Loader2, ShoppingCart, XCircle } from "lucide-react";
+import { Bot, CheckCircle2, Database, FileSpreadsheet, KeyRound, Loader2, ShoppingCart, XCircle } from "lucide-react";
 
 interface SystemStatus {
   services: {
@@ -10,6 +10,7 @@ interface SystemStatus {
     database: { configured: boolean; connected: boolean };
     line: { configured: boolean };
     orders: { connected: boolean; channel: string };
+    stockImport: { configured: boolean; source: string; schedule: string; autoApply: boolean };
   };
   checkedAt: string;
 }
@@ -66,6 +67,14 @@ export default function AdminSettingsPage() {
           <Card className="border-white/10 bg-white/5">
             <CardHeader className="flex flex-row items-center gap-3"><ShoppingCart className="h-5 w-5 text-vapor-violet" /><div><CardTitle className="text-white">ฐานข้อมูลออเดอร์</CardTitle><CardDescription className="text-white/50">ช่องทางรับคำสั่งซื้อ: {status.services.orders.channel}</CardDescription></div></CardHeader>
             <CardContent><StatusLabel ready={status.services.orders.connected} readyText="บันทึกออเดอร์เข้าฐานข้อมูลแล้ว" pendingText="ยังรับออเดอร์ผ่านแชต LINE โดยตรง" /></CardContent>
+          </Card>
+
+          <Card className="border-white/10 bg-white/5">
+            <CardHeader className="flex flex-row items-center gap-3"><FileSpreadsheet className="h-5 w-5 text-emerald-400" /><div><CardTitle className="text-white">นำเข้าสต็อกกลางคืน</CardTitle><CardDescription className="text-white/50">{status.services.stockImport.source} · {status.services.stockImport.schedule}</CardDescription></div></CardHeader>
+            <CardContent className="space-y-2">
+              <StatusLabel ready={status.services.stockImport.configured} readyText="ตั้งค่าการเชื่อมต่อแล้ว" pendingText="ยังตั้งค่าการเชื่อมต่อไม่ครบ" />
+              <p className="text-xs text-white/40">การอัปเดตอัตโนมัติ: {status.services.stockImport.autoApply ? "เปิด" : "ปิด — ต้องตรวจและกดยืนยัน"}</p>
+            </CardContent>
           </Card>
         </div>
       )}

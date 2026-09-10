@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function StockPage() {
-  return <StockClient />;
+export default function StockPage({ searchParams }: { searchParams?: { source?: string | string[] } }) {
+  const source = Array.isArray(searchParams?.source) ? searchParams?.source[0] : searchParams?.source;
+  return <StockClient fromMember={source === "member"} />;
 }

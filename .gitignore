@@ -47,3 +47,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Temp & build artifacts
+.playwright-cli/
+output/

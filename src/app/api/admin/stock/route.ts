@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/supabase";
+import { requireAdminApiPermission } from "@/lib/admin-api";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +8,7 @@ async function readStock() {
   const { data, error } = await getServerSupabase()
     .from("product_flavors")
     .select(`
-      id, stock_quantity, price, sale_price, image_url,
+      id, variant_key, sku, stock_quantity, price, sale_price, image_url,
       flavor:flavors(slug, name, name_th, color),
       product:products(id, name, name_th, puff_count, category:categories(slug, name, name_th), brand:brands(slug, name, name_th, color))
     `)
@@ -36,12 +37,14 @@ async function readStock() {
         flavors: [] 
       });
     }
-    brandRow.products.get(product.id).flavors.push({ id: flavor.slug, variantId: variant.id, name: flavor.name, nameTh: flavor.name_th, color: flavor.color, image: variant.image_url, stock: variant.stock_quantity });
+    brandRow.products.get(product.id).flavors.push({ id: flavor.slug, variantId: variant.id, variantKey: variant.variant_key, sku: variant.sku, name: flavor.name, nameTh: flavor.name_th, color: flavor.color, image: variant.image_url, stock: variant.stock_quantity });
   }
   return [...brands.values()].map((brand) => ({ ...brand, products: [...brand.products.values()] }));
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const unauthorized = await requireAdminApiPermission(request, "stock.view");
+  if (unauthorized) return unauthorized;
   try {
     return NextResponse.json({ success: true, data: await readStock(), lastUpdated: new Date().toISOString() });
   } catch (error) {
@@ -51,6 +54,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const unauthorized = await requireAdminApiPermission(request, "stock.manage");
+  if (unauthorized) return unauthorized;
   try {
     const { brands } = await request.json();
     const updates = (brands || []).flatMap((brand: any) => (brand.products || []).flatMap((product: any) => (product.flavors || []).map((flavor: any) => ({ id: flavor.variantId, brandId: brand.id, productId: product.id, flavorId: flavor.id, stock: Math.max(0, Number(flavor.stock) || 0) }))));
@@ -72,6 +77,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const unauthorized = await requireAdminApiPermission(request, "stock.manage");
+  if (unauthorized) return unauthorized;
   try {
     const { variantId, productId, flavorId, stock } = await request.json();
     let query = getServerSupabase().from("product_flavors").update({ 

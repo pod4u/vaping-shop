@@ -10,7 +10,8 @@ export const storeConfig = {
   phone: "08X-XXX-XXXX", // TODO: Replace with your phone
 
   // Service
-  freeShippingMin: 800,
+  standardShippingFee: 50,
+  freeShippingDisposableMinQuantity: 3,
   serviceHours: "24 ชั่วโมง",
 
   // Social Links (optional)

@@ -10,7 +10,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from("product_flavors")
       .select(`
-        id, stock_quantity, price, sale_price, image_url,
+        id, sku, variant_key, stock_quantity, price, sale_price, image_url,
         flavor:flavors(id, slug, name, name_th, color, is_active),
         product:products(
           id, slug, name, name_th, puff_count, price, sale_price, is_active,
@@ -80,6 +80,8 @@ export async function GET() {
       // Variant-level prices only - no fallback to product or 0
       brandGroup.products.get(product.id).availableFlavors.push({
         id: variant.id,
+        sku: variant.sku,
+        variant_key: variant.variant_key,
         stock_quantity: variant.stock_quantity,
         price: variant.price != null ? Number(variant.price) : null,
         sale_price: variant.sale_price != null ? Number(variant.sale_price) : null,

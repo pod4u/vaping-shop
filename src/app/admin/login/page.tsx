@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +19,7 @@ export default function AdminLoginPage() {
       const res = await fetch('/api/admin/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ username, password })
       });
       
       const data = await res.json();
@@ -55,7 +56,7 @@ export default function AdminLoginPage() {
               Admin <span className="text-acid-lime">Panel</span>
             </h1>
             <p className="text-white/50 text-sm mt-2">
-              กรอกรหัสผ่านเพื่อเข้าสู่ระบบ
+              เข้าสู่ระบบด้วยบัญชีทีมงาน หรือเว้นชื่อผู้ใช้เพื่อใช้บัญชี owner เดิม
             </p>
           </div>
 
@@ -63,12 +64,23 @@ export default function AdminLoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="ชื่อผู้ใช้ (บัญชี owner เดิมเว้นว่างได้)"
+                autoComplete="username"
+                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:border-acid-lime focus:outline-none"
+                autoFocus
+              />
+            </div>
+            <div>
+              <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="รหัสผ่าน"
                 className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:border-acid-lime focus:outline-none text-lg"
-                autoFocus
+                autoComplete="current-password"
               />
             </div>
             

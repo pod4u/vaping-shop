@@ -6,10 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:shipping-policy": "node scripts/verify-shipping-policy.mjs",
+    "test:line-copy": "node scripts/verify-line-copy.mjs",
+    "test:line-automation": "node --experimental-strip-types scripts/verify-line-automation.mjs",
+    "test:member-liff": "node --experimental-strip-types scripts/verify-member-liff-destination.mjs",
+    "test:payment-guards": "node scripts/verify-payment-guards.mjs",
+    "test:review-system": "node scripts/verify-review-system.mjs",
+    "test:review-credit": "node scripts/verify-review-credit.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
+    "@line/liff": "^2.31.0",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@supabase/supabase-js": "^2.112.4",
     "@types/node": "^26.2.0",

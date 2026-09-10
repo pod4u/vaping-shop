@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { bilingualPrimary, bilingualPrimaryThai, bilingualName, bilingualNameThai } from "@/lib/bilingual";
+import { AddToCartButton } from "@/components/AddToCartButton";
+import { CartDrawer } from "@/components/CartDrawer";
+import { useCart } from "@/hooks/use-cart";
 
 interface Flavor {
   id: string;
@@ -14,6 +17,8 @@ interface Flavor {
 
 interface AvailableFlavor {
   id: string;
+  sku: string | null;
+  variant_key: string | null;
   stock_quantity: number;
   price: number | null;
   sale_price: number | null;
@@ -52,7 +57,8 @@ interface StockData {
   lastUpdated: string;
 }
 
-export default function StockPage() {
+export default function StockPage({ fromMember = false }: { fromMember?: boolean }) {
+  const { itemCount, isHydrated } = useCart();
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -227,6 +233,15 @@ export default function StockPage() {
       {/* Title Section */}
       <section className="py-8 px-4 border-b border-navy-border">
         <div className="max-w-4xl mx-auto">
+          {fromMember && (
+            <Link
+              href="/member"
+              className="mb-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:border-acid-lime/50 hover:text-acid-lime"
+            >
+              <span aria-hidden="true">←</span>
+              กลับหน้าสมาชิก
+            </Link>
+          )}
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></span>
@@ -254,6 +269,17 @@ export default function StockPage() {
               : `${totalFlavors} รายการ`}
             {' • '}{totalProducts} สินค้า
           </p>
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-acid-lime/35 bg-acid-lime/10 p-3">
+            <div>
+              <p className="text-sm font-black text-white">เลือกสินค้าได้เลย</p>
+              <p className="mt-1 text-xs leading-5 text-white/65">
+                กด <span className="font-bold text-acid-lime">เพิ่มลงตะกร้า</span> ที่การ์ดสินค้า แล้วกดไอคอนตะกร้าเพื่อตรวจรายการ
+              </p>
+            </div>
+            <div className="shrink-0">
+              <CartDrawer variant="mobile" />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -325,17 +351,19 @@ export default function StockPage() {
       {/* Flavor Grid - Simple & Clean */}
       <section className="py-6 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {filteredFlavors.map((item) => {
               const displayPrice = item.flavor.sale_price ?? item.flavor.price;
               return (
-              <Link
+              <div
                 key={`${item.product.id}-${item.flavor.id}`}
-                href={item.product.slug ? `/products/${item.product.slug}` : `/products`}
                 className="group bg-navy-surface/50 border border-navy-border rounded-xl p-3 hover:border-acid-lime/50 transition-all h-full flex flex-col"
               >
                 {/* Flavor Image */}
-                <div className="relative aspect-square bg-navy-void rounded-lg mb-3 overflow-hidden">
+                <Link
+                  href={item.product.slug ? `/products/${item.product.slug}` : `/products`}
+                  className="block relative aspect-square bg-navy-void rounded-lg mb-3 overflow-hidden"
+                >
                   {item.flavor.flavor.image ? (
                     <img
                       src={item.flavor.flavor.image}
@@ -355,21 +383,26 @@ export default function StockPage() {
                   <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded bg-acid-lime/90 text-navy-deep text-[10px] font-bold">
                     {item.flavor.stock_quantity}
                   </div>
-                </div>
+                </Link>
 
                 {/* Flavor Name */}
                 <div className="space-y-0.5">
-                  <p className="text-white text-sm font-medium truncate">
-                    {bilingualPrimaryThai(item.flavor.flavor.name_th, item.flavor.flavor.name).primary}
-                  </p>
-                  {bilingualPrimaryThai(item.flavor.flavor.name_th, item.flavor.flavor.name).secondary && (
-                    <p className="text-white/40 text-xs truncate">
-                      {bilingualPrimaryThai(item.flavor.flavor.name_th, item.flavor.flavor.name).secondary}
+                  <Link
+                    href={item.product.slug ? `/products/${item.product.slug}` : `/products`}
+                    className="block"
+                  >
+                    <p className="text-white text-sm font-medium truncate">
+                      {bilingualPrimaryThai(item.flavor.flavor.name_th, item.flavor.flavor.name).primary}
                     </p>
-                  )}
-                  <p className="text-white/40 text-xs truncate">
-                    {bilingualName(item.brand.name, item.brand.name_th)}
-                  </p>
+                    {bilingualPrimaryThai(item.flavor.flavor.name_th, item.flavor.flavor.name).secondary && (
+                      <p className="text-white/40 text-xs truncate">
+                        {bilingualPrimaryThai(item.flavor.flavor.name_th, item.flavor.flavor.name).secondary}
+                      </p>
+                    )}
+                    <p className="text-white/40 text-xs truncate">
+                      {bilingualName(item.brand.name, item.brand.name_th)}
+                    </p>
+                  </Link>
                   {item.product.category && (
                     <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-vapor-violet/20 text-vapor-violet text-[10px] font-medium">
                       {bilingualNameThai(item.product.category.name_th, item.product.category.name)}
@@ -389,7 +422,26 @@ export default function StockPage() {
                     </p>
                   )}
                 </div>
-              </Link>
+
+                {/* Add to Cart Button */}
+                <div className="pt-2">
+                  <AddToCartButton
+                    productFlavorId={item.flavor.id}
+                    sku={item.flavor.sku}
+                    variantKey={item.flavor.variant_key}
+                    productName={item.product.name}
+                    productNameTh={item.product.name_th}
+                    flavorName={item.flavor.flavor.name}
+                    flavorNameTh={item.flavor.flavor.name_th}
+                    brandName={item.brand.name}
+                    brandNameTh={item.brand.name_th}
+                    imageUrl={item.flavor.flavor.image}
+                    unitPrice={displayPrice}
+                    stockQuantity={item.flavor.stock_quantity}
+                    className="w-full"
+                  />
+                </div>
+              </div>
               );
             })}
           </div>
@@ -424,6 +476,14 @@ export default function StockPage() {
           </p>
         </div>
       </footer>
+
+      {isHydrated && itemCount > 0 && (
+        <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center px-4 sm:hidden">
+          <div className="rounded-full border border-acid-lime/40 bg-navy-deep/95 p-1 shadow-2xl backdrop-blur-xl">
+            <CartDrawer variant="mobile" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

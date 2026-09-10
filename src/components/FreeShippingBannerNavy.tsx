@@ -2,30 +2,33 @@ import Link from "next/link";
 
 export default function FreeShippingBannerNavy() {
   return (
-    <section className="py-8 px-4 bg-navy-deep">
+    <section className="py-8 px-4 relative overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        <div className="vapor-card rounded-2xl border border-acid-lime/30 overflow-hidden relative">
-          {/* Background Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-acid-lime/15 via-green-500/10 to-acid-lime/15 pointer-events-none"></div>
+        <div className="navy-card rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
+          {/* Subtle Ambient Curved Glow */}
+          <div className="absolute top-0 right-1/4 w-96 h-48 bg-acid-lime/10 rounded-full blur-[70px] pointer-events-none"></div>
 
           {/* Animated Badge */}
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-acid-lime text-navy-deep text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-            🚚 ส่งฟรีทั้งเดือน!
+          <div className="absolute top-3 right-3 sm:top-5 sm:right-5 bg-acid-lime text-navy-deep text-xs font-black px-3.5 py-1 rounded-full shadow-lg shadow-acid-lime/20">
+            🚚 เฉพาะดูดแล้วทิ้ง
           </div>
 
           {/* Content */}
-          <div className="relative p-6 sm:p-8 flex flex-col gap-4">
+          <div className="relative z-10 flex flex-col gap-6">
             {/* Header */}
             <div className="flex items-center gap-4">
-              {/* Icon */}
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-acid-lime to-green-500 flex items-center justify-center text-3xl shadow-acid animate-bounce">
-                🚚
+              {/* Dual-Layer 3D Liquid Squircle */}
+              <div className="glass-squircle-container w-16 h-16 shrink-0">
+                <div className="glass-squircle-back lime"></div>
+                <div className="glass-squircle-front w-full h-full flex items-center justify-center text-3xl">
+                  <span className="drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]">🚚</span>
+                </div>
               </div>
 
               {/* Title */}
               <div>
                 <h3 className="text-white font-black text-xl sm:text-2xl mb-1">
-                  ซื้อครบ <span className="text-acid-lime">800฿</span> ส่งฟรี!
+                  ดูดแล้วทิ้งครบ <span className="text-acid-lime">3 ชิ้น</span> ส่งฟรี!
                 </h3>
                 <p className="text-white/60 text-sm sm:text-base">
                   ทุกออเดอร์ <span className="text-acid-lime font-bold">ไม่มีขั้นต่ำ</span> จัดส่งทั่วไทย
@@ -34,18 +37,18 @@ export default function FreeShippingBannerNavy() {
             </div>
 
             {/* Details */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/5 rounded-xl p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/[0.03] border border-white/[0.08] backdrop-blur-md rounded-2xl p-4 sm:p-5">
               {/* Conditions */}
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 text-white/80 text-sm">
+                <div className="flex items-center gap-2 text-white/90 text-sm font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-acid-lime"></span>
-                  สั่งซื้อครบ 800฿ = ส่งฟรีทันที ทั่วไทย
+                  เฉพาะสินค้าดูดแล้วทิ้ง 3 ชิ้นขึ้นไป ส่งฟรีทั่วไทย
                 </div>
-                <div className="flex items-center gap-2 text-white/50 text-sm">
+                <div className="flex items-center gap-2 text-white/50 text-xs sm:text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-white/30"></span>
-                  ต่ำกว่า 800฿ ค่าส่ง 50฿
+                  รายการอื่นค่าส่งทั่วไทย 50฿
                 </div>
-                <div className="flex items-center gap-2 text-white/50 text-sm">
+                <div className="flex items-center gap-2 text-white/50 text-xs sm:text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-white/30"></span>
                   จัดส่งผ่าน EMS / Flash / Kerry 1-3 วัน
                 </div>
@@ -54,7 +57,7 @@ export default function FreeShippingBannerNavy() {
               {/* CTA */}
               <Link
                 href="/stock"
-                className="flex items-center gap-2 bg-gradient-to-r from-acid-lime to-[#a3e635] text-navy-deep px-6 py-3 rounded-full text-sm font-bold hover:shadow-acid transition-all whitespace-nowrap"
+                className="btn-liquid-acid flex items-center gap-2 px-6 py-3 text-sm font-black whitespace-nowrap"
               >
                 ดูสินค้าพร้อมส่ง
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,11 +66,9 @@ export default function FreeShippingBannerNavy() {
               </Link>
             </div>
           </div>
-
-          {/* Bottom Glow */}
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-acid-lime/50 to-transparent"></div>
         </div>
       </div>
     </section>
   );
 }
+

@@ -143,7 +143,7 @@ export default function HeroHybrid() {
             </div>
             <div className="relative z-10">
               <div className="text-white font-bold text-sm">จัดส่งไว กทม. &amp; ทั่วประเทศ</div>
-              <div className="text-white/50 text-xs">ส่งฟรีเมื่อสั่งซื้อครบ {storeConfig.freeShippingMin}฿</div>
+              <div className="text-white/50 text-xs">ดูดแล้วทิ้ง {storeConfig.freeShippingDisposableMinQuantity} ชิ้นขึ้นไป ส่งฟรี</div>
             </div>
           </div>
 

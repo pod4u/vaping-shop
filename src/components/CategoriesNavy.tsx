@@ -6,11 +6,11 @@ import { categories } from "../lib/config";
 export default function CategoriesNavy() {
   return (
     <section className="py-20 px-4 relative overflow-hidden">
-      {/* Section ambient background */}
+      {/* Section ambient background with curved blur glow */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-navy-deep to-transparent"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-acid-lime/5 rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-navy-deep to-transparent"></div>
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#020617] to-transparent"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] rounded-[100%] bg-blue-600/10 blur-[90px]"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#020617] to-transparent"></div>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -25,37 +25,51 @@ export default function CategoriesNavy() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categories.map((cat, index) => (
-            <Link
-              key={cat.id}
-              href={`/categories/${cat.id}`}
-              className="group"
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <div className="navy-card rounded-2xl p-5 text-center h-full flex flex-col items-center justify-center relative overflow-hidden group-hover:border-acid-lime/60 transition-all duration-300 card-tilt animate-slide-up">
-                {/* Multi-layer hover effects */}
-                <div className="absolute inset-0 bg-gradient-to-t from-acid-lime/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          {categories.map((cat, index) => {
+            // Give subtle accent variation using site palette (Blue, Lime, Cyan)
+            const colorVariant = index % 3 === 0 ? "blue" : index % 3 === 1 ? "lime" : "cyan";
+            return (
+              <Link
+                key={cat.id}
+                href={`/categories/${cat.id}`}
+                className="group"
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <div className="navy-card rounded-2xl p-5 text-center h-full flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300">
+                  {/* Curved Blur Arc Dome Glow on Card Top */}
+                  <div 
+                    className="absolute -top-10 left-1/2 -translate-x-1/2 w-36 h-24 rounded-[100%] blur-[25px] opacity-35 group-hover:opacity-85 group-hover:scale-125 transition-all duration-500 pointer-events-none"
+                    style={{
+                      background: 'radial-gradient(ellipse at 50% 0%, rgba(138, 171, 255, 0.8) 0%, rgba(43, 95, 255, 0.4) 50%, transparent 80%)'
+                    }}
+                  ></div>
 
-                {/* Glow pulse on hover */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-acid-lime/10 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  {/* Dual-Layer 3D Liquid Glass Squircle (ตามตัวอย่าง Figma 4-step) */}
+                  <div className="glass-squircle-container w-16 h-16 mb-4">
+                    {/* Layer 1: Back Gradient Plate */}
+                    <div className={`glass-squircle-back ${colorVariant !== "blue" ? colorVariant : ""}`}></div>
+                    
+                    {/* Layer 2: Front Liquid Frosted Glass Plate */}
+                    <div className="glass-squircle-front w-full h-full flex items-center justify-center text-3xl">
+                      <span className="relative z-10 drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] transform group-hover:scale-110 transition-transform duration-300">
+                        {cat.icon}
+                      </span>
+                    </div>
+                  </div>
 
-                {/* Icon container with depth */}
-                <div className="relative z-10 w-16 h-16 rounded-2xl bg-navy-surface border border-navy-border flex items-center justify-center text-3xl mb-4 group-hover:scale-110 group-hover:border-acid-lime/40 group-hover:shadow-lg group-hover:shadow-acid-lime/20 transition-all duration-300">
-                  {/* Inner glow */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <span className="relative z-10">{cat.icon}</span>
+                  <h3 className="relative z-10 text-white font-bold text-base mb-1 group-hover:text-acid-lime transition-colors duration-300">
+                    {cat.nameTh}
+                  </h3>
+                  <div className="relative z-10 text-white/50 text-xs font-mono uppercase tracking-wider flex items-center gap-1 group-hover:text-white/80 transition-colors">
+                    <span className="text-acid-lime text-[10px]">&gt;</span> {cat.name}
+                  </div>
+
+                  {/* Bottom highlight line */}
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-acid-lime rounded-full group-hover:w-16 transition-all duration-300"></div>
                 </div>
-
-                <h3 className="relative z-10 text-white font-bold text-base mb-1 group-hover:text-acid-lime transition-colors duration-300">
-                  {cat.nameTh}
-                </h3>
-                <p className="relative z-10 text-white/40 text-xs font-mono uppercase tracking-wider">{cat.name}</p>
-
-                {/* Bottom highlight line */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-acid-lime rounded-full group-hover:w-16 transition-all duration-300"></div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

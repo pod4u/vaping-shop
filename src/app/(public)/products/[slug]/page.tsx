@@ -5,6 +5,7 @@ import { getServerSupabase } from "@/lib/supabase";
 import { APP_URL, getCanonical, safeJsonLd } from "@/lib/seo";
 import { storeConfig } from "@/lib/config";
 import { bilingualPrimary, bilingualPrimaryThai, bilingualName, bilingualNameThai, formatPuffs } from "@/lib/bilingual";
+import ProductDetailFlavorSelector from "@/components/ProductDetailFlavorSelector";
 
 interface ProductVariant {
   id: string;
@@ -18,6 +19,8 @@ interface ProductVariant {
   is_available: boolean;
   image_url: string | null;
   nicotine_level: string | null;
+  sku?: string | null;
+  variant_key?: string | null;
 }
 
 interface ProductData {
@@ -46,7 +49,7 @@ async function getProductBySlug(slug: string): Promise<ProductData | null> {
       brand:brands(id, slug, name, name_th, color),
       category:categories(id, slug, name, name_th, icon),
       variants:product_flavors(
-        id, price, sale_price, stock_quantity, is_available, is_active, image_url, nicotine_level,
+        id, sku, variant_key, price, sale_price, stock_quantity, is_available, is_active, image_url, nicotine_level,
         flavor:flavors(id, slug, name, name_th, color, is_active)
       )
     `
@@ -71,6 +74,8 @@ async function getProductBySlug(slug: string): Promise<ProductData | null> {
       is_available: v.is_available,
       image_url: v.image_url,
       nicotine_level: v.nicotine_level,
+      sku: v.sku || null,
+      variant_key: v.variant_key || null,
     }));
 
   const hasStock = variants.some((v) => v.is_available && v.stock_quantity > 0);
@@ -408,65 +413,17 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 </div>
               )}
 
-              {/* Flavors */}
-              {product.variants.length > 0 && (
-                <div className="mb-8">
-                  <h2 className="text-white font-bold text-sm uppercase font-mono tracking-wider mb-3">
-                    รสชาติที่มี ({product.variants.length})
-                  </h2>
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-2">
-                    {product.variants.map((variant) => {
-                      const flavorDisplay = bilingualPrimaryThai(variant.flavor_name_th, variant.flavor_name);
-                      return (
-                        <div
-                          key={variant.id}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-brand-surface/50 border border-brand-border/50 text-xs"
-                        >
-                          <div
-                            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: variant.flavor_color }}
-                          />
-                          <span className="text-white/80">{flavorDisplay.primary}</span>
-                          {flavorDisplay.secondary && (
-                            <span className="text-white/40">({flavorDisplay.secondary})</span>
-                          )}
-                          {variant.is_available && variant.stock_quantity > 0 && (
-                            <span className="text-acid-lime text-[10px] font-mono">({variant.stock_quantity})</span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Stock Status */}
+              {/* Interactive Flavor Selector & Add to Cart */}
               <div className="mb-8">
-                {product.variants.some((v) => v.is_available && v.stock_quantity > 0) ? (
-                  <div className="inline-flex items-center gap-2 text-xs font-mono text-acid-lime">
-                    <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse" />
-                    มีสินค้าพร้อมส่ง
-                  </div>
-                ) : (
-                  <div className="inline-flex items-center gap-2 text-xs font-mono text-red-400">
-                    <span className="w-2 h-2 rounded-full bg-red-400" />
-                    สินค้าหมดชั่วคราว
-                  </div>
-                )}
+                <ProductDetailFlavorSelector
+                  productName={product.name}
+                  productNameTh={product.name_th}
+                  brandName={product.brand?.name || ""}
+                  brandNameTh={product.brand?.name_th || null}
+                  variants={product.variants}
+                  defaultImageUrl={product.image_url}
+                />
               </div>
-
-              {/* CTA */}
-              <a
-                href={storeConfig.lineLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-acid px-8 py-4 rounded-full text-base font-extrabold flex items-center justify-center gap-3 tracking-wide shadow-acid w-fit"
-              >
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 5.58 2 10c0 2.12.92 4.04 2.42 5.44L3 22l6.4-3.2c.84.13 1.71.2 2.6.2 5.52 0 10-3.58 10-8s-4.48-8-10-8z" />
-                </svg>
-                สั่งซื้อผ่าน LINE
-              </a>
             </div>
           </div>
 

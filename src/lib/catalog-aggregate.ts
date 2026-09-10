@@ -5,6 +5,20 @@ import { getServerSupabase } from "@/lib/supabase";
  * Combines all product_flavors (variants) into a single record
  * with price range, stock status, and variant count.
  */
+export interface ProductFlavorVariant {
+  id: string;
+  sku: string | null;
+  variant_key: string | null;
+  name: string;
+  name_th: string | null;
+  color: string | null;
+  price: number;
+  sale_price: number | null;
+  stock_quantity: number;
+  is_available: boolean;
+  image_url: string | null;
+}
+
 export interface AggregatedProduct {
   slug: string;
   name: string;
@@ -31,6 +45,8 @@ export interface AggregatedProduct {
   flavor_names_th: string[];
   /** Bilingual flavor pairs for human-facing product summaries */
   flavors: Array<{ name: string; name_th: string | null }>;
+  /** List of concrete flavor variants with IDs and stock for cart addition */
+  available_variants: ProductFlavorVariant[];
 }
 
 /**
@@ -169,7 +185,7 @@ export async function getAggregatedProducts(): Promise<AggregatedProduct[]> {
   const { data: variants, error } = await supabase
     .from("product_flavors")
     .select(`
-      id, price, sale_price, stock_quantity, is_available, image_url,
+      id, sku, variant_key, price, sale_price, stock_quantity, is_available, image_url,
       product:products(
         id, slug, name, name_th, description, puff_count, image_url, price, sale_price, is_active,
         brand:brands(id, slug, name, name_th, color, is_active),
@@ -205,6 +221,20 @@ export async function getAggregatedProducts(): Promise<AggregatedProduct[]> {
     const isAvailable = row.is_available && stock > 0;
     const price = Number(row.sale_price ?? row.price);
 
+    const variantItem: ProductFlavorVariant = {
+      id: row.id,
+      sku: row.sku || null,
+      variant_key: row.variant_key || null,
+      name: flavor.name,
+      name_th: flavor.name_th || null,
+      color: flavor.color || null,
+      price: price,
+      sale_price: row.sale_price != null ? Number(row.sale_price) : null,
+      stock_quantity: stock,
+      is_available: isAvailable,
+      image_url: row.image_url || null,
+    };
+
     if (!map.has(product.slug)) {
       map.set(product.slug, {
         slug: product.slug,
@@ -229,6 +259,7 @@ export async function getAggregatedProducts(): Promise<AggregatedProduct[]> {
         flavor_names: flavor.name ? [flavor.name] : [],
         flavor_names_th: flavor.name_th ? [flavor.name_th] : [],
         flavors: [{ name: flavor.name, name_th: flavor.name_th }],
+        available_variants: [variantItem],
       });
     } else {
       const agg = map.get(product.slug)!;
@@ -242,6 +273,7 @@ export async function getAggregatedProducts(): Promise<AggregatedProduct[]> {
         agg.has_stock = true;
       }
       agg.variant_count++;
+      agg.available_variants.push(variantItem);
       // Use first available image
       if (!agg.image_url && row.image_url) {
         agg.image_url = row.image_url;

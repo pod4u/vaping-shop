@@ -12,17 +12,20 @@ export default function ProductCardNavy({ product }: ProductCardNavyProps) {
   return (
     <Link href={href} className="group block">
       <div className="navy-card rounded-2xl overflow-hidden group-hover:border-acid-lime/50 transition-all duration-300 h-full flex flex-col relative gradient-border-animated-navy">
-        {/* Animated glow overlay on hover */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-acid-lime/20 rounded-full blur-[60px]"></div>
-        </div>
+        {/* Top Curved Arc Dome Glow on Card Top */}
+        <div 
+          className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-24 rounded-[100%] blur-[28px] opacity-25 group-hover:opacity-85 group-hover:scale-125 transition-all duration-500 pointer-events-none z-10"
+          style={{
+            background: 'radial-gradient(ellipse at 50% 0%, rgba(138, 171, 255, 0.7) 0%, rgba(43, 95, 255, 0.3) 50%, transparent 80%)'
+          }}
+        ></div>
 
         {/* Image Container */}
         <div className="relative aspect-square overflow-hidden bg-navy-deep/80">
           <img
             src={product.image}
             alt={product.imageAlt || product.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "https://placehold.co/400x400/0f172a/3b82f6?text=Pod4U";
             }}
@@ -32,8 +35,8 @@ export default function ProductCardNavy({ product }: ProductCardNavyProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-navy-deep/90 via-navy-deep/20 to-transparent opacity-60 group-hover:opacity-30 transition-opacity duration-500"></div>
 
           {/* Quick action button overlay */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-            <div className="bg-acid-lime text-navy-deep px-5 py-2.5 rounded-full font-bold text-sm flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-acid">
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
+            <div className="btn-liquid-acid px-5 py-2.5 text-sm flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
               <span>ดูรายละเอียด</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

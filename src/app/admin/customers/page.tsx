@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, UserPlus, Search } from "lucide-react";
+import { Users, UserPlus, Search, MapPin } from "lucide-react";
 
 interface Customer {
   id: number;
@@ -20,19 +21,27 @@ interface Customer {
 
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [totalCustomers, setTotalCustomers] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchCustomers();
-  }, []);
+    const timeout = window.setTimeout(() => {
+      fetchCustomers(searchQuery);
+    }, 250);
+    return () => window.clearTimeout(timeout);
+  }, [searchQuery]);
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = async (query: string) => {
+    setIsLoading(true);
     try {
-      const response = await fetch("/api/admin/customers");
+      const params = new URLSearchParams({ page_size: "100" });
+      if (query.trim()) params.set("q", query.trim());
+      const response = await fetch(`/api/admin/customers?${params}`, { cache: "no-store" });
       const data = await response.json();
-      if (data.customers) {
+      if (response.ok && data.customers) {
         setCustomers(data.customers);
+        setTotalCustomers(data.pagination?.total ?? data.customers.length);
       }
     } catch (error) {
       console.error("Failed to fetch customers:", error);
@@ -40,15 +49,6 @@ export default function AdminCustomersPage() {
       setIsLoading(false);
     }
   };
-
-  const filteredCustomers = customers.filter((customer) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      (customer.full_name?.toLowerCase().includes(query) ?? false) ||
-      (customer.phone?.includes(query) ?? false) ||
-      (customer.line_id?.toLowerCase().includes(query) ?? false)
-    );
-  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("th-TH", {
@@ -80,7 +80,7 @@ export default function AdminCustomersPage() {
                 <Users className="h-5 w-5 text-vapor-violet" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-white">{customers.length}</p>
+                <p className="text-2xl font-bold text-white">{totalCustomers}</p>
                 <p className="text-xs text-white/50">ลูกค้าทั้งหมด</p>
               </div>
             </div>
@@ -108,7 +108,7 @@ export default function AdminCustomersPage() {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="ค้นหาชื่อ, เบอร์โทร, LINE ID..."
+          placeholder="ค้นหาชื่อ, เบอร์โทร หรืออีเมล..."
           className="w-full px-4 py-3 pl-10 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-acid-lime/50"
         />
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
@@ -120,7 +120,7 @@ export default function AdminCustomersPage() {
           <CardContent className="py-12 text-center text-white/50">
             กำลังโหลดข้อมูล...
           </CardContent>
-        ) : filteredCustomers.length === 0 ? (
+        ) : customers.length === 0 ? (
           <CardContent className="py-12 text-center text-white/50">
             {searchQuery ? "ไม่พบลูกค้าที่ค้นหา" : "ยังไม่มีลูกค้าสมัครสมาชิก"}
           </CardContent>
@@ -150,10 +150,13 @@ export default function AdminCustomersPage() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-white/50 uppercase">
                     วันที่สมัคร
                   </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-white/50 uppercase">
+                    จัดการ
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {filteredCustomers.map((customer) => (
+                {customers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-white/5">
                     <td className="px-4 py-3 text-sm text-white">
                       {customer.full_name || "ไม่ระบุชื่อ"}
@@ -176,6 +179,15 @@ export default function AdminCustomersPage() {
                     <td className="px-4 py-3 text-sm text-white/50">
                       {formatDate(customer.created_at)}
                     </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/admin/customers/${customer.id}`}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white transition-colors hover:border-acid-lime/50 hover:text-acid-lime"
+                      >
+                        <MapPin className="h-3.5 w-3.5" />
+                        ที่อยู่
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -191,7 +203,7 @@ export default function AdminCustomersPage() {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <div className="text-lg font-bold text-white">
-                  {customers.length}
+                  {totalCustomers}
                 </div>
                 <div className="text-xs text-white/50">ลูกค้าทั้งหมด</div>
               </div>

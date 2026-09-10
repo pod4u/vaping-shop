@@ -3,13 +3,21 @@
 import { useState, useEffect } from "react";
 import { X, Package, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const STORAGE_KEY = "welcomePopupClosed";
 
 export default function WelcomePopup() {
+  const pathname = usePathname();
+  const isSuppressedRoute = pathname === "/register" || pathname === "/stock" || pathname.startsWith("/member");
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    if (isSuppressedRoute) {
+      setIsVisible(false);
+      return;
+    }
+
     // Check if user has already closed this popup
     const hasClosed = localStorage.getItem(STORAGE_KEY);
     if (!hasClosed) {
@@ -17,14 +25,14 @@ export default function WelcomePopup() {
       const timer = setTimeout(() => setIsVisible(true), 500);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isSuppressedRoute]);
 
   const handleClose = () => {
     setIsVisible(false);
     localStorage.setItem(STORAGE_KEY, "true");
   };
 
-  if (!isVisible) return null;
+  if (!isVisible || isSuppressedRoute) return null;
 
   return (
     <>

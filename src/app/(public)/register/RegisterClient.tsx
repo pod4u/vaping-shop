@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ConsentModal from "@/components/ConsentModal";
 
@@ -22,6 +22,42 @@ export default function RegisterPage() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [lineSession, setLineSession] = useState<{ id: string; token: string } | null>(null);
+  const [lineSessionError, setLineSessionError] = useState<string | null>(null);
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+
+  useEffect(() => {
+    const storageKey = "pod4u_line_registration";
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const id = hash.get("line_session");
+    const token = hash.get("line_token");
+
+    if (id || token) {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+      if (!id || !token) {
+        sessionStorage.removeItem(storageKey);
+        setLineSessionError("ลิงก์เชื่อมต่อ LINE ไม่ครบถ้วน กรุณาขอลิงก์ใหม่ในแชท");
+        return;
+      }
+      const session = { id, token };
+      sessionStorage.setItem(storageKey, JSON.stringify(session));
+      setLineSession(session);
+      return;
+    }
+
+    try {
+      const saved = sessionStorage.getItem(storageKey);
+      if (!saved) return;
+      const parsed = JSON.parse(saved) as { id?: unknown; token?: unknown };
+      if (typeof parsed.id === "string" && typeof parsed.token === "string") {
+        setLineSession({ id: parsed.id, token: parsed.token });
+      } else {
+        sessionStorage.removeItem(storageKey);
+      }
+    } catch {
+      sessionStorage.removeItem(storageKey);
+    }
+  }, []);
 
   const handleConsentAccept = (marketing: boolean) => {
     setHasConsent(true);
@@ -81,45 +117,33 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      // TODO: Connect to Supabase API
       const response = await fetch("/api/customers/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          accepted_terms: hasConsent,
+          accepted_marketing: acceptedMarketing,
+          ...(lineSession
+            ? {
+                line_session_id: lineSession.id,
+                line_session_token: lineSession.token,
+              }
+            : {}),
+        }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        // Save consent logs
-        const customerId = data.customer_id;
-        
-        // Log terms acceptance
-        await fetch("/api/consent", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            customer_id: customerId,
-            consent_type: "terms",
-            accepted: true,
-          }),
-        });
-
-        // Log marketing acceptance (if accepted)
-        if (acceptedMarketing) {
-          await fetch("/api/consent", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              customer_id: customerId,
-              consent_type: "marketing",
-              accepted: true,
-            }),
-          });
+        if (data.line_linked) {
+          sessionStorage.removeItem("pod4u_line_registration");
+          router.replace("/member");
+          router.refresh();
+        } else {
+          router.replace("/member");
+          router.refresh();
         }
-
-        alert("สมัครสมาชิกสำเร็จ!");
-        router.push("/");
       } else {
         alert(data.error || "เกิดข้อผิดพลาด กรุณาลองใหม่");
       }
@@ -147,11 +171,33 @@ export default function RegisterPage() {
               สมัคร<span className="text-white-neon">สมาชิก</span>
             </h1>
             <p className="text-white/50 text-sm">
-              สมัครสมาชิกเพื่อรับสิทธิพิเศษและโปรโมชั่นพิเศษ
+              {lineSession
+                ? "กรอกข้อมูลครั้งเดียวเพื่อสมัครสมาชิกและเชื่อมกับ LINE นี้"
+                : "สมัครสมาชิกเพื่อรับสิทธิพิเศษและโปรโมชั่นพิเศษ"}
             </p>
           </div>
 
-          {/* Form */}
+          {lineSessionError && (
+            <div className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-center text-sm text-red-300">
+              {lineSessionError}
+            </div>
+          )}
+
+          {registrationComplete ? (
+            <div className="vapor-card rounded-2xl border border-acid-lime/30 p-8 text-center">
+              <div className="mb-4 text-5xl" aria-hidden="true">✅</div>
+              <h2 className="mb-2 text-2xl font-black text-white">สมัครและเชื่อม LINE สำเร็จ</h2>
+              <p className="mb-6 text-sm text-white/60">
+                กลับไปที่ LINE แล้วกด “สั่งซื้อสินค้า” เพื่อเลือกรายการพร้อมส่งได้เลย
+              </p>
+              <a
+                href="https://lin.ee/RU5qNLj"
+                className="inline-flex items-center justify-center rounded-full bg-acid-lime px-6 py-3 font-bold text-navy-deep"
+              >
+                กลับไป LINE OA
+              </a>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal Info */}
           <div className="vapor-card rounded-2xl p-6 border border-navy-border">
@@ -355,6 +401,7 @@ export default function RegisterPage() {
             )}
           </button>
         </form>
+          )}
         </div>
       </div>
     </>

@@ -19,85 +19,124 @@ interface FlavorWithStock {
   productSlug?: string;
 }
 
+import { getCatalogProducts } from "@/lib/catalog";
+
 export default function ReadyToShipProductsNavy() {
   const [products, setProducts] = useState<FlavorWithStock[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadReadyProducts();
-  }, []);
+    let isMounted = true;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-  const loadReadyProducts = async () => {
-    try {
-      const res = await fetch('/api/stock');
-      const data = await res.json();
+    const load = async () => {
+      try {
+        const res = await fetch('/api/stock', { signal: controller.signal });
+        const data = await res.json();
+        clearTimeout(timeoutId);
 
-      if (data.success) {
-        const readyProducts: FlavorWithStock[] = [];
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          const readyProducts: FlavorWithStock[] = [];
 
-        data.data.forEach((brandData: any) => {
-          const brandId = brandData.brand?.id;
-          const brandName = brandData.brand?.name;
-          const brandNameTh = brandData.brand?.name_th;
-          const brandColor = brandData.brand?.color;
+          data.data.forEach((brandData: any) => {
+            const brandId = brandData.brand?.id;
+            const brandName = brandData.brand?.name;
+            const brandNameTh = brandData.brand?.name_th;
+            const brandColor = brandData.brand?.color;
 
-          brandData.products?.forEach((product: any) => {
-            product.availableFlavors?.forEach((flavorData: any) => {
-              const stock = flavorData.stock_quantity || 0;
+            brandData.products?.forEach((product: any) => {
+              product.availableFlavors?.forEach((flavorData: any) => {
+                const stock = flavorData.stock_quantity || 0;
 
-              if (stock > 0) {
-                // Use variant-level price only, no fallback to product or 0
-                const price = flavorData.sale_price ?? flavorData.price ?? null;
+                if (stock > 0) {
+                  const price = flavorData.sale_price ?? flavorData.price ?? null;
 
-                readyProducts.push({
-                  id: flavorData.id,
-                  brandId,
-                  brandName,
-                  brandNameTh,
-                  brandColor,
-                  name: flavorData.flavor?.name || flavorData.id,
-                  nameTh: flavorData.flavor?.name_th || flavorData.id,
-                  color: flavorData.flavor?.color || '#6B7280',
-                  image: flavorData.flavor?.image || '/images/placeholder.svg',
-                  stock,
-                  price,
-                  productSlug: product.slug,
-                });
-              }
+                  readyProducts.push({
+                    id: flavorData.id,
+                    brandId,
+                    brandName,
+                    brandNameTh,
+                    brandColor,
+                    name: flavorData.flavor?.name || flavorData.id,
+                    nameTh: flavorData.flavor?.name_th || flavorData.id,
+                    color: flavorData.flavor?.color || '#6B7280',
+                    image: flavorData.flavor?.image || '/images/placeholder.svg',
+                    stock,
+                    price,
+                    productSlug: product.slug,
+                  });
+                }
+              });
             });
           });
-        });
 
-        readyProducts.sort((a, b) => {
-          const brandCompare = (a.brandName || a.brandNameTh || '').localeCompare(
-            b.brandName || b.brandNameTh || '',
-            'en',
-            { sensitivity: 'base' }
-          );
-
-          if (brandCompare !== 0) return brandCompare;
-          return (a.name || a.nameTh || '').localeCompare(
-            b.name || b.nameTh || '',
-            'en',
-            { sensitivity: 'base' }
-          );
-        });
-        setProducts(readyProducts.slice(0, 8));
+          if (isMounted && readyProducts.length > 0) {
+            setProducts(readyProducts.slice(0, 8));
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('Stock API delayed or unavailable, loading catalog fallback:', error);
       }
-    } catch (error) {
-      console.error('Error loading products:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+      // Fallback: Load from catalog dataset directly
+      try {
+        const catalogItems = await getCatalogProducts();
+        if (isMounted) {
+          const fallbackProducts: FlavorWithStock[] = catalogItems
+            .filter((p) => p.inStock)
+            .slice(0, 8)
+            .map((p) => ({
+              id: String(p.id),
+              brandId: p.brandSlug || 'default',
+              brandName: p.features?.[0] || 'Brand',
+              brandNameTh: null,
+              brandColor: '#3B82F6',
+              name: p.name,
+              nameTh: p.nameTh || p.name,
+              color: '#3B82F6',
+              image: p.image || '/images/placeholder.svg',
+              stock: 50,
+              price: p.price,
+              productSlug: p.slug,
+            }));
+          setProducts(fallbackProducts);
+        }
+      } catch (err) {
+        console.error('Failed to load fallback catalog:', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, []);
 
   if (isLoading) {
     return (
-      <section className="py-20 px-4">
+      <section className="py-12 sm:py-16 lg:py-20 px-4 relative overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-acid-lime border-t-acid-lime rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-white/60">กำลังโหลดสินค้าพร้อมส่ง...</p>
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-acid-lime/10 border border-acid-lime/30 mb-4">
+              <div className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></div>
+              <span className="text-acid-lime text-sm font-bold">พร้อมส่งทันที</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
+              สินค้า<span className="text-acid-lime">พร้อมส่ง</span>
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="navy-card rounded-2xl h-64 shimmer animate-pulse"></div>
+            ))}
           </div>
         </div>
       </section>
@@ -138,7 +177,7 @@ export default function ReadyToShipProductsNavy() {
             <Link
               key={`${product.brandId}-${product.id}`}
               href={product.productSlug ? `/products/${product.productSlug}` : `/products`}
-              className="group navy-card rounded-xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-acid h-full flex flex-col"
+              className="group navy-card rounded-2xl overflow-hidden transition-all duration-300 h-full flex flex-col relative"
             >
               {/* Product Image */}
               <div
@@ -206,7 +245,7 @@ export default function ReadyToShipProductsNavy() {
         <div className="mt-12 text-center">
           <Link
             href="/stock"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-acid-lime to-[#a3e635] text-navy-deep px-8 py-4 rounded-full font-bold text-lg shadow-acid hover:shadow-[0_0_40px_rgba(212,255,20,0.5)] transition-all hover:scale-105"
+            className="btn-liquid-acid inline-flex items-center gap-2 px-8 py-4 text-base font-bold"
           >
             <span>ดูสินค้าพร้อมส่งทั้งหมด</span>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

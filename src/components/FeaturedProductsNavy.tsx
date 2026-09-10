@@ -1,14 +1,83 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import type { Product } from "../types/product";
 import { getCatalogProducts } from "@/lib/catalog";
 import ProductCardNavy from "./ProductCardNavy";
 import Link from "next/link";
 
-export default function FeaturedProductsNavy() {
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  useEffect(() => { getCatalogProducts().then((items) => setFeaturedProducts(items.filter((item) => item.inStock).slice(0, 4))).catch(console.error); }, []);
+const fallbackFeaturedProducts: Product[] = [
+  {
+    id: "marbo-mswitch-15k-wb",
+    name: "MARBO M SWITCH 15K - Watermelon Bubblegum",
+    nameTh: "มาร์โบ หัวเปลี่ยน MSW 15K - แตงโมบับเบิ้ลกัม",
+    category: "flavor-pod",
+    slug: "marbo-m-switch-15k",
+    brandSlug: "marbo",
+    price: 390,
+    image: "https://puslxgriozubqlpoxrqo.supabase.co/storage/v1/object/public/product-images/marbo/m-switch-15k/watermelon-bubblegum.webp",
+    description: "หัวพอตพร้อมน้ำยา สำหรับเครื่อง MARBO M SWITCH และ F SWITCH",
+    features: ["MARBO", "15,000 Puffs", "Watermelon Bubblegum"],
+    inStock: true,
+    isFeatured: true,
+  },
+  {
+    id: "moood-14k-bb",
+    name: "MOOOD Monster Series 14K - Blueberry",
+    nameTh: "มู้ด มอนสเตอร์ 14K - บลูเบอร์รี่",
+    category: "disposable-pod",
+    slug: "moood-monster-series-14k",
+    brandSlug: "moood",
+    price: 350,
+    image: "https://puslxgriozubqlpoxrqo.supabase.co/storage/v1/object/public/product-images/moood/monster-series-14k/blueberry.webp",
+    description: "พอตใช้แล้วทิ้งรุ่นใหญ่ 14,000 คำ รสชาติเข้มข้น",
+    features: ["MOOOD", "14,000 Puffs", "Blueberry"],
+    inStock: true,
+    isFeatured: true,
+  },
+  {
+    id: "relx-pro-2-mf",
+    name: "RELX Pod Pro 2 - Mint Freeze",
+    nameTh: "รีแล็กซ์ พอดโปร 2 - มิ้นท์ฟรีซ",
+    category: "flavor-pod",
+    slug: "relx-pod-pro-2",
+    brandSlug: "relx",
+    price: 200,
+    image: "https://puslxgriozubqlpoxrqo.supabase.co/storage/v1/object/public/product-images/relx/pro-2/mint-freeze.webp",
+    description: "หัวน้ำยา RELX แท้ รสชาติเย็นสดชื่น ฟีลสูบนุ่มลึก",
+    features: ["RELX", "Mint Freeze", "3% Nicotine"],
+    inStock: true,
+    isFeatured: true,
+  },
+  {
+    id: "vplus-16k-mint",
+    name: "VPLUS 16K - Mint",
+    nameTh: "วีพลัส 16K - มิ้นท์",
+    category: "disposable-pod",
+    slug: "vplus-16k",
+    brandSlug: "vplus",
+    price: 340,
+    image: "https://puslxgriozubqlpoxrqo.supabase.co/storage/v1/object/public/product-images/vplus/16k/mint.jpg",
+    description: "พอตใช้แล้วทิ้ง VPLUS 16,000 คำ หน้าจอดิจิทัลบอกแบตและน้ำยา",
+    features: ["VPLUS", "16,000 Puffs", "Mint"],
+    inStock: true,
+    isFeatured: true,
+  },
+];
+
+export default async function FeaturedProductsNavy() {
+  let featuredProducts: Product[] = [];
+
+  try {
+    const items = await getCatalogProducts();
+    const inStockItems = items.filter((item) => item.inStock);
+    if (inStockItems.length > 0) {
+      featuredProducts = inStockItems.slice(0, 4);
+    }
+  } catch (error) {
+    console.warn("FeaturedProducts fetch failed, using fallback:", error);
+  }
+
+  if (featuredProducts.length === 0) {
+    featuredProducts = fallbackFeaturedProducts;
+  }
   return (
     <section className="py-20 px-4 relative overflow-hidden">
       {/* Multi-layer depth background */}
@@ -53,7 +122,7 @@ export default function FeaturedProductsNavy() {
         <div className="mt-10 text-center sm:hidden">
           <Link
             href="/products"
-            className="w-full bg-gradient-to-r from-acid-lime to-[#a3e635] text-navy-deep px-6 py-3.5 rounded-full text-sm font-bold inline-flex items-center justify-center gap-2 shadow-acid"
+            className="btn-liquid-acid w-full px-6 py-3.5 text-sm inline-flex items-center justify-center gap-2"
           >
             ดูสินค้าทั้งหมด
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

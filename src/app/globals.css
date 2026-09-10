@@ -72,72 +72,244 @@ body {
 }
 
 /* ============================================
-   NAVY BLUE THEME
+   BRAND DESIGN SYSTEM (BDS Frosted & Translucent Glass)
+   - Clean & Succinct Card Layouts
+   - Stacked Translucent Glass Frames
+   - Specular Inner Sheen & Soft Ambient Glows
+   - Pill Indicators & Frosted Badges
+   - Strict adherence to Website Brand Palette
    ============================================ */
 
-/* Navy Card */
-.navy-card {
-  background: #172554;
-  border: 1px solid #1e40af;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+/* BDS Primary Glass Card */
+.navy-card, .bds-glass-card {
+  position: relative;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.07) 0%, rgba(15, 23, 42, 0.6) 50%, rgba(2, 6, 23, 0.8) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1.5rem; /* 24px squircle */
+  box-shadow: 
+    0 20px 45px -12px rgba(0, 0, 0, 0.75),
+    0 0 25px -5px rgba(37, 99, 235, 0.12),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.navy-card:hover {
-  background: #1e3a8a;
-  border-color: #3b82f6;
-  box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.35);
+.navy-card:hover, .bds-glass-card:hover {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.11) 0%, rgba(15, 23, 42, 0.65) 50%, rgba(2, 6, 23, 0.85) 100%);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-4px);
+  box-shadow: 
+    0 28px 60px -12px rgba(0, 0, 0, 0.85),
+    0 0 40px -5px rgba(59, 130, 246, 0.35),
+    inset 0 2px 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.4);
 }
 
-/* Navy Button Outline */
-.btn-navy-outline {
-  background: rgba(30, 64, 175, 0.15);
-  border: 1px solid #3b82f6;
+/* BDS Pill Indicator / Badge */
+.bds-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 4px 15px -2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.35);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   color: #ffffff;
   transition: all 0.25s ease;
 }
 
-.btn-navy-outline:hover {
-  background: rgba(59, 130, 246, 0.25);
-  border-color: #d4ff14;
-  color: #d4ff14;
+.bds-pill-badge:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.06) 100%);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.35);
 }
 
-/* Navy Glass Effect */
-.navy-glass {
-  background: rgba(23, 37, 84, 0.75);
+/* Dual-Layer 3D Squircle Icon Container (Based on Figma & BDS reference) */
+.glass-squircle-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Back Frame: Vibrant Brand Gradient Plate */
+.glass-squircle-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
+  transform: rotate(-5deg) translate(-2px, -2px) scale(0.96);
+  opacity: 0.85;
+  filter: drop-shadow(0 8px 16px rgba(37, 99, 235, 0.4));
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-squircle-back.lime {
+  background: linear-gradient(135deg, #65a30d 0%, #a3e635 50%, #d4ff14 100%);
+  filter: drop-shadow(0 8px 16px rgba(212, 255, 20, 0.35));
+}
+
+.glass-squircle-back.cyan {
+  background: linear-gradient(135deg, #0284c7 0%, #06b6d4 50%, #38bdf8 100%);
+  filter: drop-shadow(0 8px 16px rgba(6, 182, 212, 0.35));
+}
+
+.group:hover .glass-squircle-back {
+  transform: rotate(-8deg) translate(-4px, -3px) scale(1.02);
+  opacity: 1;
+  filter: drop-shadow(0 12px 24px rgba(59, 130, 246, 0.6));
+}
+
+.group:hover .glass-squircle-back.lime {
+  filter: drop-shadow(0 12px 24px rgba(212, 255, 20, 0.55));
+}
+
+/* Front Frame: Frosted Liquid Glass Plate with Top Specular Edge */
+.glass-squircle-front {
+  position: relative;
+  z-index: 2;
+  border-radius: 1.25rem;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(59, 130, 246, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 
+    0 10px 25px -4px rgba(0, 0, 0, 0.5),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Gradient Border Animated for Navy */
-.gradient-border-animated-navy {
+.group:hover .glass-squircle-front {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 
+    0 16px 32px -4px rgba(0, 0, 0, 0.6),
+    inset 0 2px 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================
+   3D LIQUID GLASS BUTTONS
+   ============================================ */
+
+/* Primary 3D Liquid Acid Button */
+.btn-acid, .btn-liquid-acid {
   position: relative;
-  background: #172554;
-  border-radius: 16px;
+  background: linear-gradient(180deg, #e4ff4f 0%, #d4ff14 50%, #a3e635 100%);
+  color: #06040a;
+  font-weight: 800;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 10px 25px -5px rgba(212, 255, 20, 0.45),
+    0 4px 10px -2px rgba(0, 0, 0, 0.3),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -2px 1px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.gradient-border-animated-navy::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    #d4ff14,
-    #3b82f6,
-    #1e40af,
-    #d4ff14
-  );
-  background-size: 300% 300%;
-  animation: gradient-border-rotate 4s ease infinite;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.btn-acid:hover, .btn-liquid-acid:hover {
+  background: linear-gradient(180deg, #f0ff70 0%, #e2ff4f 50%, #bbf44a 100%);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 15px 35px 0px rgba(212, 255, 20, 0.65),
+    0 6px 15px -2px rgba(0, 0, 0, 0.4),
+    inset 0 2px 1px 0 #ffffff,
+    inset 0 -2px 1px 0 rgba(0, 0, 0, 0.25);
 }
 
-.gradient-border-animated-navy:hover::before {
-  opacity: 1;
+.btn-acid:active, .btn-liquid-acid:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 
+    0 5px 15px 0px rgba(212, 255, 20, 0.4),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Secondary Frosted Liquid Glass Button */
+.btn-navy-outline, .btn-liquid-glass {
+  position: relative;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 9999px;
+  box-shadow: 
+    0 8px 20px -6px rgba(0, 0, 0, 0.5),
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-navy-outline:hover, .btn-liquid-glass:hover {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 14px 28px -6px rgba(0, 0, 0, 0.6),
+    0 0 25px -5px rgba(59, 130, 246, 0.3),
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
+}
+
+.btn-navy-outline:active, .btn-liquid-glass:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Electric Blue Liquid Glass Button */
+.btn-blue-glow-navy, .btn-liquid-blue {
+  position: relative;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 
+    0 10px 25px -5px rgba(37, 99, 235, 0.5),
+    0 4px 10px -2px rgba(0, 0, 0, 0.3),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -2px 1px 0 rgba(0, 0, 0, 0.25);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-blue-glow-navy:hover, .btn-liquid-blue:hover {
+  background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 15px 35px 0px rgba(59, 130, 246, 0.75),
+    0 6px 15px -2px rgba(0, 0, 0, 0.4),
+    inset 0 2px 1px 0 #ffffff,
+    inset 0 -2px 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.btn-blue-glow-navy:active, .btn-liquid-blue:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Navy Glass Overlay Effect */
+.navy-glass {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.75) 0%, rgba(2, 6, 23, 0.85) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 20px 40px -15px rgba(0, 0, 0, 0.75),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4);
 }
 
 /* ============================================

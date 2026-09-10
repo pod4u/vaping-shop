@@ -1,36 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllCustomers } from "@/lib/supabase";
+import { requireAdminApiPermission } from "@/lib/admin-api";
+import { listCustomers } from "@/lib/customer-service";
+
+export const dynamic = "force-dynamic";
+
+function boundedInteger(value: string | null, fallback: number, maximum: number): number {
+  if (!value || !/^\d+$/.test(value)) return fallback;
+  return Math.min(Math.max(Number(value), 1), maximum);
+}
 
 export async function GET(request: NextRequest) {
+  const unauthorized = await requireAdminApiPermission(request, "customers.view");
+  if (unauthorized) return unauthorized;
+
   try {
-    const customers = await getAllCustomers();
+    const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+    const page = boundedInteger(request.nextUrl.searchParams.get("page"), 1, 100000);
+    const pageSize = boundedInteger(request.nextUrl.searchParams.get("page_size"), 25, 100);
+    const result = await listCustomers({ query, page, pageSize });
 
-    const transformedCustomers = customers.map((customer: any) => ({
-      id: customer.id,
-      full_name: customer.full_name,
-      phone: customer.phone,
-      line_id: customer.line_id,
-      email: customer.email,
-      address: customer.address,
-      district: customer.district,
-      sub_district: customer.sub_district,
-      province: customer.province,
-      postal_code: customer.postal_code,
-      total_orders: customer.total_orders || 0,
-      total_spent: customer.total_spent || 0,
-      last_order_date: customer.last_order_date,
-      is_active: customer.is_active,
-      created_at: customer.created_at,
-    }));
-
-    return NextResponse.json({
-      customers: transformedCustomers,
-    });
-  } catch (error) {
-    console.error("Failed to fetch customers:", error);
     return NextResponse.json(
-      { customers: [] },
-      { status: 500 }
+      {
+        success: true,
+        customers: result.customers,
+        pagination: {
+          page,
+          page_size: pageSize,
+          total: result.total,
+          total_pages: Math.ceil(result.total / pageSize),
+        },
+      },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (error: unknown) {
+    const code = typeof error === "object" && error && "code" in error
+      ? String(error.code)
+      : "unknown";
+    console.error("Admin customer search failed", { code });
+    return NextResponse.json(
+      { success: false, customers: [], error: "โหลดข้อมูลลูกค้าไม่สำเร็จ" },
+      { status: 500, headers: { "Cache-Control": "no-store" } },
     );
   }
 }

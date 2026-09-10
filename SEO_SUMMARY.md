@@ -413,3 +413,15 @@ SEO smoke tests และ HTTP status ที่รายงานด้านล
 - ✅ Preview deployment: Ready แต่มี Vercel Authentication
 - ✅ SEO production smoke test: Passed
 - ไม่ต้องรอยืนยัน deploy Production เพราะ Git integration deploy ให้อัตโนมัติแล้ว
+
+---
+
+## 15. Public Reviews Discovery — 2026-09-10
+
+- หน้า `/reviews` เป็นหน้าสาธารณะและ indexable พร้อม canonical ของตัวเอง
+- เพิ่มทางเข้าจากเมนูหลักทั้ง desktop/mobile, Footer, หน้าแรก และหน้า Member
+- เพิ่ม `/reviews` ใน sitemap โดยไม่เพิ่มหน้า Member หรือหน้า Admin
+- แสดงเฉพาะรีวิวสถานะ `approved`
+- ชื่อสมาชิกและเลขออเดอร์ถูกปิดบังก่อนแสดงสาธารณะ
+- ป้ายยืนยันอ้างอิงสถานะออเดอร์จริง: มีออเดอร์, ยืนยันชำระ, จัดส่งแล้ว หรือจัดส่งสำเร็จ
+- ปรับข้อความสาธารณะให้รองรับรีวิวประสบการณ์สั่งซื้อและการใช้งานระบบ โดยไม่กล่าวอ้างว่าทุกรีวิวได้รับสินค้าแล้ว

@@ -15,6 +15,7 @@ interface FlavorWithStock {
   image: string;
   stock: number;
   price: number;
+  productSlug?: string;
 }
 
 export default function ReadyToShipProductsHybrid() {
@@ -22,57 +23,69 @@ export default function ReadyToShipProductsHybrid() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadReadyProducts();
-  }, []);
+    let isMounted = true;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-  const loadReadyProducts = async () => {
-    try {
-      const res = await fetch('/api/stock');
-      const data = await res.json();
+    const load = async () => {
+      try {
+        const res = await fetch('/api/stock', { signal: controller.signal });
+        const data = await res.json();
+        clearTimeout(timeoutId);
 
-      if (data.success) {
-        const readyProducts: FlavorWithStock[] = [];
+        if (data.success && isMounted) {
+          const readyProducts: FlavorWithStock[] = [];
 
-        data.data.forEach((brandData: any) => {
-          const brandId = brandData.brand?.id;
-          const brandName = brandData.brand?.name;
-          const brandNameTh = brandData.brand?.name_th;
-          const brandColor = brandData.brand?.color;
+          data.data.forEach((brandData: any) => {
+            const brandId = brandData.brand?.id;
+            const brandName = brandData.brand?.name;
+            const brandNameTh = brandData.brand?.name_th;
+            const brandColor = brandData.brand?.color;
 
-          brandData.products?.forEach((product: any) => {
-            product.availableFlavors?.forEach((flavorData: any) => {
-              const stock = flavorData.stock_quantity || 0;
+            brandData.products?.forEach((product: any) => {
+              product.availableFlavors?.forEach((flavorData: any) => {
+                const stock = flavorData.stock_quantity || 0;
 
-              if (stock > 0) {
-                readyProducts.push({
-                  id: flavorData.id,
-                  brandId,
-                  brandName,
-                  brandNameTh,
-                  brandColor,
-                  name: flavorData.flavor?.name || flavorData.id,
-                  nameTh: flavorData.flavor?.name_th || flavorData.id,
-                  color: flavorData.flavor?.color || '#6B7280',
-                  image: flavorData.flavor?.image || '/images/placeholder.svg',
-                  stock,
-                  price: product.price || getPrice(brandId)
-                });
-              }
+                if (stock > 0) {
+                  const price = flavorData.sale_price ?? flavorData.price ?? null;
+
+                  readyProducts.push({
+                    id: flavorData.id,
+                    brandId,
+                    brandName,
+                    brandNameTh,
+                    brandColor,
+                    name: flavorData.flavor?.name || flavorData.id,
+                    nameTh: flavorData.flavor?.name_th || flavorData.id,
+                    color: flavorData.flavor?.color || '#6B7280',
+                    image: flavorData.flavor?.image || '/images/placeholder.svg',
+                    stock,
+                    price,
+                    productSlug: product.slug,
+                  });
+                }
+              });
             });
           });
-        });
 
-        readyProducts.sort((a, b) => b.stock - a.stock);
-        setProducts(readyProducts.slice(0, 8));
+          setProducts(readyProducts.slice(0, 8));
+        }
+      } catch (error) {
+        console.warn('ReadyToShip Hybrid load issue:', error);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading products:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
 
-  const getPrice = (brandId: string): number => {
+    load();
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, []);
+
+  const getPriceByBrand = (brandId: string): number => {
     const prices: Record<string, number> = {
       alfa: 450, marbo: 250, msw: 390, mood: 290, vplus: 380,
       eskobar: 480, mbar: 350, relx: 450
@@ -84,9 +97,10 @@ export default function ReadyToShipProductsHybrid() {
     return (
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-hybrid-glow border-t-hybrid-glow-bright rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-white/60">กำลังโหลดสินค้าพร้อมส่ง...</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="hybrid-card rounded-2xl h-64 shimmer animate-pulse"></div>
+            ))}
           </div>
         </div>
       </section>

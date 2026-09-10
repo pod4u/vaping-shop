@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2500" height="843" viewBox="0 0 2500 843">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#050b18"/><stop offset="1" stop-color="#111f3b"/></linearGradient>
+    <linearGradient id="hero" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d7ff31"/><stop offset="1" stop-color="#8bea24"/></linearGradient>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#182b50"/><stop offset="1" stop-color="#101c35"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="18"/></filter>
+    <style>
+      .thai { font-family: "Sukhumvit Set", "Thonburi", "Noto Sans Thai", sans-serif; font-weight: 700; }
+      .caption { font-family: "Sukhumvit Set", "Thonburi", "Noto Sans Thai", sans-serif; font-weight: 500; }
+      .icon { fill: none; stroke: currentColor; stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+  <rect width="2500" height="843" fill="url(#bg)"/>
+  <circle cx="310" cy="155" r="220" fill="#bfff2d" opacity=".12" filter="url(#glow)"/>
+  <circle cx="2050" cy="660" r="230" fill="#5b8cff" opacity=".10" filter="url(#glow)"/>
+
+  <g color="#071426">
+    <rect x="18" y="18" width="798" height="385" rx="46" fill="url(#hero)"/>
+    <rect x="52" y="45" width="154" height="42" rx="21" fill="#071426" opacity=".9"/>
+    <text x="129" y="74" text-anchor="middle" font-size="22" class="thai" fill="#d7ff31">เริ่มตรงนี้</text>
+    <g transform="translate(292 58) scale(1.2)" class="icon"><path d="M0 15h31l20 96h132l25-68H57"/><circle cx="76" cy="150" r="13"/><circle cx="168" cy="150" r="13"/></g>
+    <text x="417" y="294" text-anchor="middle" font-size="68" class="thai" fill="#071426">สั่งซื้อสินค้า</text>
+    <text x="417" y="352" text-anchor="middle" font-size="31" class="caption" fill="#29470c">ดูสต็อกพร้อมส่งล่าสุด</text>
+  </g>
+
+  <g color="#bfff2d">
+    <rect x="852" y="18" width="798" height="385" rx="46" fill="url(#tile)" stroke="#2d4776" stroke-width="3"/>
+    <circle cx="1251" cy="137" r="91" fill="#bfff2d" opacity=".08"/>
+    <g transform="translate(1116 50) scale(1.2)" class="icon"><circle cx="81" cy="49" r="40"/><path d="M12 151c10-42 33-62 69-62s59 20 69 62"/><path d="M161 64h64M193 32v64"/></g>
+    <text x="1251" y="294" text-anchor="middle" font-size="64" class="thai" fill="#ffffff">เข้าสู่ระบบสมาชิก</text>
+    <text x="1251" y="352" text-anchor="middle" font-size="31" class="caption" fill="#9fb1d0">ดูออเดอร์ • จัดการที่อยู่</text>
+  </g>
+
+  <g color="#72ddff">
+    <rect x="1684" y="18" width="798" height="385" rx="46" fill="url(#tile)" stroke="#2d4776" stroke-width="3"/>
+    <circle cx="2083" cy="137" r="91" fill="#72ddff" opacity=".08"/>
+    <g transform="translate(1977 50) scale(1.2)" class="icon"><rect x="0" y="17" width="176" height="127" rx="19"/><path d="M0 61h176M41 17V0M135 17V0M37 101h43M101 101h38"/></g>
+    <text x="2083" y="294" text-anchor="middle" font-size="64" class="thai" fill="#ffffff">เช็กสถานะออเดอร์</text>
+    <text x="2083" y="352" text-anchor="middle" font-size="31" class="caption" fill="#9fb1d0">ติดตามการจัดส่งและพัสดุ</text>
+  </g>
+
+  <g color="#ffd65a">
+    <rect x="18" y="439" width="798" height="386" rx="46" fill="#101d36" stroke="#2d4776" stroke-width="3"/>
+    <circle cx="417" cy="561" r="82" fill="#ffd65a" opacity=".08"/>
+    <g transform="translate(274 466) scale(1.15)" class="icon"><path d="M84 4l23 48 53 8-38 38 9 54-47-25-47 25 9-54L8 60l53-8z"/><path d="M176 50h42c18 0 30 12 30 29v45c0 17-12 29-30 29h-20l-24 19 6-19h-9"/></g>
+    <text x="417" y="712" text-anchor="middle" font-size="65" class="thai" fill="#ffffff">รีวิวลูกค้า</text>
+    <text x="417" y="773" text-anchor="middle" font-size="31" class="caption" fill="#9fb1d0">ดูรีวิว • รับส่วนลด ฿5</text>
+  </g>
+
+  <g color="#bd8cff">
+    <rect x="852" y="439" width="798" height="386" rx="46" fill="#101d36" stroke="#2d4776" stroke-width="3"/>
+    <circle cx="1251" cy="561" r="82" fill="#bd8cff" opacity=".08"/>
+    <g transform="translate(1126 466) scale(1.15)" class="icon"><path d="M12 8h174c20 0 32 13 32 32v71c0 19-12 32-32 32h-81l-52 39 13-39H12c-20 0-32-13-32-32V40C-20 21-8 8 12 8z"/><path d="M34 74h129"/></g>
+    <text x="1251" y="712" text-anchor="middle" font-size="65" class="thai" fill="#ffffff">ติดต่อแอดมิน</text>
+    <text x="1251" y="773" text-anchor="middle" font-size="31" class="caption" fill="#9fb1d0">สอบถามเจ้าหน้าที่</text>
+  </g>
+
+  <g color="#55e69f">
+    <rect x="1684" y="439" width="798" height="386" rx="46" fill="#101d36" stroke="#2d4776" stroke-width="3"/>
+    <circle cx="2083" cy="561" r="82" fill="#55e69f" opacity=".08"/>
+    <g transform="translate(1981 466) scale(1.15)" class="icon"><path d="M7 92c0-45 36-82 82-82s82 37 82 82-36 82-82 82c-13 0-25-3-36-8L8 185l12-38C12 132 7 113 7 92z"/><path d="M52 92h74M102 55l37 37-37 37"/></g>
+    <text x="2083" y="712" text-anchor="middle" font-size="65" class="thai" fill="#ffffff">LINE สำรอง</text>
+    <text x="2083" y="773" text-anchor="middle" font-size="31" class="caption" fill="#9fb1d0">ช่องทางติดต่อสำรอง</text>
+  </g>
+</svg>
