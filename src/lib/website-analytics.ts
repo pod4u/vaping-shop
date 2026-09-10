@@ -7,6 +7,7 @@ export interface TrafficTotals { pageviews: number; visitors: number }
 export interface SearchTotals { clicks: number; impressions: number; ctr: number; position: number | null }
 export interface TrafficRow extends TrafficTotals { label: string }
 export interface SearchRow extends SearchTotals { date: string }
+export interface SearchDimensionRow extends SearchTotals { label: string }
 export interface TrafficReport {
   range: DateRange;
   previousRange: DateRange;
@@ -25,6 +26,9 @@ export interface SearchReport {
   totals: SearchTotals;
   previous: SearchTotals;
   daily: SearchRow[];
+  queries?: SearchDimensionRow[];
+  pages?: SearchDimensionRow[];
+  detailsError?: string | null;
   dataThrough: string | null;
 }
 export interface HealthCheck {
@@ -123,5 +127,7 @@ export function analyticsNotices(dashboard: AnalyticsDashboard): AnalyticsNotice
   if (!dashboard.scheduleConfigured) notices.push({ level: "info", title: "ยังไม่ได้ตั้งค่าซิงก์อัตโนมัติ", detail: "ตั้ง CRON_SECRET และ deploy ตาราง cron; ตอนนี้ใช้ปุ่มซิงก์ได้" });
   if (dashboard.vercel.data?.comparisonError) notices.push({ level: "info", title: "ยังเทียบช่วงก่อนหน้าของ Vercel ไม่ได้", detail: dashboard.vercel.data.comparisonError });
   if (dashboard.google.data && dashboard.google.data.totals.impressions < 100) notices.push({ level: "info", title: "ข้อมูล Google ยังน้อย", detail: "ยังไม่ควรสรุปแนวโน้มจากเปอร์เซ็นต์ที่เปลี่ยนมากในช่วงข้อมูลน้อย" });
+  if (dashboard.google.data?.totals.impressions && !dashboard.google.data.queries?.length) notices.push({ level: "info", title: "Google ยังไม่เปิดเผยคำค้น", detail: "ยอดรวมยังถูกต้อง แต่คำค้นที่มีปริมาณน้อยอาจถูกซ่อนเพื่อความเป็นส่วนตัว จึงไม่ควรเดาคำค้นจากยอดรวม" });
+  if (dashboard.google.data?.detailsError) notices.push({ level: "warning", title: "อ่านรายละเอียด Google ได้ไม่ครบ", detail: dashboard.google.data.detailsError });
   return notices;
 }

@@ -64,6 +64,9 @@ try {
   await test("Provider schemas distinguish empty data from corrupt payloads", () => {
     assert.deepEqual(provider.parseSearchRows({}), []);
     assert.throws(() => provider.parseSearchRows({ rows: [{}] }));
+    assert.deepEqual(provider.parseSearchDimensionRows({ rows: [{ keys: ["mbar"], clicks: 1, impressions: 10, ctr: .1, position: 7 }] }, "query")[0].label, "mbar");
+    assert.equal(provider.parseSearchDimensionRows({ rows: [{ keys: ["https://www.pod4u.store/products/mbar-10k?source=google"], clicks: 1, impressions: 10, ctr: .1, position: 7 }] }, "page")[0].label, "/products/mbar-10k");
+    assert.throws(() => provider.parseSearchDimensionRows({ rows: [{ keys: ["https://evil.example/"], clicks: 1, impressions: 1, ctr: 1, position: 1 }] }, "page"));
     assert.deepEqual(provider.parseTrafficRows({ data: [] }), []);
     assert.throws(() => provider.parseTrafficRows({}));
     assert.throws(() => provider.parseTrafficRows({ data: [{ visitors: 1, pageviews: Infinity }] }));
@@ -137,6 +140,7 @@ try {
     process.env.GSC_SERVICE_ACCOUNT_EMAIL = "test@example.invalid";
     process.env.GSC_SERVICE_ACCOUNT_PRIVATE_KEY = privateKey;
     process.env.GSC_PROPERTY = "sc-domain:pod4u.store";
+    const searchRequests = [];
     globalThis.fetch = async (url, init) => {
       if (String(url).includes("oauth2.googleapis.com")) {
         const assertion = new URLSearchParams(init.body).get("assertion");
@@ -145,16 +149,39 @@ try {
         return reply({ access_token: "test-google-token" });
       }
       const request = JSON.parse(init.body);
+      searchRequests.push(request);
       assert.equal(request.dataState, "final");
-      assert.deepEqual(request.dimensions, ["date"]);
-      assert.equal(request.aggregationType, "byProperty");
-      assert.equal(request.startDate, "2026-08-25");
-      return reply({ rows: [{ keys: ["2026-09-03"], clicks: 3, impressions: 50, ctr: .06, position: 5 }, { keys: ["2026-08-26"], clicks: 1, impressions: 20, ctr: .05, position: 8 }] });
+      if (request.dimensions[0] === "date") {
+        assert.equal(request.aggregationType, "byProperty");
+        assert.equal(request.startDate, "2026-08-25");
+        return reply({ rows: [{ keys: ["2026-09-03"], clicks: 3, impressions: 50, ctr: .06, position: 5 }, { keys: ["2026-08-26"], clicks: 1, impressions: 20, ctr: .05, position: 8 }] });
+      }
+      assert.equal(request.startDate, "2026-09-01");
+      if (request.dimensions[0] === "query") return reply({ rows: [{ keys: ["mbar"], clicks: 2, impressions: 25, ctr: .08, position: 6 }] });
+      assert.equal(request.aggregationType, "auto");
+      return reply({ rows: [{ keys: ["https://www.pod4u.store/products/mbar-10k"], clicks: 2, impressions: 25, ctr: .08, position: 6 }] });
     };
     search = await provider.fetchSearchReport(7, now);
     assert.equal(search.totals.clicks, 3);
     assert.equal(search.previous.clicks, 1);
     assert.equal(search.dataThrough, "2026-09-03");
+    assert.equal(search.queries[0].label, "mbar");
+    assert.equal(search.pages[0].label, "/products/mbar-10k");
+    assert.deepEqual(searchRequests.map((request) => request.dimensions[0]).sort(), ["date", "page", "query"]);
+  });
+  await test("GSC detail failure keeps trustworthy property totals", async () => {
+    globalThis.fetch = async (url, init) => {
+      if (String(url).includes("oauth2.googleapis.com")) return reply({ access_token: "test-google-token" });
+      const request = JSON.parse(init.body);
+      if (request.dimensions[0] === "date") return reply({ rows: [{ keys: ["2026-09-03"], clicks: 3, impressions: 50, ctr: .06, position: 5 }] });
+      return reply({ private: "DO_NOT_LEAK" }, 403);
+    };
+    const report = await provider.fetchSearchReport(7, now);
+    assert.equal(report.totals.impressions, 50);
+    assert.deepEqual(report.queries, []);
+    assert.deepEqual(report.pages, []);
+    assert(report.detailsError);
+    assert(!report.detailsError.includes("DO_NOT_LEAK"));
   });
   await test("A later failed sync retains last successful report and flags stale data", () => {
     const snapshot = { source: "vercel", scope_key: provider.providerConfig("vercel").scopeKey, period_days: 7, fetched_at: new Date(Date.now() - 48 * 3600_000).toISOString(), payload: traffic };

@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Activity, ArrowUpRight, CheckCircle2, Clock3, Cloud, Globe2, RefreshCw, Search, ShieldCheck, TriangleAlert } from "lucide-react";
+import { Activity, ArrowUpRight, CheckCircle2, Clock3, Cloud, Globe2, Lightbulb, RefreshCw, Search, ShieldCheck, TriangleAlert } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import {
   analyticsNotices, percentChange, shiftDate,
-  type AnalyticsDashboard, type DateRange, type PeriodDays, type SourceStatus, type SourceView, type TrafficRow,
+  type AnalyticsDashboard, type DateRange, type PeriodDays, type SearchDimensionRow, type SearchReport, type SourceStatus, type SourceView, type TrafficRow,
 } from "@/lib/website-analytics";
 
 const panel = "rounded-2xl border border-white/10 bg-white/[0.025] p-5 sm:p-6";
@@ -75,6 +75,32 @@ function Breakdown({ title, rows }: { title: string; rows?: TrafficRow[] }) {
   </section>;
 }
 
+function SearchBreakdown({ title, rows, pageLinks = false }: { title: string; rows?: SearchDimensionRow[]; pageLinks?: boolean }) {
+  return <section className={`${panel} min-w-0`}>
+    <h2 className="font-medium text-white">{title}</h2>
+    <div className="mt-4 overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead><tr className="border-b border-white/10 text-xs text-white/45"><th className="pb-3 font-normal">รายการ</th><th className="pb-3 pl-3 text-right font-normal">คลิก</th><th className="pb-3 pl-3 text-right font-normal">แสดงผล</th><th className="pb-3 pl-3 text-right font-normal">CTR</th><th className="pb-3 pl-3 text-right font-normal">อันดับ</th></tr></thead>
+        <tbody>{rows?.map((row, index) => <tr key={`${row.label}-${index}`} className="border-b border-white/5 last:border-0"><td className="max-w-[300px] break-words py-3 pr-3 text-white/80">{pageLinks ? <a href={row.label} target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-4 hover:text-acid-lime">{row.label}</a> : row.label}</td><td className="py-3 pl-3 text-right text-white tabular-nums">{format(row.clicks)}</td><td className="py-3 pl-3 text-right text-white/65 tabular-nums">{format(row.impressions)}</td><td className="py-3 pl-3 text-right text-white/55 tabular-nums">{format(row.ctr * 100)}%</td><td className="py-3 pl-3 text-right text-white/55 tabular-nums">{format(row.position)}</td></tr>)}</tbody>
+      </table>
+      {!rows?.length && <p className="py-8 text-center text-sm leading-6 text-white/40">ยังไม่มีรายการที่ Google เปิดเผยในช่วงนี้<br />คำค้นปริมาณน้อยอาจถูกซ่อนเพื่อความเป็นส่วนตัว</p>}
+    </div>
+  </section>;
+}
+
+function seoActions(search?: SearchReport | null) {
+  if (!search) return [];
+  const queries = search.queries ?? [];
+  if (!queries.length) return search.totals.impressions > 0 ? [{ title: "รอให้ข้อมูลคำค้นมากขึ้น", detail: "Google แสดงยอดรวมแล้ว แต่ยังไม่เปิดเผยคำค้นรายคำ อย่าเดาว่าคนค้นคำใดจากยอดรวมนี้" }] : [];
+  const actions: { title: string; detail: string }[] = [];
+  const nearPageOne = [...queries].filter((row) => row.position != null && row.position > 3 && row.position <= 20).sort((a, b) => b.impressions - a.impressions)[0];
+  if (nearPageOne) actions.push({ title: `ขยับคำว่า “${nearPageOne.label}”`, detail: `มี ${format(nearPageOne.impressions)} impressions อันดับเฉลี่ย ${format(nearPageOne.position)} — ตรวจ title, H1 และเนื้อหาของหน้าที่ตรงกับคำนี้ก่อนเพิ่มบทความใหม่` });
+  const lowCtr = [...queries].filter((row) => row.impressions >= 5 && row.ctr < 0.03).sort((a, b) => b.impressions - a.impressions)[0];
+  if (lowCtr && lowCtr.label !== nearPageOne?.label) actions.push({ title: `ปรับข้อความค้นหาสำหรับ “${lowCtr.label}”`, detail: `มี ${format(lowCtr.impressions)} impressions แต่ CTR ${format(lowCtr.ctr * 100)}% — ตรวจว่า title และ description ตอบสิ่งที่คนค้นจริง` });
+  if (!actions.length) actions.push({ title: "ติดตามต่อก่อนเปลี่ยนเนื้อหา", detail: "ยังไม่มีคำค้นที่มีข้อมูลพอให้ชี้จุดแก้ชัดเจน ดูแนวโน้มอย่างน้อย 2–4 สัปดาห์และอย่าตัดสินจากคลิกจำนวนน้อย" });
+  return actions.slice(0, 3);
+}
+
 export function WebsiteAnalyticsDashboard() {
   const [days, setDays] = useState<PeriodDays>(7);
   const [data, setData] = useState<AnalyticsDashboard | null>(null);
@@ -116,6 +142,7 @@ export function WebsiteAnalyticsDashboard() {
   const traffic = data?.vercel.data;
   const search = data?.google.data;
   const health = data?.health.data;
+  const actions = seoActions(search);
   return <div className="mx-auto max-w-[1500px] space-y-6 p-4 text-white sm:p-8">
     <header className="flex flex-col justify-between gap-5 xl:flex-row xl:items-center">
       <div><p className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-acid-lime"><Activity size={15} /> Website overview</p><h1 className="mt-3 text-2xl font-semibold sm:text-3xl">สถิติและสถานะเว็บไซต์</h1><p className="mt-2 text-sm text-white/55">ภาพรวมการเข้าใช้งาน ข้อมูลจาก Google และผลตรวจเว็บไซต์</p></div>
@@ -149,6 +176,14 @@ export function WebsiteAnalyticsDashboard() {
       <p className="text-xs leading-6 text-white/45">Google ใช้ข้อมูล final และเว้น 3 วันล่าสุด ส่วน Vercel ใช้วันเต็มตาม UTC จึงอาจมีช่วงวันที่ต่างกัน · ช่องว่างในกราฟหมายถึงไม่มีแถวข้อมูล · เส้น deploy แสดงวันที่สร้าง deployment ที่มีสถานะ Ready ตาม UTC ไม่ใช่เวลาที่ผู้ใช้ทุกคนเริ่มเห็นเวอร์ชันนั้น</p>
       {search && <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-white/65"><span>CTR: {format(search.totals.ctr * 100)}%</span><span>อันดับเฉลี่ย: {format(search.totals.position)}</span><span>วันที่ล่าสุดที่ Google ส่งแถวข้อมูล: {search.dataThrough ?? "ยังไม่มี"}</span></div>}
 
+      <div><h2 className="flex items-center gap-2 text-lg font-medium"><Search size={19} />คนค้นหาอะไรใน Google</h2><RangeLabel range={search?.range} /><p className="mt-2 text-xs leading-6 text-white/45">ตารางคำค้นและหน้าปลายทางเป็นข้อมูลที่ Google เปิดเผย ไม่จำเป็นต้องรวมเท่ากับยอดด้านบน เพราะ Google ซ่อนคำค้นบางส่วนเพื่อความเป็นส่วนตัว</p></div>
+      <div className="grid gap-5 xl:grid-cols-2"><SearchBreakdown title="คำค้นที่พาให้เว็บไซต์ปรากฏ" rows={search?.queries} /><SearchBreakdown title="หน้าที่ปรากฏใน Google" rows={search?.pages} pageLinks /></div>
+
+      <section className={panel}>
+        <h2 className="flex items-center gap-2 text-lg font-medium"><Lightbulb size={19} className="text-acid-lime" />ควรทำอะไรต่อ</h2>
+        {actions.length ? <div className="mt-4 grid gap-3 lg:grid-cols-2">{actions.map((action, index) => <div key={index} className="rounded-xl border border-acid-lime/10 bg-acid-lime/[0.035] p-4"><p className="text-sm font-medium">{action.title}</p><p className="mt-2 text-xs leading-6 text-white/55">{action.detail}</p></div>)}</div> : <p className="mt-4 text-sm text-white/60">ยังไม่มีข้อมูล Google มากพอสำหรับจัดลำดับงาน</p>}
+      </section>
+
       <section className={panel}>
         <h2 className="flex items-center gap-2 text-lg font-medium"><TriangleAlert size={19} className="text-amber-300" />สิ่งที่ต้องตรวจต่อ</h2>
         {notices.length ? <div className="mt-4 grid gap-3 lg:grid-cols-2">{notices.map((notice, index) => <div key={index} className={`rounded-xl border p-4 ${notice.level === "warning" ? "border-amber-400/15 bg-amber-400/5" : "border-white/5 bg-white/[0.02]"}`}><p className="text-sm font-medium">{notice.title}</p><p className="mt-2 text-xs leading-6 text-white/55">{notice.detail}</p></div>)}</div> : <p className="mt-4 text-sm text-white/60">ยังไม่พบข้อเตือนจากข้อมูลที่มี ผลนี้ครอบคลุมเฉพาะรายการที่ตรวจและเวลาซิงก์ล่าสุด</p>}
@@ -169,13 +204,13 @@ export function WebsiteAnalyticsDashboard() {
         <div className="mt-4 space-y-2">{data.runs.slice(0, 6).map((run) => <details key={run.id} className="rounded-xl bg-white/[0.025] p-3"><summary className="cursor-pointer text-sm text-white/70">{time(run.started_at)} · {({ success: "สำเร็จ", partial: "สำเร็จบางส่วน", running: "กำลังซิงก์ / รอสรุปผล", error: "ไม่สำเร็จ" } as Record<string, string>)[run.status] ?? run.status}</summary><ul className="mt-3 space-y-2 text-xs text-white/50">{run.outcomes.map((outcome, index) => <li key={index}>{outcome.source} {outcome.days ? `${outcome.days} วัน` : ""} · {outcome.status === "success" ? "สำเร็จ" : outcome.message ?? "ไม่สำเร็จ"}</li>)}</ul></details>)}{!data.runs.length && <p className="py-5 text-sm text-white/40">ยังไม่มีประวัติซิงก์</p>}</div>
       </section>
 
-      <section className={panel} id="connections"><h2 className="text-lg font-medium">การเชื่อมต่อและตั้งค่า</h2><p className="mt-2 text-sm leading-6 text-white/55">ตั้งค่าใน Vercel → Project → Settings → Environment Variables แล้ว deploy เวอร์ชันที่มีค่านั้น จากนั้นกลับมากดซิงก์ข้อมูล</p>
+      <details className={panel} id="connections" open={!data.storageReady || !data.google.configured || !data.vercel.configured}><summary className="cursor-pointer text-lg font-medium">การเชื่อมต่อและตั้งค่า <span className="ml-2 text-sm font-normal text-emerald-300">{data.storageReady && data.google.configured && data.vercel.configured && data.scheduleConfigured ? "พร้อมใช้งาน" : "ต้องตรวจเพิ่ม"}</span></summary><p className="mt-3 text-sm leading-6 text-white/55">ตั้งค่าใน Vercel → Project → Settings → Environment Variables แล้ว deploy เวอร์ชันที่มีค่านั้น จากนั้นกลับมากดซิงก์ข้อมูล</p>
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
           <div className="rounded-xl border border-white/10 p-4"><h3 className="font-medium">Google Search Console</h3><ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-white/60"><li>เปิด Search Console API ใน Google Cloud และสร้าง service account</li><li>เพิ่มอีเมล service account ในสิทธิ์ผู้ใช้ของ property ที่ยืนยันแล้ว ให้สิทธิ์อ่านรายงาน</li><li>ตั้งค่าตัวแปรด้านล่าง โดย private key เก็บเป็น Secret ฝั่งเซิร์ฟเวอร์</li></ol><div className="mt-3 space-y-1 break-all font-mono text-xs text-white/50"><p>GSC_PROPERTY=sc-domain:pod4u.store</p><p>GSC_SERVICE_ACCOUNT_EMAIL</p><p>GSC_SERVICE_ACCOUNT_PRIVATE_KEY</p></div><a href="https://search.google.com/search-console" target="_blank" rel="noreferrer" className="mt-4 inline-block text-xs text-acid-lime">เปิด Search Console ↗</a></div>
           <div className="rounded-xl border border-white/10 p-4"><h3 className="font-medium">Vercel Web Analytics</h3><ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-white/60"><li>เปิด Web Analytics ในโปรเจกต์ และสร้าง access token ที่มีสิทธิ์อ่านโปรเจกต์นี้</li><li>คัดลอก Project ID และ Team ID จาก Settings</li><li>ตรวจแพ็กเกจที่รองรับช่วงข้อมูลย้อนหลัง หากอ่านช่วงก่อนหน้าไม่ได้ ระบบจะแสดงเหตุผล</li></ol><div className="mt-3 space-y-1 break-all font-mono text-xs text-white/50"><p>ANALYTICS_VERCEL_TOKEN</p><p>ANALYTICS_VERCEL_PROJECT_ID</p><p>ANALYTICS_VERCEL_TEAM_ID</p></div><a href="https://vercel.com/docs/analytics/web-analytics-api" target="_blank" rel="noreferrer" className="mt-4 inline-block text-xs text-acid-lime">คู่มือ API ของ Vercel ↗</a></div>
         </div>
         <p className="mt-5 text-xs leading-6 text-white/50">ฐานข้อมูล: {data.storageReady ? "พร้อมใช้งาน" : "รอติดตั้ง migration / ตรวจการเชื่อมต่อ"} · CRON_SECRET: {data.scheduleConfigured ? "ตั้งค่าแล้ว (ตรวจการทำงานจากประวัติซิงก์)" : "ยังไม่ได้ตั้งค่า"}<br />คู่มือติดตั้งสำหรับผู้พัฒนาอยู่ใน docs/website-analytics-setup.md · ห้ามตั้งชื่อคีย์ลับด้วย NEXT_PUBLIC_</p>
-      </section>
+      </details>
       <p className="pb-3 text-xs leading-6 text-white/35">อัปเดตหน้าจอ: {time(data.generatedAt)} · สถิตินี้ไม่ระบุชื่อ อีเมล หรือบัญชีของผู้เข้าชม และไม่เชื่อมกับข้อมูลสมาชิก</p>
     </>}
   </div>;

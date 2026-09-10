@@ -2,7 +2,7 @@ import "server-only";
 import { createHash, createSign } from "node:crypto";
 import {
   reportingRanges, searchTotals,
-  type AnalyticsSource, type DateRange, type PeriodDays, type SearchReport, type SearchRow,
+  type AnalyticsSource, type DateRange, type PeriodDays, type SearchDimensionRow, type SearchReport, type SearchRow,
   type TrafficReport, type TrafficRow, type TrafficTotals, type HealthReport,
 } from "@/lib/website-analytics";
 
@@ -68,6 +68,22 @@ export function parseSearchRows(result: Record<string, unknown>): SearchRow[] {
   }).sort((a, b) => a.date.localeCompare(b.date));
 }
 
+export function parseSearchDimensionRows(result: Record<string, unknown>, dimension: "query" | "page"): SearchDimensionRow[] {
+  if (result.rows === undefined) return [];
+  if (!Array.isArray(result.rows)) throw new Error("Invalid rows");
+  return result.rows.map((row) => {
+    if (!row || !Array.isArray(row.keys) || typeof row.keys[0] !== "string" || !row.keys[0].trim()) throw new Error("Invalid dimension");
+    const impressions = metric(row.impressions);
+    let label = row.keys[0].trim().slice(0, 240);
+    if (dimension === "page") {
+      const url = new URL(label);
+      if (!["pod4u.store", "www.pod4u.store"].includes(url.hostname)) throw new Error("Unexpected page host");
+      label = url.pathname.slice(0, 240);
+    }
+    return { label, clicks: metric(row.clicks), impressions, ctr: metric(row.ctr), position: impressions ? metric(row.position) : null };
+  });
+}
+
 async function googleToken(): Promise<string> {
   const issued = Math.floor(Date.now() / 1000);
   const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString("base64url");
@@ -92,15 +108,30 @@ export async function fetchSearchReport(days: PeriodDays, now = new Date()): Pro
     throw new AnalyticsProviderError("GSC_PROPERTY ต้องเป็น property ของ pod4u.store ที่ยืนยันสิทธิ์แล้ว");
   }
   const token = await googleToken();
-  // Date-only aggregation preserves property totals; do not sum top-query rows.
-  const result = await fetchJson(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(property)}/searchAnalytics/query`, {
+  const endpoint = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(property)}/searchAnalytics/query`;
+  const query = (body: Record<string, unknown>) => fetchJson(endpoint, {
     method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ startDate: ranges.previous.start, endDate: ranges.current.end, dimensions: ["date"], type: "web", dataState: "final", aggregationType: "byProperty", rowLimit: 100 }),
+    body: JSON.stringify({ type: "web", dataState: "final", rowLimit: 100, ...body }),
   });
-  const rows = parseSearchRows(result);
+  // Keep property totals separate: top query/page rows are truncated and must never be summed into totals.
+  const detail = async (body: Record<string, unknown>) => {
+    try { return { result: await query(body), error: null }; }
+    catch (error) { return { result: {}, error: safeAnalyticsError(error) }; }
+  };
+  const [dateResult, queryDetail, pageDetail] = await Promise.all([
+    query({ startDate: ranges.previous.start, endDate: ranges.current.end, dimensions: ["date"], aggregationType: "byProperty" }),
+    detail({ startDate: ranges.current.start, endDate: ranges.current.end, dimensions: ["query"], aggregationType: "byProperty", rowLimit: 25 }),
+    detail({ startDate: ranges.current.start, endDate: ranges.current.end, dimensions: ["page"], aggregationType: "auto", rowLimit: 25 }),
+  ]);
+  const rows = parseSearchRows(dateResult);
   const daily = rows.filter((row) => row.date >= ranges.current.start && row.date <= ranges.current.end);
   const previous = rows.filter((row) => row.date >= ranges.previous.start && row.date <= ranges.previous.end);
-  return { range: ranges.current, previousRange: ranges.previous, totals: searchTotals(daily), previous: searchTotals(previous), daily, dataThrough: daily.at(-1)?.date ?? null };
+  return {
+    range: ranges.current, previousRange: ranges.previous, totals: searchTotals(daily), previous: searchTotals(previous), daily,
+    queries: parseSearchDimensionRows(queryDetail.result, "query"), pages: parseSearchDimensionRows(pageDetail.result, "page"),
+    detailsError: [queryDetail.error, pageDetail.error].filter(Boolean).join(" · ") || null,
+    dataThrough: daily.at(-1)?.date ?? null,
+  };
 }
 
 function vercelUrl(path: string) {
