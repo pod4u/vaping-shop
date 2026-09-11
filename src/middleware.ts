@@ -12,20 +12,8 @@ const PAGE_PERMISSIONS: Array<[string, AdminPermission]> = [
   ['/admin', 'dashboard.view'],
 ];
 
-const REVIEW_DESIGN_COOKIE = 'pod4u_review_design_preview';
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  const reviewDesignMode = request.cookies.get(REVIEW_DESIGN_COOKIE)?.value === 'enabled';
-  if (pathname === '/reviews' && reviewDesignMode) {
-    const previewUrl = request.nextUrl.clone();
-    previewUrl.pathname = '/reviews/design-preview-7q9m2';
-    return NextResponse.rewrite(previewUrl);
-  }
-  if (pathname === '/reviews/design-preview-7q9m2' && !reviewDesignMode) {
-    return NextResponse.redirect(new URL('/reviews', request.url));
-  }
 
   const isWarehousePage = pathname.startsWith('/warehouse') && pathname !== '/warehouse/login';
   const isWarehouseApi = pathname.startsWith('/api/warehouse') && pathname !== '/api/warehouse/auth';
@@ -63,5 +51,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*', '/warehouse/:path*', '/api/warehouse/:path*', '/reviews/:path*', '/reviews'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/warehouse/:path*', '/api/warehouse/:path*'],
 };
