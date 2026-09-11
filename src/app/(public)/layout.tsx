@@ -14,17 +14,18 @@ export default function PublicLayout({
 }) {
   const pathname = usePathname();
   const isMemberPortal = pathname.startsWith("/member");
+  const isReviewsExperience = pathname.startsWith("/reviews");
   const hasPageLevelMobileAction = pathname.startsWith("/reviews");
   const isMemberTransition = pathname.startsWith("/member/liff")
     || pathname.startsWith("/member/access");
 
   return (
     <CartProvider>
-      {!isMemberTransition && <WelcomePopup />}
+      {!isMemberTransition && !isReviewsExperience && <WelcomePopup />}
       <div className="bg-navy-deep min-h-screen">
-        {!isMemberTransition && <HeaderNavy />}
-        <main className={`min-h-screen ${isMemberTransition ? "" : "pt-20"}`}>{children}</main>
-        {!isMemberPortal && <FooterNavy />}
+        {!isMemberTransition && !isReviewsExperience && <HeaderNavy />}
+        <main className={`min-h-screen ${isMemberTransition || isReviewsExperience ? "" : "pt-20"}`}>{children}</main>
+        {!isMemberPortal && !isReviewsExperience && <FooterNavy />}
         {!isMemberPortal && !hasPageLevelMobileAction && <LineButtonNavy />}
       </div>
     </CartProvider>

@@ -1,8 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, MessageCircleMore, ShieldCheck, Sparkles, Star } from "lucide-react";
+import {
+  ArrowRight,
+  Grid2X2,
+  Heart,
+  Home,
+  Menu,
+  MessageCircleMore,
+  Search,
+  ShoppingCart,
+  Star,
+  UserRound,
+} from "lucide-react";
 import PublicReviewsList from "./PublicReviewsList";
 import { getCanonical } from "@/lib/seo";
+import { CartDrawer } from "@/components/CartDrawer";
 
 export const metadata: Metadata = {
   title: "รีวิวจากลูกค้า",
@@ -19,37 +31,35 @@ export const metadata: Metadata = {
 
 export default function ReviewsPage() {
   return (
-    <div className="relative isolate overflow-hidden pb-32 text-white sm:pb-24">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[42rem] bg-[radial-gradient(circle_at_78%_2%,rgba(59,130,246,0.22),transparent_36%),radial-gradient(circle_at_18%_22%,rgba(212,255,20,0.08),transparent_24%)]" />
+    <div className="relative isolate min-h-screen overflow-hidden bg-[#061328] pb-40 text-white sm:pb-28">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_68%_4%,rgba(37,99,235,0.25),transparent_28%),radial-gradient(circle_at_10%_36%,rgba(20,92,158,0.16),transparent_34%),linear-gradient(180deg,#071a37_0%,#041124_100%)]" />
 
-      <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 sm:pt-14">
-        <header className="relative overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#09162d]/90 px-5 py-8 shadow-2xl shadow-black/25 sm:px-9 sm:py-11">
-          <div className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full border border-sky-300/10 bg-sky-400/10 blur-3xl" />
-          <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-acid-lime/25 bg-acid-lime/[0.08] px-3 py-1.5 text-xs font-black text-acid-lime">
-                <Sparkles className="h-4 w-4" /> เสียงจริงจากสมาชิก Pod4U
-              </div>
-              <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-6xl">รีวิวจากลูกค้า</h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-                ประสบการณ์จากผู้ใช้งานที่มีคำสั่งซื้ออยู่ในระบบจริง เพื่อช่วยให้ลูกค้าคนต่อไปตัดสินใจได้ง่ายขึ้นค่ะ
-              </p>
-            </div>
-
-            <div className="grid gap-2 text-xs font-bold text-slate-200 sm:grid-cols-2 lg:grid-cols-1">
-              <span className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5">
-                <BadgeCheck className="h-4 w-4 text-acid-lime" /> เชื่อมกับหมายเลขคำสั่งซื้อ
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5">
-                <ShieldCheck className="h-4 w-4 text-acid-lime" /> ซ่อนข้อมูลส่วนตัวก่อนเผยแพร่
-              </span>
-            </div>
+      <header className="border-b border-sky-300/10 bg-[#06152d]/75 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-7">
+          <Link href="/" aria-label="Pod4U หน้าแรก" className="leading-none">
+            <span className="block text-3xl font-black italic tracking-[-0.08em] text-white sm:text-4xl">Pod<span className="text-acid-lime">4U</span></span>
+            <span className="mt-1 block text-[7px] font-bold tracking-[0.34em] text-slate-300 sm:text-[8px]">LIFESTYLE IN YOUR WAY</span>
+          </Link>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Link href="/products" aria-label="ค้นหาสินค้า" className="rounded-xl p-2 text-white transition hover:bg-white/10"><Search className="h-7 w-7" /></Link>
+            <div className="[&_button]:border-0 [&_button]:bg-transparent [&_button]:p-2 [&_button]:shadow-none"><CartDrawer /></div>
+            <Link href="/products" aria-label="เมนูสินค้า" className="rounded-xl p-2 text-white transition hover:bg-white/10"><Menu className="h-8 w-8" /></Link>
           </div>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-6xl px-5 pt-10 sm:px-7 sm:pt-14">
+        <header className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-end">
+          <div>
+            <h1 className="text-4xl font-black tracking-tight sm:text-6xl">รีวิวจากลูกค้า</h1>
+            <p className="mt-3 max-w-3xl text-base leading-7 text-slate-300 sm:text-xl">เสียงจริง จากผู้ใช้งานจริง ขอบคุณที่ให้เราเป็นส่วนหนึ่งในทุกวัน</p>
+          </div>
+          <div className="hidden pb-1 text-right text-sm font-bold leading-6 text-slate-300 sm:block">ของแท้&nbsp; จัดส่งไว<br />ดูแลต่อเนื่อง<div className="ml-auto mt-3 h-1 w-14 rounded-full bg-acid-lime" /></div>
         </header>
 
         <PublicReviewsList />
 
-        <section className="mt-8 overflow-hidden rounded-[2rem] border border-acid-lime/25 bg-[linear-gradient(135deg,rgba(212,255,20,0.12),rgba(9,22,45,0.88)_45%)] p-6 sm:p-8">
+        <section className="mt-8 overflow-hidden rounded-[1.6rem] border border-acid-lime/25 bg-[linear-gradient(135deg,rgba(212,255,20,0.12),rgba(9,22,45,0.88)_45%)] p-6 sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2 text-acid-lime">
@@ -68,11 +78,27 @@ export default function ReviewsPage() {
         </section>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#071126]/90 p-3 backdrop-blur-xl sm:hidden">
+      <div className="fixed inset-x-0 bottom-[4.85rem] z-40 border-t border-white/10 bg-[#071126]/90 p-3 backdrop-blur-xl sm:hidden">
         <Link href="/member#reviews" className="mx-auto flex max-w-lg items-center justify-center gap-2 rounded-2xl bg-acid-lime px-5 py-3.5 font-black text-navy-deep shadow-xl">
           <MessageCircleMore className="h-5 w-5" /> เขียนรีวิว รับส่วนลด ฿5
         </Link>
       </div>
+
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-sky-300/10 bg-[#06152d]/95 px-4 pb-[max(0.7rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl" aria-label="เมนูหลัก">
+        <div className="mx-auto grid w-full max-w-3xl grid-cols-5">
+          {[
+            ["/", "หน้าหลัก", Home],
+            ["/products", "หมวดหมู่", Grid2X2],
+            ["/reviews", "รีวิวจากลูกค้า", MessageCircleMore],
+            ["/products", "รายการโปรด", Heart],
+            ["/member", "บัญชี", UserRound],
+          ].map(([href, label, Icon]) => (
+            <Link key={label as string} href={href as string} className={`flex flex-col items-center gap-1 text-xs font-bold ${href === "/reviews" ? "text-acid-lime" : "text-slate-400"}`}>
+              <Icon className="h-6 w-6" /><span>{label as string}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
     </div>
   );
 }

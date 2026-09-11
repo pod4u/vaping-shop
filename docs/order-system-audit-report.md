@@ -2235,3 +2235,9 @@ Executed the complete review reward lifecycle against the production Supabase sc
 - `npx tsc --noEmit`: PASS
 - `npm run build`: PASS (55 routes)
 - Browser verification: PASS at 390×844 and 1440×1000; no application console errors.
+## Public Reviews Reference-Match Upgrade — 2026-09-11
+
+- Rebuilt `/reviews` against the approved navy/lime mobile reference: dedicated Pod4U masthead, compact rating/trust panel, pill filters, verified-review cards, member review CTA, and five-item bottom navigation.
+- Removed the generic storefront header, footer, and welcome popup from this focused review experience.
+- Kept review integrity unchanged: only approved database reviews are rendered; no demo or fabricated customer reviews were added.
+- Responsive verification: mobile 390×844 and production-safe desktop layout. TypeScript, review-system verification (43 passed), and Next.js production build passed.

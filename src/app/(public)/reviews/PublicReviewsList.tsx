@@ -5,12 +5,9 @@ import {
   BadgeCheck,
   ChevronLeft,
   ChevronRight,
-  Headphones,
   Loader2,
-  Package,
   ShieldCheck,
   ShoppingBag,
-  Sparkles,
   Star,
   Truck,
   UsersRound,
@@ -37,11 +34,11 @@ interface ReviewSummary {
 }
 
 const CATEGORIES = [
-  { value: "all", label: "ทั้งหมด", icon: Sparkles },
-  { value: "product", label: "สินค้า", icon: Package },
-  { value: "delivery", label: "การจัดส่ง", icon: Truck },
-  { value: "service", label: "การใช้งาน", icon: Headphones },
-  { value: "overall", label: "ภาพรวม", icon: Star },
+  { value: "all", label: "ทั้งหมด" },
+  { value: "product", label: "สินค้า" },
+  { value: "delivery", label: "การจัดส่ง" },
+  { value: "service", label: "การใช้งาน" },
+  { value: "overall", label: "บริการ" },
 ] as const;
 
 const CATEGORY_LABELS: Record<ReviewCategory, string> = {
@@ -120,53 +117,53 @@ export default function PublicReviewsList() {
 
   return (
     <section className="mt-5 sm:mt-7" aria-label="รายการรีวิวจากลูกค้า">
-      <div className="overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#0a1931]/85 shadow-xl shadow-black/20">
-        <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="flex flex-col justify-center border-b border-white/10 p-6 sm:p-8 lg:border-b-0 lg:border-r">
+      <div className="mt-7 overflow-hidden rounded-[1.6rem] border border-sky-300/25 bg-[#081b38]/80 shadow-xl shadow-black/20">
+        <div className="grid grid-cols-[0.82fr_1.18fr]">
+          <div className="flex flex-col justify-center border-r border-white/10 p-5 sm:p-8">
             <div className="flex items-end gap-3">
-              <strong className="text-6xl font-black tracking-tighter sm:text-7xl">
+              <strong className="text-5xl font-black tracking-tighter sm:text-7xl">
                 {hasReviews ? summary!.average_rating.toFixed(1) : "—"}
               </strong>
               <span className="pb-2 text-sm font-bold text-slate-400">/ 5</span>
             </div>
-            <div className="mt-3"><ReviewStars rating={summary?.average_rating ?? 0} size="large" /></div>
-            <p className="mt-3 text-sm font-black text-white">
+            <div className="mt-3 origin-left scale-75 sm:scale-100"><ReviewStars rating={summary?.average_rating ?? 0} size="large" /></div>
+            <p className="mt-2 text-xs font-black leading-5 text-white sm:mt-3 sm:text-sm">
               {hasReviews ? `${summary!.total_reviews.toLocaleString("th-TH")} รีวิวจากคำสั่งซื้อจริง` : "รอรีวิวจากคำสั่งซื้อจริงรายการแรก"}
             </p>
-            <p className="mt-1 text-xs leading-5 text-slate-400">ระบบไม่นำรีวิวที่ยังไม่ผ่านการตรวจสอบมาแสดงค่ะ</p>
+            <p className="mt-1 hidden text-xs leading-5 text-slate-400 sm:block">ระบบไม่นำรีวิวที่ยังไม่ผ่านการตรวจสอบมาแสดงค่ะ</p>
           </div>
 
-          <div className="grid gap-3 p-6 sm:p-8">
-            <div className="flex gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300"><BadgeCheck className="h-5 w-5" /></span>
-              <div><p className="font-black">ผู้ซื้อที่ยืนยันแล้ว</p><p className="mt-0.5 text-xs leading-5 text-slate-400">ทุกรีวิวต้องเชื่อมกับคำสั่งซื้อของสมาชิก</p></div>
+          <div className="grid content-center gap-3 p-4 sm:p-8">
+            <div className="flex gap-2.5 sm:gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300 sm:h-10 sm:w-10"><BadgeCheck className="h-5 w-5" /></span>
+              <div><p className="text-xs font-black sm:text-base">ผู้ซื้อที่ยืนยันแล้ว</p><p className="mt-0.5 text-[10px] leading-4 text-slate-400 sm:text-xs sm:leading-5">ทุกรีวิวเชื่อมกับคำสั่งซื้อจริง</p></div>
             </div>
-            <div className="flex gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300"><ShoppingBag className="h-5 w-5" /></span>
-              <div><p className="font-black">ตรวจสอบย้อนกลับได้</p><p className="mt-0.5 text-xs leading-5 text-slate-400">แสดงหมายเลขออเดอร์แบบปกปิดข้อมูลสำคัญ</p></div>
+            <div className="flex gap-2.5 sm:gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300 sm:h-10 sm:w-10"><ShoppingBag className="h-5 w-5" /></span>
+              <div><p className="text-xs font-black sm:text-base">รีวิวเชื่อมกับออเดอร์</p><p className="mt-0.5 text-[10px] leading-4 text-slate-400 sm:text-xs sm:leading-5">ตรวจสอบย้อนกลับได้ทุกรายการ</p></div>
             </div>
-            <div className="flex gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300"><UsersRound className="h-5 w-5" /></span>
-              <div><p className="font-black">ประสบการณ์จริงจากลูกค้า</p><p className="mt-0.5 text-xs leading-5 text-slate-400">รีวิวช่วยให้ร้านพัฒนาสินค้าและบริการให้ดีขึ้น</p></div>
+            <div className="flex gap-2.5 sm:gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300 sm:h-10 sm:w-10"><UsersRound className="h-5 w-5" /></span>
+              <div><p className="text-xs font-black sm:text-base">ประสบการณ์จริงจากลูกค้า</p><p className="mt-0.5 text-[10px] leading-4 text-slate-400 sm:text-xs sm:leading-5">เพื่อพัฒนาบริการให้ดียิ่งขึ้น</p></div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-5 flex gap-2 overflow-x-auto pb-2" aria-label="กรองรีวิวตามหมวดหมู่">
+      <div className="mt-6 grid grid-cols-5 gap-2 overflow-x-auto pb-1" aria-label="กรองรีวิวตามหมวดหมู่">
         {CATEGORIES.map((item) => (
           <button
             key={item.value}
             type="button"
             onClick={() => setCategory(item.value as typeof category)}
             aria-pressed={category === item.value}
-            className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-black transition ${
+            className={`inline-flex min-h-12 min-w-[6rem] shrink-0 items-center justify-center rounded-[1.25rem] border px-4 py-2.5 text-sm font-black transition ${
               category === item.value
                 ? "border-acid-lime bg-acid-lime text-navy-deep shadow-lg shadow-acid-lime/10"
                 : "border-white/10 bg-[#0a1931]/70 text-slate-300 hover:border-white/20 hover:bg-white/[0.06]"
             }`}
           >
-            <item.icon className="h-4 w-4" /> {item.label}
+            {item.label}
           </button>
         ))}
       </div>
@@ -192,7 +189,7 @@ export default function PublicReviewsList() {
           {reviews.map((review) => {
             const primaryItem = review.items[0];
             return (
-              <article key={review.id} className="rounded-[1.75rem] border border-sky-300/15 bg-[linear-gradient(145deg,rgba(12,31,59,0.96),rgba(7,17,38,0.96))] p-5 shadow-lg shadow-black/15 sm:p-6">
+              <article key={review.id} className="rounded-[1.6rem] border border-sky-300/20 bg-[linear-gradient(145deg,rgba(12,34,66,0.96),rgba(7,22,45,0.96))] p-5 shadow-lg shadow-black/15 sm:p-7">
                 <div className="flex items-start gap-3 sm:gap-4">
                   <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-sky-200/15 bg-gradient-to-br from-sky-300/35 to-blue-600/20 text-lg font-black text-white">
                     {reviewInitial(review.masked_customer_name)}
