@@ -150,7 +150,7 @@ export default function PublicReviewsList() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-5 gap-2 overflow-x-auto pb-1" aria-label="กรองรีวิวตามหมวดหมู่">
+      <div className="mt-6 grid grid-cols-5 gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="กรองรีวิวตามหมวดหมู่">
         {CATEGORIES.map((item) => (
           <button
             key={item.value}
