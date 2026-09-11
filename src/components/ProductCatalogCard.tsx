@@ -66,10 +66,10 @@ export default function ProductCatalogCard({ product }: ProductCatalogCardProps)
       </Link>
 
       {/* Content */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between relative">
+      <div className="p-5 flex-1 flex flex-col justify-between relative">
         <div>
           <Link href={`/products/${product.slug}`} className="block group-hover:text-acid-lime transition-colors">
-            <h3 className="text-white font-bold text-sm sm:text-base mb-0.5 line-clamp-1">
+            <h3 className="text-white font-bold text-base mb-0.5 line-clamp-2 leading-snug">
               {primary}
             </h3>
             {secondary && (
@@ -112,7 +112,7 @@ export default function ProductCatalogCard({ product }: ProductCatalogCardProps)
 
           {/* ADD TO CART ACTION BUTTON */}
           {product.has_stock && (
-            <div className="relative" ref={pickerRef}>
+            <div ref={pickerRef}>
               {inStockVariants.length === 1 ? (
                 // Only 1 variant: Direct Add to Cart Button
                 <AddToCartButton
@@ -136,7 +136,7 @@ export default function ProductCatalogCard({ product }: ProductCatalogCardProps)
                   <button
                     type="button"
                     onClick={() => setShowFlavorPicker(!showFlavorPicker)}
-                    className="btn-liquid-acid w-full py-2.5 px-3 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-sm"
+                    className="btn-liquid-acid w-full min-h-12 py-3 px-4 text-sm font-bold flex items-center justify-center gap-2 shadow-sm"
                     aria-expanded={showFlavorPicker}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,37 +148,43 @@ export default function ProductCatalogCard({ product }: ProductCatalogCardProps)
                     </svg>
                   </button>
 
-                  {/* Flavor Quick-Picker Popover */}
+                  {/* Flavor picker stays in the document flow so it never covers product details on mobile. */}
                   {showFlavorPicker && (
-                    <div className="absolute bottom-full left-0 right-0 mb-2 p-3 rounded-2xl bg-navy-deep/95 backdrop-blur-xl border border-white/20 shadow-2xl shadow-black/80 z-30 animate-scale-in">
-                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
-                        <span className="text-xs font-bold text-white">เลือกรสชาติที่ต้องการ</span>
+                    <div className="mt-3 p-3.5 rounded-2xl bg-navy-deep/95 border border-acid-lime/20 shadow-xl shadow-black/40 animate-scale-in">
+                      <div className="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-white/10">
+                        <div>
+                          <span className="block text-sm font-bold text-white">เลือกรสชาติ</span>
+                          <span className="block mt-0.5 text-[11px] text-white/45">แตะเพิ่มรสที่ต้องการลงตะกร้า</span>
+                        </div>
                         <button
                           type="button"
                           onClick={() => setShowFlavorPicker(false)}
-                          className="text-white/40 hover:text-white text-xs p-1"
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 hover:text-white"
                           aria-label="ปิด"
                         >
                           ✕
                         </button>
                       </div>
 
-                      <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 text-xs">
+                      <div className="max-h-80 overflow-y-auto space-y-2 pr-1 overscroll-contain">
                         {inStockVariants.map((variant) => {
                           const flavorNameDisplay = bilingualPrimaryThai(variant.name_th, variant.name);
                           return (
                             <div
                               key={variant.id}
-                              className="flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors gap-2"
+                              className="grid min-h-[68px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.055] p-3 transition-colors hover:bg-white/10"
                             >
-                              <div className="min-w-0 flex items-center gap-2">
+                              <div className="min-w-0 flex items-start gap-2.5">
                                 <span
-                                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                  className="mt-1 h-3 w-3 rounded-full flex-shrink-0 ring-2 ring-white/10"
                                   style={{ backgroundColor: variant.color || "#a3e635" }}
                                 />
-                                <div className="truncate">
-                                  <div className="text-white font-medium truncate">{flavorNameDisplay.primary}</div>
-                                  <div className="text-white/40 text-[10px]">เหลือ {variant.stock_quantity} ชิ้น • ฿{variant.price}</div>
+                                <div className="min-w-0">
+                                  <div className="text-sm font-semibold leading-snug text-white break-words">{flavorNameDisplay.primary}</div>
+                                  {flavorNameDisplay.secondary && (
+                                    <div className="mt-0.5 text-[11px] leading-snug text-white/45 break-words">{flavorNameDisplay.secondary}</div>
+                                  )}
+                                  <div className="mt-1 text-[11px] text-white/55">เหลือ {variant.stock_quantity} ชิ้น · ฿{variant.price?.toLocaleString()}</div>
                                 </div>
                               </div>
                               <div className="flex-shrink-0">
@@ -196,6 +202,7 @@ export default function ProductCatalogCard({ product }: ProductCatalogCardProps)
                                   imageUrl={variant.image_url || product.image_url}
                                   unitPrice={variant.price}
                                   stockQuantity={variant.stock_quantity}
+                                  className="min-h-10 rounded-full border border-acid-lime/30 bg-acid-lime/10 px-3 text-acid-lime hover:bg-acid-lime/20"
                                 />
                               </div>
                             </div>
@@ -203,10 +210,10 @@ export default function ProductCatalogCard({ product }: ProductCatalogCardProps)
                         })}
                       </div>
 
-                      <div className="mt-2 pt-2 border-t border-white/10 text-center">
+                      <div className="mt-3 pt-3 border-t border-white/10 text-center">
                         <Link
                           href={`/products/${product.slug}`}
-                          className="text-acid-lime hover:underline text-[11px] font-semibold"
+                          className="inline-flex min-h-10 items-center justify-center text-acid-lime hover:underline text-xs font-semibold"
                         >
                           ดูรายละเอียดเต็มรุ่นนี้ →
                         </Link>
