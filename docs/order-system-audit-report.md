@@ -2219,3 +2219,19 @@ Executed the complete review reward lifecycle against the production Supabase sc
 - Production warehouse login: PASS
 - Production queue read: PASS (2 existing jobs; no order state changed)
 - Production browser verification: PASS for login redirect, warehouse dashboard, status counts, order items, SKU/quantity, recipient details, and action controls.
+
+## Public Reviews Visual Upgrade — 2026-09-11
+
+**Status:** ✅ Implemented and ready for production deployment
+
+- Rebuilt `/reviews` from the approved navy/lime mockup as a responsive production page.
+- Added a verified-review summary, order-linked trust explanation, category filters, full-width review cards, masked customer/order identity, product context, and mobile review CTA.
+- Public rating totals and review cards continue to use approved `order_reviews` records only. No sample or fabricated customer reviews are rendered in production.
+- The empty state explicitly explains that reviews appear only after Admin moderation rather than displaying fake social proof.
+- The review CTA links directly to the Member review section, where an eligible order can earn a ฿5 credit after approval.
+- Hid the floating LINE button on `/reviews` at mobile widths because the page-level review CTA owns that fixed action area.
+- `npm run test:review-system`: PASS (43 checks)
+- `npm run test:review-credit`: PASS
+- `npx tsc --noEmit`: PASS
+- `npm run build`: PASS (55 routes)
+- Browser verification: PASS at 390×844 and 1440×1000; no application console errors.

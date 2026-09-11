@@ -14,6 +14,7 @@ export default function PublicLayout({
 }) {
   const pathname = usePathname();
   const isMemberPortal = pathname.startsWith("/member");
+  const hasPageLevelMobileAction = pathname.startsWith("/reviews");
   const isMemberTransition = pathname.startsWith("/member/liff")
     || pathname.startsWith("/member/access");
 
@@ -24,7 +25,7 @@ export default function PublicLayout({
         {!isMemberTransition && <HeaderNavy />}
         <main className={`min-h-screen ${isMemberTransition ? "" : "pt-20"}`}>{children}</main>
         {!isMemberPortal && <FooterNavy />}
-        {!isMemberPortal && <LineButtonNavy />}
+        {!isMemberPortal && !hasPageLevelMobileAction && <LineButtonNavy />}
       </div>
     </CartProvider>
   );
