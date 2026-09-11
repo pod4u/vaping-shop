@@ -112,7 +112,7 @@ export const mockReviews: PublicReview[] = [
     review_text: "ส่งถึงมือภายใน 24 ชั่วโมง แพ็คห่อดีมาก มีฟองน้ำป้องกันกระแทก เห็นใจลูกค้ามาก",
     published_at: "2026-08-30T12:10:00Z",
     masked_order_number: "POD-****-7654",
-    masked_customer_name: "สมศรี ค.",
+    masked_customer_name: "ตันตัน",
     verification_status: "delivered",
     items: [{ product_name: "MOOOD Monster Series 14K", flavor_name: "Blueberry", brand_name: "MOOOD" }],
   },
