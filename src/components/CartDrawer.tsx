@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { useCart } from "@/hooks/use-cart";
 import { storeConfig } from "@/lib/config";
+import { MEMBER_LIFF_URL } from "@/lib/line-account-links";
 import { bilingualPrimaryThai, bilingualName } from "@/lib/bilingual";
 import OrderSlipUpload from "@/components/OrderSlipUpload";
 
@@ -420,8 +421,31 @@ export function CartDrawer({ variant = "desktop" }: CartDrawerProps) {
                   </button>
                 ) : (
                   <div className="space-y-2">
-                    {/* DUAL CHECKOUT BUTTONS - Smart Order Based on Device */}
-                    {isDesktop ? (
+                    {isLoadingSession ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="btn-liquid-acid w-full py-3.5 rounded-xl font-black text-sm opacity-60"
+                      >
+                        กำลังตรวจสอบสมาชิก...
+                      </button>
+                    ) : !memberSession?.isLoggedIn ? (
+                      <>
+                        <a
+                          href={MEMBER_LIFF_URL}
+                          className="btn-liquid-acid w-full py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-acid transition-all"
+                        >
+                          <span>เชื่อม LINE / สมัครสมาชิกเพื่อสั่งซื้อ</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={handleStartWebCheckout}
+                          className="btn-liquid-glass w-full py-2.5 rounded-xl font-bold text-xs"
+                        >
+                          เป็นสมาชิกแล้ว เข้าสู่ระบบด้วยเบอร์โทร
+                        </button>
+                      </>
+                    ) : isDesktop ? (
                       <>
                         {/* Desktop Primary: Direct Web Checkout */}
                         <button
@@ -620,20 +644,12 @@ export function CartDrawer({ variant = "desktop" }: CartDrawerProps) {
               </form>
 
               <div className="mt-4 pt-4 border-t border-white/10 text-center space-y-2">
-                <Link
-                  href="/register"
-                  onClick={() => setIsOpen(false)}
-                  className="block text-xs text-acid-lime font-bold hover:underline"
+                <a
+                  href={MEMBER_LIFF_URL}
+                  className="block rounded-xl border border-acid-lime/30 bg-acid-lime/10 px-4 py-3 text-xs font-bold text-acid-lime transition-colors hover:bg-acid-lime/15"
                 >
-                  ยังไม่เคยสมัครสมาชิก? คลิกสมัครที่นี่ →
-                </Link>
-                <button
-                  type="button"
-                  onClick={handleSendToLine}
-                  className="text-[11px] text-white/40 hover:text-white"
-                >
-                  หรือสั่งซื้อผ่าน LINE โดยไม่ต้องสมัครสมาชิก
-                </button>
+                  เชื่อมด้วย LINE หรือสมัครสมาชิกใหม่ →
+                </a>
               </div>
             </div>
 

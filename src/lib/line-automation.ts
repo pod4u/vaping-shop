@@ -26,6 +26,19 @@ export function isPaymentQuestion(value: string) {
   return includesAny(value, ['โอนเงิน', 'ชำระเงิน', 'เลขบัญชี', 'บัญชีไหน', 'ส่งสลิป', 'จ่ายเงิน']);
 }
 
+export function isCashOnDeliveryQuestion(value: string) {
+  return includesAny(value, [
+    'เก็บปลายทาง',
+    'ชำระปลายทาง',
+    'จ่ายปลายทาง',
+    'รับของค่อยจ่าย',
+    'ได้ของแล้วค่อยจ่าย',
+    'จ่ายตอนรับของ',
+    'จ่ายเงินตอนรับของ',
+    'cash on delivery',
+  ]) || /(?:^|[^a-z])cod(?:[^a-z]|$)/i.test(value);
+}
+
 export function isTrackingQuestion(value: string) {
   return includesAny(value, ['เลขพัสดุ', 'tracking', 'แทรค', 'เช็กพัสดุ', 'เช็คพัสดุ']);
 }
@@ -95,7 +108,7 @@ export function buildGreetingMessage(
   if (context?.linked && context.hasDefaultAddress) {
     return {
       type: 'text',
-      text: '👋 สวัสดีค่ะ ยินดีต้อนรับกลับมาที่ Pod4U\n\nบัญชีสมาชิกและที่อยู่จัดส่งพร้อมใช้งานแล้วค่ะ วันนี้กำลังมองหาแบรนด์หรือรสไหนอยู่คะ',
+      text: '👋 สวัสดีค่ะ ยินดีต้อนรับกลับมาที่ Pod4U\n\nบัญชีสมาชิกและที่อยู่จัดส่งพร้อมใช้งานแล้วค่ะ\n\n💳 ร้านรับชำระก่อนจัดส่งเท่านั้น ไม่มีบริการเก็บเงินปลายทางค่ะ\n\nวันนี้กำลังมองหาแบรนด์หรือรสไหนอยู่คะ',
       quickReply: {
         items: [
           stockAction,
@@ -111,7 +124,7 @@ export function buildGreetingMessage(
   if (context?.linked) {
     return {
       type: 'text',
-      text: '👋 สวัสดีค่ะ ยินดีต้อนรับกลับมาที่ Pod4U\n\nบัญชีสมาชิกเชื่อมเรียบร้อยแล้ว เหลือเพิ่มที่อยู่จัดส่งหลักก่อนยืนยันออเดอร์ค่ะ ต้องการดูสินค้าก่อนหรือเปิดหน้าสมาชิกคะ',
+      text: '👋 สวัสดีค่ะ ยินดีต้อนรับกลับมาที่ Pod4U\n\nบัญชีสมาชิกเชื่อมเรียบร้อยแล้ว เหลือเพิ่มที่อยู่จัดส่งหลักก่อนยืนยันออเดอร์ค่ะ\n\n💳 ร้านรับชำระก่อนจัดส่งเท่านั้น ไม่มีบริการเก็บเงินปลายทางค่ะ\n\nต้องการดูสินค้าก่อนหรือเปิดหน้าสมาชิกคะ',
       quickReply: {
         items: [
           stockAction,
@@ -126,7 +139,7 @@ export function buildGreetingMessage(
 
   return {
     type: 'text',
-    text: '👋 สวัสดีค่ะ ยินดีต้อนรับสู่ Pod4U\n\nดูสินค้าพร้อมส่งได้ทันที หรือเข้าสู่ระบบสมาชิกครั้งเดียวเพื่อให้ระบบช่วยจำข้อมูล ออเดอร์ และเลขพัสดุค่ะ วันนี้กำลังมองหาแบรนด์หรือรสไหนอยู่คะ',
+    text: '👋 สวัสดีค่ะ ยินดีต้อนรับสู่ Pod4U\n\nดูสินค้าพร้อมส่งได้ทันที หรือเข้าสู่ระบบสมาชิกครั้งเดียวเพื่อให้ระบบช่วยจำข้อมูล ออเดอร์ และเลขพัสดุค่ะ\n\n💳 ร้านรับชำระก่อนจัดส่งเท่านั้น ไม่มีบริการเก็บเงินปลายทางค่ะ\n\nวันนี้กำลังมองหาแบรนด์หรือรสไหนอยู่คะ',
     quickReply: {
       items: [
         stockAction,
@@ -194,6 +207,7 @@ export function buildAutomationMenuMessage(accountAlias: LineAccountAlias = 'pri
           automationStep('2', 'เข้าสู่ระบบสมาชิก', 'เชื่อมครั้งแรกครั้งเดียว บันทึกที่อยู่และออเดอร์'),
           automationStep('3', 'เพิ่มตะกร้าแล้วส่งเข้า LINE', 'ตรวจรายการ ยืนยัน และส่งสลิปในแชทนี้'),
           { type: 'separator', margin: 'md' },
+          { type: 'text', text: '💳 ชำระก่อนจัดส่งเท่านั้น · ไม่มีเก็บเงินปลายทาง', size: 'sm', color: '#B42318', weight: 'bold', wrap: true, margin: 'md' },
           { type: 'text', text: 'สมาชิกเช็กออเดอร์ เลขพัสดุ และรับเครดิตรีวิว ฿5 ได้ค่ะ', size: 'xs', color: '#667085', wrap: true, margin: 'md' },
           { type: 'text', text: 'วันนี้กำลังมองหาแบรนด์หรือรสไหนอยู่คะ?', size: 'sm', color: '#101828', weight: 'bold', wrap: true, margin: 'md' },
         ],

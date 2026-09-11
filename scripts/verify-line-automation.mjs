@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   buildAutomationMenuMessage,
   buildGreetingMessage,
+  isCashOnDeliveryQuestion,
   isCancellationQuestion,
   isDispatchScheduleQuestion,
   isExplicitProductOrder,
@@ -31,6 +32,11 @@ const cases = [
   [isShippingQuestion, 'ส่งฟรีไหมคะ', true],
   [isDispatchScheduleQuestion, 'วันนี้ตัดรอบกี่โมง', true],
   [isPaymentQuestion, 'ขอเลขบัญชีค่ะ', true],
+  [isCashOnDeliveryQuestion, 'มีเก็บปลายทางไหมคะ', true],
+  [isCashOnDeliveryQuestion, 'รับของค่อยจ่ายได้ไหม', true],
+  [isCashOnDeliveryQuestion, 'COD ได้ไหม', true],
+  [isCashOnDeliveryQuestion, 'codได้ไหม', true],
+  [isCashOnDeliveryQuestion, 'ขอเลขบัญชีค่ะ', false],
   [isTrackingQuestion, 'เลขพัสดุออกหรือยัง', true],
   [isCancellationQuestion, 'ขอยกเลิกออเดอร์', true],
   [isGreeting, 'สวัสดีค่ะ', true],
@@ -62,7 +68,9 @@ assert.match(JSON.stringify(secondaryGreeting), /oa=secondary(?:&|\\u0026)next=o
 for (const greeting of [newCustomerGreeting, linkedCustomerGreeting, missingAddressGreeting]) {
   assert.equal(greeting.type, 'text');
   assert.equal(greeting.quickReply.items.length, 2);
+  assert.match(greeting.text, /ไม่มีบริการเก็บเงินปลายทาง/);
 }
+assert.match(JSON.stringify(menu), /ไม่มีเก็บเงินปลายทาง/);
 assert.notEqual(newCustomerGreeting.text, linkedCustomerGreeting.text);
 assert.notEqual(linkedCustomerGreeting.text, missingAddressGreeting.text);
 assert.equal(newCustomerGreeting.quickReply.items[1].action.type, 'uri');

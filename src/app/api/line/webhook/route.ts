@@ -19,6 +19,7 @@ import {
   buildAutomationMenuMessage,
   buildGreetingMessage,
   includesAny,
+  isCashOnDeliveryQuestion,
   isCancellationQuestion,
   isDispatchScheduleQuestion,
   isExplicitProductOrder,
@@ -188,6 +189,17 @@ async function handleMessage(
     return;
   }
 
+  if (isCashOnDeliveryQuestion(normalizedMessage)) {
+    await replyWithSalesPrompt(
+      replyToken,
+      '💳 ร้านไม่มีบริการเก็บเงินปลายทางค่ะ รับชำระผ่านการโอนก่อนจัดส่งเท่านั้น\n\nหลังยืนยันและจองสต๊อก ระบบจะส่งยอดและข้อมูลบัญชีในแชทนี้ จากนั้นส่งรูปสลิปเพื่อยืนยันออเดอร์ได้เลยค่ะ',
+      await resolveSalesContext(event, destination),
+      'หากสะดวกชำระก่อนจัดส่ง กดดูสินค้าพร้อมส่งและสั่งผ่านระบบได้เลยค่ะ',
+      'stock',
+    );
+    return;
+  }
+
   if (isShippingQuestion(normalizedMessage)) {
     await replyWithSalesPrompt(
       replyToken,
@@ -340,8 +352,7 @@ async function handleMessage(
   if (isOrderHelpQuestion(normalizedMessage)) {
     await replyWithOrderGuide(replyToken, await resolveSalesContext(event, destination));
   } else if (isGenericMarboFamilyQuestion(normalizedMessage)) {
-    const products = await getAvailableProducts(100);
-    await replyWithMarboFamilyChoice(replyToken, products, await resolveSalesContext(event, destination));
+    await replyWithMarboFamilyChoice(replyToken, await resolveSalesContext(event, destination));
   } else if (isProductAvailabilityQuestion(normalizedMessage)) {
     const products = await fuzzySearchProducts(message, 8);
     await replyWithProductAvailability(replyToken, products, await resolveSalesContext(event, destination));
@@ -833,12 +844,9 @@ async function replyWithProductAvailability(
   }
 
   const available = products.filter((product) => product.stock > 0);
-  const lines = available.slice(0, 6).map((product) => (
-    `• ${product.brandNameTh || product.brandName} · ${product.productNameTh || product.productName} · ${product.flavorNameTh || product.flavorName}\n  พร้อมส่ง ${product.stock} ชิ้น · ฿${product.price.toLocaleString('th-TH')}`
-  ));
   const text = available.length > 0
-    ? `✅ มีสินค้าที่ใกล้เคียงพร้อมส่งค่ะ\n\n${lines.join('\n')}\n\n${salesContextCopy(context)}\n\nลูกค้ารับรสไหนดีคะ กดดูสต็อกล่าสุดแล้วเพิ่มลงตะกร้าได้เลยค่ะ`
-    : `สินค้าที่ค้นหาไม่มีพร้อมส่งในขณะนี้ค่ะ\n\n${salesContextCopy(context)}\n\nให้ช่วยแนะนำรสหรือรุ่นอื่นที่พร้อมส่งแทนไหมคะ`;
+    ? `✅ มีสินค้าที่ใกล้เคียงพร้อมส่งค่ะ\n\nสต็อกเปลี่ยนแปลงตลอด กด “ดูสินค้าพร้อมส่ง” เพื่อดูรายการ ราคา และจำนวนล่าสุดแล้วเพิ่มลงตะกร้าได้เลยค่ะ\n\n${salesContextCopy(context)}`
+    : `สินค้าที่ค้นหาไม่มีพร้อมส่งในขณะนี้ค่ะ\n\nกด “ดูสินค้าพร้อมส่ง” เพื่อดูรสและรุ่นอื่นที่มีสต็อกล่าสุดได้เลยค่ะ\n\n${salesContextCopy(context)}`;
 
   await sendReply(replyToken, {
     type: 'text',
@@ -849,52 +857,24 @@ async function replyWithProductAvailability(
   });
 }
 
-function marboFamilyFlavorSummary(products: Awaited<ReturnType<typeof getAvailableProducts>>, brand: string) {
-  const flavors = products
-    .filter((product) => product.brandName?.toUpperCase() === brand)
-    .map((product) => product.flavorNameTh || product.flavorName)
-    .filter(Boolean)
-    .slice(0, 4);
-
-  return flavors.length > 0 ? flavors.join(' · ') : 'ตอนนี้ไม่มีสินค้าพร้อมส่ง';
-}
-
 async function replyWithMarboFamilyChoice(
   replyToken: string,
-  products: Awaited<ReturnType<typeof getAvailableProducts>>,
   context: SalesContext,
 ) {
-  const switchFlavors = marboFamilyFlavorSummary(products, 'MARBO');
-  const disposableFlavors = marboFamilyFlavorSummary(products, 'M BAR');
-
   await sendReply(replyToken, {
     type: 'text',
-    text: `MARBO มี 2 แบบค่ะ เพื่อให้เลือกได้ตรงใจ\n\n🧩 หัวเปลี่ยน\nMARBO M SWITCH 15K\nรสพร้อมส่ง: ${switchFlavors}\n\n💨 ดูดแล้วทิ้ง\nM BAR 10K\nรสพร้อมส่ง: ${disposableFlavors}\n\n${salesContextCopy(context)}\n\nลูกค้าต้องการแบบหัวเปลี่ยน หรือแบบดูดแล้วทิ้งคะ`,
+    text: `MARBO มีทั้งแบบหัวเปลี่ยน MARBO M SWITCH และแบบดูดแล้วทิ้ง M BAR ค่ะ\n\nสต็อกเปลี่ยนแปลงตลอด กด “ดูสินค้าพร้อมส่ง” เพื่อดูรส ราคา และจำนวนล่าสุดแล้วเพิ่มลงตะกร้าได้เลยค่ะ\n\n${salesContextCopy(context)}`,
     quickReply: {
-      items: [
-        {
-          type: 'action',
-          action: { type: 'message', label: 'หัวเปลี่ยน MARBO', text: 'MARBO M SWITCH มีรสอะไรเหลือ' },
-        },
-        {
-          type: 'action',
-          action: { type: 'message', label: 'ดูดแล้วทิ้ง M BAR', text: 'M BAR มีรสอะไรเหลือ' },
-        },
-        ...buildSalesQuickReply(context, 'stock'),
-      ],
+      items: buildSalesQuickReply(context, 'stock'),
     },
   });
 }
 
 // Reply with product list
 async function replyWithProductList(replyToken: string, context: SalesContext) {
-  const products = await getAvailableProducts(10);
-
   const message = {
     type: 'text',
-    text: '📦 ตัวอย่างสินค้าพร้อมส่งตอนนี้:\n\n' +
-      products.map(p => `• ${p.brandNameTh} ${p.flavorNameTh} - ฿${p.price}`).join('\n') +
-      `\n\n${salesContextCopy(context)}\n\nลูกค้าสนใจแบรนด์หรือรสไหนคะ กดดูรายการทั้งหมดแล้วเพิ่มลงตะกร้าได้เลยค่ะ`,
+    text: `📦 ดูสินค้า ราคา และจำนวนพร้อมส่งล่าสุดได้จากหน้า Live Stock ค่ะ\n\nกด “ดูสินค้าพร้อมส่ง” แล้วเพิ่มรายการลงตะกร้าได้เลย ไม่ต้องรอแอดมินส่งรายการค่ะ\n\n${salesContextCopy(context)}`,
     quickReply: { items: buildSalesQuickReply(context, 'stock') },
   };
 
