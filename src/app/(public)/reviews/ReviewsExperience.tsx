@@ -55,7 +55,7 @@ export function ReviewsExperience({ previewData, previewMode = false }: { previe
 
         <PublicReviewsList previewData={previewData} />
 
-        <section className="mt-8 overflow-hidden rounded-[1.6rem] border border-acid-lime/25 bg-[linear-gradient(135deg,rgba(212,255,20,0.12),rgba(9,22,45,0.88)_45%)] p-6 sm:p-8">
+        <section className="bds-glass-card mt-8 overflow-hidden rounded-[1.6rem] border-acid-lime/25 p-6 sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2 text-acid-lime">
@@ -67,7 +67,7 @@ export function ReviewsExperience({ previewData, previewMode = false }: { previe
                 รีวิวสินค้า การจัดส่ง บริการ หรือการใช้งานระบบได้ตั้งแต่มีออเดอร์ เมื่อผ่านการตรวจสอบ เครดิตจะถูกใช้กับออเดอร์ถัดไปอัตโนมัติค่ะ
               </p>
             </div>
-            <Link href="/member#reviews" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-acid-lime px-6 py-4 font-black text-navy-deep shadow-lg shadow-acid-lime/10 transition hover:brightness-110">
+            <Link href="/member#reviews" className="btn-liquid-acid inline-flex shrink-0 items-center justify-center gap-2 px-6 py-4 font-black text-navy-deep">
               ไปเขียนรีวิว <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
@@ -75,7 +75,7 @@ export function ReviewsExperience({ previewData, previewMode = false }: { previe
       </div>
 
       <div className="fixed inset-x-0 bottom-[4.85rem] z-40 border-t border-white/10 bg-[#071126]/90 p-3 backdrop-blur-xl sm:hidden">
-        <Link href="/member#reviews" className="mx-auto flex max-w-lg items-center justify-center gap-2 rounded-2xl bg-acid-lime px-5 py-3.5 font-black text-navy-deep shadow-xl">
+        <Link href="/member#reviews" className="btn-liquid-acid mx-auto flex max-w-lg items-center justify-center gap-2 px-5 py-3.5 font-black text-navy-deep">
           <MessageCircleMore className="h-5 w-5" /> เขียนรีวิว รับส่วนลด ฿5
         </Link>
       </div>

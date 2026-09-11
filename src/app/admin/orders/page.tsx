@@ -51,7 +51,7 @@ function maskPhone(phone: string | undefined) {
 
 function QueueCard({ icon: Icon, label, count, active, onClick }: { icon: typeof ClipboardList; label: string; count: number; active: boolean; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className={`rounded-xl border p-4 text-left transition ${active ? "border-acid-lime bg-acid-lime/10" : "border-white/10 bg-white/5 hover:border-white/20"}`}>
+    <button type="button" onClick={onClick} className={`bds-glass-card rounded-2xl p-4 text-left ${active ? "border-acid-lime bg-acid-lime/10" : "hover:border-white/20"}`}>
       <div className="flex items-center justify-between gap-3">
         <Icon className={`h-5 w-5 ${active ? "text-acid-lime" : "text-white/50"}`} />
         <span className="text-2xl font-black text-white">{count}</span>
@@ -136,7 +136,7 @@ export default function AdminOrdersPage() {
 
       <div className="flex flex-wrap gap-2" aria-label="กรองออเดอร์">
         {FILTERS.map((item) => (
-          <button key={item.value} type="button" onClick={() => setFilter(item.value)} className={`rounded-full border px-3 py-2 text-sm ${filter === item.value ? "border-acid-lime bg-acid-lime text-navy-deep" : "border-white/10 text-white/60 hover:bg-white/5"}`}>
+          <button key={item.value} type="button" onClick={() => setFilter(item.value)} className={`rounded-full border px-3 py-2 text-sm ${filter === item.value ? "btn-liquid-acid border-acid-lime text-navy-deep" : "btn-liquid-glass text-white/60"}`}>
             {item.label} <span className="ml-1 opacity-70">{counts[item.value]}</span>
           </button>
         ))}
@@ -154,7 +154,7 @@ export default function AdminOrdersPage() {
             const meta = STATUS_META[order.status] ?? { label: order.status, next: "เปิดดูรายละเอียด", className: "border-white/10 bg-white/5 text-white/70" };
             const paymentExpired = now > 0 && order.payment?.status === "awaiting_slip" && new Date(order.payment.expires_at).getTime() <= now;
             return (
-              <article key={order.id} className="rounded-xl border border-white/10 bg-white/5 p-4 hover:border-white/20">
+              <article key={order.id} className="bds-glass-card rounded-2xl p-4 hover:border-white/20">
                 <div className="grid gap-4 lg:grid-cols-[1fr_1fr_180px_auto] lg:items-center">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -171,7 +171,7 @@ export default function AdminOrdersPage() {
                     {order.status === "pending" && order.payment?.status === "awaiting_slip" && !paymentExpired && <p className="mt-1 text-xs text-sky-200">รอถึง {formatDate(order.payment.expires_at)}</p>}
                   </div>
                   <div className="lg:text-right"><p className="text-xs text-white/40">ยอดออเดอร์</p><p className="mt-1 text-xl font-black text-white">฿{Number(order.total).toLocaleString("th-TH")}</p>{Number(order.discount_amount) > 0 && <p className="mt-1 text-xs font-bold text-acid-lime">ใช้เครดิตรีวิว −฿{Number(order.discount_amount).toLocaleString("th-TH")}</p>}</div>
-                  <Link href={`/admin/orders/${order.id}`} className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold ${order.status === "draft" ? "bg-acid-lime text-navy-deep" : "border border-white/15 text-white/80 hover:bg-white/5"}`}>{order.status === "draft" ? "ตรวจออเดอร์" : "เปิดรายละเอียด"}<ChevronRight className="h-4 w-4" /></Link>
+                  <Link href={`/admin/orders/${order.id}`} className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold ${order.status === "draft" ? "btn-liquid-acid text-navy-deep" : "btn-liquid-glass text-white/80"}`}>{order.status === "draft" ? "ตรวจออเดอร์" : "เปิดรายละเอียด"}<ChevronRight className="h-4 w-4" /></Link>
                 </div>
               </article>
             );

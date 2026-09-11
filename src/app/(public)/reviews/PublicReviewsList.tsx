@@ -135,7 +135,7 @@ export default function PublicReviewsList({ previewData }: PublicReviewsListProp
 
   return (
     <section className="mt-5 sm:mt-7" aria-label="รายการรีวิวจากลูกค้า">
-      <div className="mt-7 overflow-hidden rounded-[1.6rem] border border-sky-300/25 bg-[#081b38]/80 shadow-xl shadow-black/20">
+      <div className="bds-glass-card mt-7 overflow-hidden rounded-[1.6rem]">
         <div className="grid grid-cols-[0.82fr_1.18fr]">
           <div className="flex flex-col justify-center border-r border-white/10 p-5 sm:p-8">
             <div className="flex items-end gap-3">
@@ -178,7 +178,7 @@ export default function PublicReviewsList({ previewData }: PublicReviewsListProp
             className={`inline-flex min-h-12 basis-[calc(33.333%-0.375rem)] grow items-center justify-center rounded-[1.25rem] border px-3 py-2.5 text-sm font-black transition sm:basis-0 ${
               category === item.value
                 ? "border-acid-lime bg-acid-lime text-navy-deep shadow-lg shadow-acid-lime/10"
-                : "border-white/10 bg-[#0a1931]/70 text-slate-300 hover:border-white/20 hover:bg-white/[0.06]"
+                : "btn-liquid-glass border-white/10 text-slate-300 hover:border-white/20"
             }`}
           >
             {item.label}
@@ -193,11 +193,11 @@ export default function PublicReviewsList({ previewData }: PublicReviewsListProp
       )}
 
       {isLoading ? (
-        <div className="mt-5 flex min-h-52 items-center justify-center rounded-[2rem] border border-white/10 bg-[#0a1931]/60">
+        <div className="bds-glass-card mt-5 flex min-h-52 items-center justify-center rounded-[2rem]">
           <Loader2 className="h-8 w-8 animate-spin text-acid-lime" aria-label="กำลังโหลดรีวิว" />
         </div>
       ) : reviews.length === 0 ? (
-        <div className="mt-5 rounded-[2rem] border border-white/10 bg-[#0a1931]/70 px-6 py-12 text-center shadow-lg">
+        <div className="bds-glass-card mt-5 rounded-[2rem] px-6 py-12 text-center">
           <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-acid-lime/20 bg-acid-lime/[0.08] text-acid-lime"><ShieldCheck className="h-8 w-8" /></span>
           <h2 className="mt-5 text-xl font-black">{category === "all" ? "ยังไม่มีรีวิวที่เผยแพร่" : "ยังไม่มีรีวิวในหมวดนี้"}</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">รีวิวจากสมาชิกจะปรากฏที่นี่หลังผ่านการตรวจสอบจากแอดมิน โดยไม่มีการสร้างข้อความรีวิวขึ้นเองค่ะ</p>
@@ -207,7 +207,7 @@ export default function PublicReviewsList({ previewData }: PublicReviewsListProp
           {reviews.map((review) => {
             const primaryItem = review.items[0];
             return (
-              <article key={review.id} className="rounded-[1.6rem] border border-sky-300/20 bg-[linear-gradient(145deg,rgba(12,34,66,0.96),rgba(7,22,45,0.96))] p-5 shadow-lg shadow-black/15 sm:p-7">
+              <article key={review.id} className="bds-glass-card rounded-[1.6rem] p-5 sm:p-7">
                 <div className="flex items-start gap-3 sm:gap-4">
                   <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-sky-200/15 bg-gradient-to-br from-sky-300/35 to-blue-600/20 text-lg font-black text-white">
                     {reviewInitial(review.masked_customer_name)}

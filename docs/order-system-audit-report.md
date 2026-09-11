@@ -2248,3 +2248,13 @@ Executed the complete review reward lifecycle against the production Supabase sc
 - The preview does not query or write Supabase, is not linked from public navigation, and cannot alter the production review feed.
 - The public `/reviews` route remains restricted to approved real reviews only.
 - Verified the preview at 390×844; filters and responsive review cards render correctly. TypeScript and the full Next.js production build passed.
+
+## Site-wide Liquid Glass UI Pass — 2026-09-11
+
+- Unified shared cards and buttons around the supplied liquid-glass references while preserving the Pod4U navy/acid-green CI palette.
+- Added central liquid-surface tokens, translucent navy depth, blue edge light, restrained acid-green underglow, glossy capsule primary actions, and frosted secondary actions.
+- Applied the system through the shared `Button` and `Card` primitives and key customer/operations surfaces: storefront product cards, Member, public reviews, Admin order queue, and Warehouse login/work queue.
+- Kept routing, order/payment/review logic, content, and permissions unchanged.
+- `npx tsc --noEmit --pretty false`: PASS
+- `npm run build`: PASS (56 routes)
+- Playwright visual verification: PASS at 390×844 and 1440×1000 for `/reviews`, plus mobile checks for `/member` and `/products`; no browser console errors.

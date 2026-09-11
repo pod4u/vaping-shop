@@ -89,7 +89,7 @@ export default async function MemberPage() {
   if (!dashboard) {
     return (
       <div className="mx-auto max-w-lg px-4 py-20 text-center">
-        <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-b from-slate-900/90 via-navy-deep/80 to-slate-950/90 p-8 shadow-2xl backdrop-blur-2xl">
+        <div className="bds-glass-card relative overflow-hidden rounded-3xl p-8">
           <div className="w-16 h-16 rounded-2xl bg-acid-lime/10 border border-acid-lime/30 text-3xl flex items-center justify-center mx-auto mb-4 text-acid-lime shadow-inner">
             👤
           </div>
@@ -115,7 +115,7 @@ export default async function MemberPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 pb-28 pt-6 sm:pt-10 space-y-6">
       {/* 1. LUXURY VIP HERO CARD */}
-      <header className="relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-br from-slate-900/95 via-navy-deep/90 to-slate-950/95 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl group">
+      <header className="bds-glass-card relative overflow-hidden rounded-3xl p-6 sm:p-8 group">
         {/* Ambient holographic glows */}
         <div className="absolute -top-16 -right-16 w-56 h-56 bg-acid-lime/15 rounded-full blur-3xl pointer-events-none group-hover:bg-acid-lime/25 transition-all duration-700" />
         <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -160,7 +160,7 @@ export default async function MemberPage() {
           {/* Action 1: Shop Now (Primary Glowing CTA) */}
           <Link
             href="/stock?source=member"
-            className="group/btn relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br from-acid-lime to-[#bbf011] text-navy-deep font-black shadow-lg shadow-acid/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex flex-col justify-between min-h-[105px]"
+            className="btn-liquid-acid group/btn relative flex min-h-[105px] flex-col justify-between overflow-hidden p-4 text-navy-deep font-black"
           >
             <div className="flex items-center justify-between">
               <span className="text-2xl">🛍️</span>
@@ -175,7 +175,7 @@ export default async function MemberPage() {
           {/* Action 2: Orders */}
           <a
             href="#orders"
-            className="group/btn relative overflow-hidden rounded-2xl p-4 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-sky-400/40 text-white transition-all hover:scale-[1.02] flex flex-col justify-between min-h-[105px] backdrop-blur-md"
+            className="btn-liquid-glass group/btn relative flex min-h-[105px] flex-col justify-between overflow-hidden p-4 text-white hover:border-sky-400/40"
           >
             <div className="flex items-center justify-between">
               <span className="text-2xl">📦</span>
@@ -194,7 +194,7 @@ export default async function MemberPage() {
           {/* Action 3: Reviews & Cash Credit */}
           <a
             href="#reviews"
-            className="group/btn relative overflow-hidden rounded-2xl p-4 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-amber-400/40 text-white transition-all hover:scale-[1.02] flex flex-col justify-between min-h-[105px] backdrop-blur-md"
+            className="btn-liquid-glass group/btn relative flex min-h-[105px] flex-col justify-between overflow-hidden p-4 text-white hover:border-amber-400/40"
           >
             <div className="flex items-center justify-between">
               <span className="text-2xl">⭐</span>
@@ -211,7 +211,7 @@ export default async function MemberPage() {
           {/* Action 4: Profile / Address */}
           <a
             href="#profile"
-            className="group/btn relative overflow-hidden rounded-2xl p-4 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/30 text-white transition-all hover:scale-[1.02] flex flex-col justify-between min-h-[105px] backdrop-blur-md"
+            className="btn-liquid-glass group/btn relative flex min-h-[105px] flex-col justify-between overflow-hidden p-4 text-white hover:border-white/30"
           >
             <div className="flex items-center justify-between">
               <span className="text-2xl">📍</span>
@@ -230,7 +230,7 @@ export default async function MemberPage() {
       {/* 3. VIP METRICS HUD (STATS CARDS) */}
       <section aria-label="สรุปสถิติบัญชี" className="grid grid-cols-3 gap-3">
         {/* Metric 1 */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-transparent p-4 text-center backdrop-blur-xl shadow-lg">
+        <div className="bds-glass-card relative overflow-hidden rounded-2xl p-4 text-center">
           <span className="text-[10px] uppercase font-bold tracking-wider text-white/40 block">กำลังดำเนินการ</span>
           <div className="mt-1 flex items-baseline justify-center gap-1.5">
             <span className="text-2xl sm:text-3xl font-black font-mono text-sky-300 drop-shadow">
@@ -244,7 +244,7 @@ export default async function MemberPage() {
         </div>
 
         {/* Metric 2 */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-transparent p-4 text-center backdrop-blur-xl shadow-lg">
+        <div className="bds-glass-card relative overflow-hidden rounded-2xl p-4 text-center">
           <span className="text-[10px] uppercase font-bold tracking-wider text-white/40 block">ออเดอร์ทั้งหมด</span>
           <div className="mt-1 flex items-baseline justify-center gap-1.5">
             <span className="text-2xl sm:text-3xl font-black font-mono text-white">
@@ -256,7 +256,7 @@ export default async function MemberPage() {
         </div>
 
         {/* Metric 3 */}
-        <div className="relative overflow-hidden rounded-2xl border border-acid-lime/20 bg-gradient-to-b from-acid-lime/[0.08] to-transparent p-4 text-center backdrop-blur-xl shadow-lg">
+        <div className="bds-glass-card relative overflow-hidden rounded-2xl border-acid-lime/20 p-4 text-center">
           <span className="text-[10px] uppercase font-bold tracking-wider text-acid-lime/70 block">ยอดสะสม VIP</span>
           <div className="mt-1 flex items-baseline justify-center gap-0.5 truncate">
             <span className="text-xs text-acid-lime font-bold">฿</span>
@@ -282,7 +282,7 @@ export default async function MemberPage() {
           </Link>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-acid-lime/30 bg-gradient-to-br from-acid-lime/[0.12] via-slate-900/90 to-navy-deep/90 backdrop-blur-2xl shadow-2xl">
+        <div className="bds-glass-card overflow-hidden rounded-3xl border-acid-lime/30">
           <div className="p-6 sm:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-white/10">
               <div>
@@ -349,7 +349,7 @@ export default async function MemberPage() {
                   <span>✍️</span> เขียนรีวิวออเดอร์เพื่อรับส่วนลด
                 </p>
                 {reviewOrders.map((order) => (
-                  <article key={order.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-md">
+                  <article key={order.id} className="bds-glass-card rounded-2xl p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-white/10">
                       <div>
                         <p className="font-mono text-xs font-black text-white">{order.order_number}</p>
@@ -388,7 +388,7 @@ export default async function MemberPage() {
         </div>
 
         {dashboard.orders.length === 0 ? (
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-10 text-center backdrop-blur-xl">
+          <div className="bds-glass-card rounded-3xl p-10 text-center">
             <span className="text-5xl block mb-2" aria-hidden="true">🛍️</span>
             <p className="text-lg font-bold text-white">ยังไม่มีออเดอร์ในขณะนี้</p>
             <p className="mt-1 text-xs text-white/50 max-w-sm mx-auto">
@@ -402,7 +402,7 @@ export default async function MemberPage() {
             </Link>
           </div>
         ) : activeOrders.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center text-xs text-white/60 backdrop-blur-md">
+          <div className="bds-glass-card rounded-2xl p-8 text-center text-xs text-white/60">
             ไม่มีออเดอร์ที่กำลังดำเนินการ (คุณสามารถตรวจสอบรายการที่ส่งแล้วได้ในประวัติออเดอร์ด้านล่าง)
           </div>
         ) : (
@@ -639,7 +639,7 @@ export default async function MemberPage() {
 
         <div className="grid gap-4 md:grid-cols-2">
           {/* Address Card */}
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl shadow-xl">
+          <div className="bds-glass-card rounded-3xl p-6">
             <div className="flex items-start gap-3">
               <span className="text-2xl bg-white/5 p-2 rounded-xl" aria-hidden="true">📍</span>
               <div className="min-w-0 flex-1">
