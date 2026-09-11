@@ -2241,3 +2241,4 @@ Executed the complete review reward lifecycle against the production Supabase sc
 - Removed the generic storefront header, footer, and welcome popup from this focused review experience.
 - Kept review integrity unchanged: only approved database reviews are rendered; no demo or fabricated customer reviews were added.
 - Responsive verification: mobile 390×844 and production-safe desktop layout. TypeScript, review-system verification (43 passed), and Next.js production build passed.
+- Mobile filter repair: replaced the overflowing single-row scroller with a balanced 3+2 wrapped layout, removing overlap and the visible scrollbar on narrow screens.

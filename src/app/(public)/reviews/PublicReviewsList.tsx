@@ -150,14 +150,14 @@ export default function PublicReviewsList() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-5 gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="กรองรีวิวตามหมวดหมู่">
+      <div className="mt-6 flex flex-wrap gap-2" aria-label="กรองรีวิวตามหมวดหมู่">
         {CATEGORIES.map((item) => (
           <button
             key={item.value}
             type="button"
             onClick={() => setCategory(item.value as typeof category)}
             aria-pressed={category === item.value}
-            className={`inline-flex min-h-12 min-w-[6rem] shrink-0 items-center justify-center rounded-[1.25rem] border px-4 py-2.5 text-sm font-black transition ${
+            className={`inline-flex min-h-12 basis-[calc(33.333%-0.375rem)] grow items-center justify-center rounded-[1.25rem] border px-3 py-2.5 text-sm font-black transition sm:basis-0 ${
               category === item.value
                 ? "border-acid-lime bg-acid-lime text-navy-deep shadow-lg shadow-acid-lime/10"
                 : "border-white/10 bg-[#0a1931]/70 text-slate-300 hover:border-white/20 hover:bg-white/[0.06]"
