@@ -10,7 +10,7 @@ export const mockReviews: PublicReview[] = [
     masked_order_number: "POD-****-7821",
     masked_customer_name: "บอม พ.",
     verification_status: "delivered",
-    items: [{ product_name: "Relx Infinity 2", flavor_name: "Dark Sorbet", brand_name: "RELX" }],
+    items: [{ product_name: "MARBO M SWITCH 15K", flavor_name: "Grape Lychee", brand_name: "MARBO" }],
   },
   {
     id: "2",
@@ -21,7 +21,7 @@ export const mockReviews: PublicReview[] = [
     masked_order_number: "POD-****-3156",
     masked_customer_name: "ฟลุค",
     verification_status: "delivered",
-    items: [{ product_name: "SKE Crystal Bar", flavor_name: "Blue Fusion", brand_name: "SKE" }],
+    items: [{ product_name: "M BAR 10K", flavor_name: "Cola", brand_name: "M BAR" }],
   },
   {
     id: "3",
@@ -32,7 +32,7 @@ export const mockReviews: PublicReview[] = [
     masked_order_number: "POD-****-9024",
     masked_customer_name: "มิ้นท์ เอ.",
     verification_status: "payment_confirmed",
-    items: [{ product_name: "Kardinal Stick", flavor_name: "Lush Ice", brand_name: "KARDINAL" }],
+    items: [{ product_name: "VPLUS 16K", flavor_name: "Watermelon", brand_name: "VPLUS" }],
   },
   {
     id: "4",
@@ -44,20 +44,19 @@ export const mockReviews: PublicReview[] = [
     masked_customer_name: "ณัฐพล ก.",
     verification_status: "delivered",
     items: [
-      { product_name: "SP2S Device", flavor_name: "Cigarette Tobacco", brand_name: "SP2S" },
-      { product_name: "SP2S Pod", flavor_name: "Ice Mint", brand_name: "SP2S" },
+      { product_name: "MOOOD Monster Series 14K", flavor_name: "Kyoho Grape", brand_name: "MOOOD" },
     ],
   },
   {
     id: "5",
     rating: 5,
     category: "product",
-    review_text: "รส Menthol สดชื่นมาก ไม่แสบคอ ดึงได้ลื่น คุ้มค่ามากๆ",
+    review_text: "รส Mint สดชื่นมาก ไม่แสบคอ ดึงได้ลื่น คุ้มค่ามากๆ",
     published_at: "2026-09-04T18:30:00Z",
     masked_order_number: "POD-****-8871",
     masked_customer_name: "ปีโป้",
     verification_status: "shipped",
-    items: [{ product_name: "Relx Pod Pro", flavor_name: "Zesty Menthol", brand_name: "RELX" }],
+    items: [{ product_name: "RELX Pod Pro 2", flavor_name: "Mint Freeze", brand_name: "RELX" }],
   },
   {
     id: "6",
@@ -68,7 +67,7 @@ export const mockReviews: PublicReview[] = [
     masked_order_number: "POD-****-2265",
     masked_customer_name: "แนน",
     verification_status: "delivered",
-    items: [{ product_name: "Infy Pod", flavor_name: "Lychee Ice", brand_name: "INFY" }],
+    items: [{ product_name: "ALFA Duo Mesh 20K", flavor_name: "Watermelon Ice", brand_name: "ALFA" }],
   },
   {
     id: "7",
@@ -79,7 +78,7 @@ export const mockReviews: PublicReview[] = [
     masked_order_number: "POD-****-6743",
     masked_customer_name: "เจมส์ น.",
     verification_status: "delivered",
-    items: [{ product_name: "Jues Pod", flavor_name: "Grape Ice", brand_name: "JUES" }],
+    items: [{ product_name: "M BAR 10K", flavor_name: "Grape", brand_name: "M BAR" }],
   },
   {
     id: "8",
@@ -91,8 +90,8 @@ export const mockReviews: PublicReview[] = [
     masked_customer_name: "บอส ว.",
     verification_status: "delivered",
     items: [
-      { product_name: "Relx Infinity 2", flavor_name: "Bright Tobacco", brand_name: "RELX" },
-      { product_name: "Relx Pod Pro", flavor_name: "Watermelon", brand_name: "RELX" },
+      { product_name: "VPLUS 16K", flavor_name: "Double Apple Shisha", brand_name: "VPLUS" },
+      { product_name: "VPLUS 16K", flavor_name: "Blueberry", brand_name: "VPLUS" },
     ],
   },
   {
@@ -104,7 +103,7 @@ export const mockReviews: PublicReview[] = [
     masked_order_number: "POD-****-3342",
     masked_customer_name: "พีท",
     verification_status: "delivered",
-    items: [{ product_name: "Kardinal Stick", flavor_name: "Mango Freeze", brand_name: "KARDINAL" }],
+    items: [{ product_name: "MARBO M SWITCH 15K", flavor_name: "Blue Ice", brand_name: "MARBO" }],
   },
   {
     id: "10",
@@ -115,7 +114,7 @@ export const mockReviews: PublicReview[] = [
     masked_order_number: "POD-****-7654",
     masked_customer_name: "สมศรี ค.",
     verification_status: "delivered",
-    items: [{ product_name: "SP2S Device", flavor_name: "Classic Tobacco", brand_name: "SP2S" }],
+    items: [{ product_name: "MOOOD Monster Series 14K", flavor_name: "Blueberry", brand_name: "MOOOD" }],
   },
 ];
 
