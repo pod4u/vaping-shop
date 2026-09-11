@@ -14,7 +14,8 @@
     "test:member-liff": "node --experimental-strip-types scripts/verify-member-liff-destination.mjs",
     "test:payment-guards": "node scripts/verify-payment-guards.mjs",
     "test:review-system": "node scripts/verify-review-system.mjs",
-    "test:review-credit": "node scripts/verify-review-credit.mjs"
+    "test:review-credit": "node scripts/verify-review-credit.mjs",
+    "test:warehouse": "node scripts/verify-warehouse-portal.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

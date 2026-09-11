@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getCanonical } from "@/lib/seo";
 import { ReviewsExperience } from "./ReviewsExperience";
+import { mockReviewsPreviewData } from "./mockReviews";
 
 export const metadata: Metadata = {
   title: "รีวิวจากลูกค้า",
@@ -16,5 +17,5 @@ export const metadata: Metadata = {
 };
 
 export default function ReviewsPage() {
-  return <ReviewsExperience />;
+  return <ReviewsExperience previewData={mockReviewsPreviewData} />;
 }
