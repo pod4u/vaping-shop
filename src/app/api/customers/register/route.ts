@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       const notificationSent = await pushMessage(result.providerUserId, {
         type: "text",
         text: "✅ สมัครสมาชิกและเชื่อมบัญชี LINE สำเร็จแล้ว\n\nตอนนี้คุณสามารถเลือกสินค้าจากเมนู ‘สั่งซื้อสินค้า’ และส่งรายการเข้าระบบได้ทันทีค่ะ",
-      });
+      }, result.providerAccountId);
 
       const response = NextResponse.json(
         {

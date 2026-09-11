@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import liff from "@line/liff";
 import { resolveMemberLiffDestination } from "@/lib/member-liff-destination";
+import { getLineAddUrl, resolveMemberLiffAccount } from "@/lib/line-account-links";
 
 const liffId = process.env.NEXT_PUBLIC_LINE_LIFF_ID?.trim();
 
@@ -11,6 +12,7 @@ export default function MemberLiffClient() {
   const router = useRouter();
   const [message, setMessage] = useState("กำลังยืนยันตัวตนผ่าน LINE");
   const [error, setError] = useState<string | null>(null);
+  const [returnLineUrl, setReturnLineUrl] = useState(getLineAddUrl("primary"));
 
   useEffect(() => {
     let cancelled = false;
@@ -20,6 +22,8 @@ export default function MemberLiffClient() {
         if (!liffId) throw new Error("ยังไม่ได้ตั้งค่า LIFF ID");
         await liff.init({ liffId });
         const destination = resolveMemberLiffDestination(window.location.search);
+        const accountAlias = resolveMemberLiffAccount(window.location.search);
+        setReturnLineUrl(getLineAddUrl(accountAlias));
         if (!liff.isLoggedIn()) {
           liff.login({ redirectUri: window.location.href });
           return;
@@ -32,7 +36,7 @@ export default function MemberLiffClient() {
         const response = await fetch("/api/customers/liff-session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id_token: idToken }),
+          body: JSON.stringify({ id_token: idToken, account_alias: accountAlias }),
         });
         const result = await response.json();
         if (result.registration_url) {
@@ -68,7 +72,7 @@ export default function MemberLiffClient() {
             >
               ลองใหม่
             </button>
-            <a href="https://lin.ee/RU5qNLj" className="text-sm text-white/60 underline">กลับไปที่ LINE OA</a>
+            <a href={returnLineUrl} className="text-sm text-white/60 underline">กลับไปที่ LINE OA</a>
           </div>
         )}
       </div>

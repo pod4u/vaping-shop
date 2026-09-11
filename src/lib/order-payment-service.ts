@@ -63,14 +63,17 @@ function thunderApiKey(): string {
 async function getLineRecipient(identityId: string) {
   const { data, error } = await getServerSupabase()
     .from("customer_identities")
-    .select("provider_user_id")
+    .select("provider_account_id,provider_user_id")
     .eq("id", identityId)
     .eq("provider", "line")
     .eq("status", "verified")
     .maybeSingle();
   if (error) throw error;
   if (!data) throw new OrderPaymentError("identity", "LINE_IDENTITY_NOT_FOUND", "Verified LINE identity not found");
-  return String(data.provider_user_id);
+  return {
+    providerAccountId: String(data.provider_account_id),
+    providerUserId: String(data.provider_user_id),
+  };
 }
 
 export async function requestLineOrderPayment(orderId: string, actor: string) {
@@ -101,11 +104,11 @@ export async function requestLineOrderPayment(orderId: string, actor: string) {
   const amount = Number(result.expected_amount ?? order.total);
   const discountAmount = Number(order.discount_amount ?? 0);
   const expiresAt = new Date(result.expires_at);
-  const sent = await pushMessage(recipient, {
+  const sent = await pushMessage(recipient.providerUserId, {
     type: "text",
     text:
       `💳 เช็กและจองสต๊อกเรียบร้อยแล้ว\n\nเลขที่ออเดอร์: ${order.order_number}${discountAmount > 0 ? `\n🎁 ใช้ส่วนลดจากรีวิว: −฿${discountAmount.toLocaleString("th-TH", { minimumFractionDigits: 2 })}` : ""}\nยอดชำระ: ฿${amount.toLocaleString("th-TH", { minimumFractionDigits: 2 })}\n\n${instructions}\n\nกรุณาโอนยอดให้ตรงและส่งรูปสลิปในแชทนี้ภายใน ${expiresAt.toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}\nหากไม่ส่งสลิปภายในเวลานี้ ออเดอร์จะยกเลิกอัตโนมัติและต้องสั่งใหม่อีกครั้ง\n\nระบบจะยืนยันออเดอร์ให้กับลูกค้าหลังจากตรวจเช็กสลิปเรียบร้อยแล้ว\nเลข Tracking พัสดุจะสามารถเข้าไปเช็กได้ในระบบสมาชิกวันพรุ่งนี้นะคะ`,
-  });
+  }, recipient.providerAccountId);
 
   return {
     paymentRequestId: result.payment_request_id,
@@ -221,8 +224,12 @@ export async function verifySlipBufferWithThunder(
   };
 }
 
-async function verifyWithThunder(messageId: string, expectedAmount: number) {
-  const image = await getLineMessageContent(messageId);
+async function verifyWithThunder(
+  providerAccountId: string,
+  messageId: string,
+  expectedAmount: number,
+) {
+  const image = await getLineMessageContent(messageId, providerAccountId);
   const imageBuffer = image.bytes.buffer.slice(
     image.bytes.byteOffset,
     image.bytes.byteOffset + image.bytes.byteLength,
@@ -264,7 +271,7 @@ export async function processLinePaymentSlip(input: {
 
   let verified: Awaited<ReturnType<typeof verifyWithThunder>>;
   try {
-    verified = await verifyWithThunder(input.messageId, expectedAmount);
+    verified = await verifyWithThunder(input.providerAccountId, input.messageId, expectedAmount);
   } catch (error) {
     const code = error instanceof OrderPaymentError ? error.code : "SLIP_PROCESSING_FAILED";
     await recordFailure(payment.id, input.messageId, code).catch(() => undefined);
@@ -313,7 +320,10 @@ export async function processLinePaymentSlip(input: {
   };
 }
 
-export async function getOrderLineRecipient(orderId: string): Promise<string | null> {
+export async function getOrderLineRecipient(orderId: string): Promise<{
+  providerAccountId: string;
+  providerUserId: string;
+} | null> {
   const { data: order, error } = await getServerSupabase()
     .from("orders")
     .select("source_customer_identity_id")

@@ -2,8 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 const projectRoot = process.cwd();
-const configPath = path.join(projectRoot, "assets/line/rich-menu-v6.json");
-const imagePath = path.join(projectRoot, "assets/line/rich-menu-v6.jpg");
+const accountArg = process.argv.find((argument) => argument.startsWith("--account="));
+const account = accountArg?.split("=")[1] === "secondary" ? "secondary" : "primary";
+const assetName = account === "secondary" ? "rich-menu-secondary-v1" : "rich-menu-v6";
+const configPath = path.join(projectRoot, `assets/line/${assetName}.json`);
+const imagePath = path.join(projectRoot, `assets/line/${assetName}.jpg`);
 const shouldPublish = process.argv.includes("--publish");
 
 function readEnvFile(filePath) {
@@ -18,8 +21,11 @@ function readEnvFile(filePath) {
 }
 
 const localEnv = readEnvFile(path.join(projectRoot, ".env.local"));
-const token = process.env.LINE_CHANNEL_ACCESS_TOKEN || localEnv.LINE_CHANNEL_ACCESS_TOKEN;
-if (!token) throw new Error("LINE_CHANNEL_ACCESS_TOKEN is required");
+const tokenKey = account === "secondary"
+  ? "LINE_SECONDARY_CHANNEL_ACCESS_TOKEN"
+  : "LINE_CHANNEL_ACCESS_TOKEN";
+const token = process.env[tokenKey] || localEnv[tokenKey];
+if (!token) throw new Error(`${tokenKey} is required`);
 if (!fs.existsSync(configPath)) throw new Error("Rich menu JSON is missing");
 if (!fs.existsSync(imagePath)) throw new Error("Rich menu PNG is missing");
 
@@ -49,7 +55,7 @@ const validateResponse = await fetch("https://api.line.me/v2/bot/richmenu/valida
   body: JSON.stringify(config),
 });
 await assertOk(validateResponse, "Rich menu validation");
-console.log("Rich menu JSON validation: PASS");
+console.log(`Rich menu JSON validation (${account}): PASS`);
 
 if (!shouldPublish) {
   console.log("Dry run only. Use --publish after the supporting webhook code is deployed.");

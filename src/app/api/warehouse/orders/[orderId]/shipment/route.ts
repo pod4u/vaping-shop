@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrderLineRecipient } from "@/lib/order-payment-service";
 import { pushMessage } from "@/lib/line-client";
+import { getMemberLiffUrlForBotUserId } from "@/lib/line-account";
 import { requireSameOrigin, requireWarehouseSession } from "@/lib/warehouse-api";
 import { parseWarehouseOrderId, shipWarehouseOrder, WarehouseInputError } from "@/lib/warehouse-service";
 
@@ -25,10 +26,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { orderI
     if (!result.idempotent_replay) {
       try {
         const recipient = await getOrderLineRecipient(orderId);
-        lineNotificationSent = recipient ? await pushMessage(recipient, {
+        lineNotificationSent = recipient ? await pushMessage(recipient.providerUserId, {
           type: "text",
-          text: `📦 จัดส่งสินค้าแล้วค่ะ\n\nบริษัทขนส่ง: ${carrier.trim()}\nเลขพัสดุ: ${trackingNumber.trim().toUpperCase()}\n\nดูรายละเอียดและติดตามพัสดุได้ในระบบสมาชิกค่ะ\nhttps://liff.line.me/2011511843-ReAPLsJH?next=orders`,
-        }) : null;
+          text: `📦 จัดส่งสินค้าแล้วค่ะ\n\nบริษัทขนส่ง: ${carrier.trim()}\nเลขพัสดุ: ${trackingNumber.trim().toUpperCase()}\n\nดูรายละเอียดและติดตามพัสดุได้ในระบบสมาชิกค่ะ\n${getMemberLiffUrlForBotUserId(recipient.providerAccountId, "orders")}`,
+        }, recipient.providerAccountId) : null;
       } catch {
         console.error("Warehouse LINE shipment notification failed");
         lineNotificationSent = false;

@@ -4,6 +4,7 @@ import { requireAdminApiPermission } from "@/lib/admin-api";
 import { cancelOrder, markOrderDelivered, markOrderShipped } from "@/lib/order-service";
 import { getOrderLineRecipient } from "@/lib/order-payment-service";
 import { pushMessage } from "@/lib/line-client";
+import { getMemberLiffUrlForBotUserId } from "@/lib/line-account";
 import { OrderInputError, parseOrderId } from "@/lib/order-validation";
 
 export const dynamic = "force-dynamic";
@@ -55,10 +56,10 @@ export async function PATCH(
       try {
         const recipient = await getOrderLineRecipient(orderId);
         lineNotificationSent = recipient
-          ? await pushMessage(recipient, {
+          ? await pushMessage(recipient.providerUserId, {
             type: "text",
-            text: `📦 จัดส่งสินค้าแล้วค่ะ\n\nบริษัทขนส่ง: ${String(body.carrier).trim()}\nเลขพัสดุ: ${String(body.trackingNumber).trim()}\n\nดูรายละเอียดและติดตามพัสดุได้ในระบบสมาชิกค่ะ\nhttps://liff.line.me/2011511843-ReAPLsJH?next=orders`,
-          })
+            text: `📦 จัดส่งสินค้าแล้วค่ะ\n\nบริษัทขนส่ง: ${String(body.carrier).trim()}\nเลขพัสดุ: ${String(body.trackingNumber).trim()}\n\nดูรายละเอียดและติดตามพัสดุได้ในระบบสมาชิกค่ะ\n${getMemberLiffUrlForBotUserId(recipient.providerAccountId, "orders")}`,
+          }, recipient.providerAccountId)
           : null;
       } catch {
         console.error("LINE shipment notification failed");

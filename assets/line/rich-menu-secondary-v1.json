@@ -1,0 +1,32 @@
+{
+  "size": { "width": 2500, "height": 1686 },
+  "selected": true,
+  "name": "Pod4U Backup Product Menu v1",
+  "chatBarText": "เมนู Pod4U",
+  "areas": [
+    {
+      "bounds": { "x": 0, "y": 0, "width": 2500, "height": 810 },
+      "action": { "type": "uri", "label": "สั่งซื้อสินค้า", "uri": "https://www.pod4u.store/stock?source=line-secondary" }
+    },
+    {
+      "bounds": { "x": 0, "y": 810, "width": 1250, "height": 490 },
+      "action": { "type": "uri", "label": "เข้าสู่ระบบสมาชิก", "uri": "https://liff.line.me/2011511843-ReAPLsJH?oa=secondary" }
+    },
+    {
+      "bounds": { "x": 1250, "y": 810, "width": 1250, "height": 490 },
+      "action": { "type": "uri", "label": "เช็กสถานะออเดอร์", "uri": "https://liff.line.me/2011511843-ReAPLsJH?oa=secondary&next=orders" }
+    },
+    {
+      "bounds": { "x": 0, "y": 1300, "width": 834, "height": 386 },
+      "action": { "type": "uri", "label": "รีวิวลูกค้า", "uri": "https://www.pod4u.store/reviews?source=line-rich-menu-secondary" }
+    },
+    {
+      "bounds": { "x": 834, "y": 1300, "width": 832, "height": 386 },
+      "action": { "type": "postback", "label": "ติดต่อแอดมิน", "data": "action=support", "displayText": "ติดต่อแอดมิน" }
+    },
+    {
+      "bounds": { "x": 1666, "y": 1300, "width": 834, "height": 386 },
+      "action": { "type": "uri", "label": "LINE หลัก", "uri": "https://lin.ee/RU5qNLj" }
+    }
+  ]
+}

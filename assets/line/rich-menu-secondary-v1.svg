@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2500" height="1686" viewBox="0 0 2500 1686">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d203a"/>
+      <stop offset="1" stop-color="#06111f"/>
+    </linearGradient>
+    <style>
+      .thai { font-family: "Sukhumvit Set", "Thonburi", sans-serif; font-weight: 700; }
+      .caption { font-family: "Sukhumvit Set", "Thonburi", sans-serif; font-weight: 500; }
+      .icon { fill: none; stroke: currentColor; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; }
+      .arrow { fill: none; stroke: #c6ff00; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+  <image href="rich-menu-v6.jpg" width="2500" height="1686"/>
+  <g color="#c6ff00">
+    <rect x="1666" y="1314" width="820" height="358" rx="38" fill="url(#tile)" stroke="#426084" stroke-width="3"/>
+    <g transform="translate(1717 1385) scale(.78)" class="icon"><path d="M13 111c0-56 45-102 102-102s102 46 102 102-45 102-102 102c-16 0-31-4-45-10l-56 24 15-47c-10-18-16-42-16-69z"/><path d="M69 111h92M131 65l46 46-46 46"/></g>
+    <text x="1924" y="1468" font-size="65" class="thai" fill="#ffffff">LINE <tspan fill="#c6ff00">หลัก</tspan></text>
+    <text x="1924" y="1544" font-size="38" class="caption" fill="#aabbd0">ช่องทางหลัก</text>
+    <path d="M2390 1470l28 28-28 28" class="arrow"/>
+  </g>
+</svg>

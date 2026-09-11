@@ -42,6 +42,7 @@ for (const [matcher, input, expected] of cases) {
 }
 
 const menu = buildAutomationMenuMessage();
+const secondaryMenu = buildAutomationMenuMessage('secondary');
 assert.equal(menu.type, 'flex');
 assert.equal(menu.contents.body.contents.filter((item) => item.type === 'box').length, 3);
 assert.equal(menu.contents.footer.contents.length, 2);
@@ -54,6 +55,10 @@ assert.equal('displayText' in memberButton.action, false);
 const newCustomerGreeting = buildGreetingMessage({ linked: false, hasDefaultAddress: false });
 const linkedCustomerGreeting = buildGreetingMessage({ linked: true, hasDefaultAddress: true });
 const missingAddressGreeting = buildGreetingMessage({ linked: true, hasDefaultAddress: false });
+const secondaryGreeting = buildGreetingMessage({ linked: true, hasDefaultAddress: true }, 'secondary');
+
+assert.match(JSON.stringify(secondaryMenu), /oa=secondary/);
+assert.match(JSON.stringify(secondaryGreeting), /oa=secondary(?:&|\\u0026)next=orders/);
 for (const greeting of [newCustomerGreeting, linkedCustomerGreeting, missingAddressGreeting]) {
   assert.equal(greeting.type, 'text');
   assert.equal(greeting.quickReply.items.length, 2);

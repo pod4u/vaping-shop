@@ -2,9 +2,14 @@
 // ใช้สำหรับรับข้อความจาก LINE และตอบกลับ
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createHmac, timingSafeEqual } from 'node:crypto';
 import { fuzzySearchProducts, getAvailableProducts, parseQuantity } from '@/lib/fuzzy-search';
 import { sendReply } from '@/lib/line-client';
+import {
+  getActiveLineAccount,
+  getActiveMemberLiffUrl,
+  verifyLineWebhookSignature,
+  withLineAccount,
+} from '@/lib/line-account';
 import { OrderPaymentError, processLinePaymentSlip } from '@/lib/order-payment-service';
 import { verifyLineIdentityLinkCode } from '@/lib/customer-identity-service';
 import { extractLineLinkCode, parseLineProviderUserId } from '@/lib/customer-validation';
@@ -25,7 +30,6 @@ import {
   isShippingQuestion,
   isStoreHoursQuestion,
   isTrackingQuestion,
-  MEMBER_LIFF_URL,
   shouldHandOffImageWithoutReply,
 } from '@/lib/line-automation';
 import {
@@ -48,31 +52,33 @@ export async function POST(req: NextRequest) {
     if (rawBody.length > 1_000_000) {
       return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
     }
+    const body = JSON.parse(rawBody);
+    const destination = typeof body.destination === 'string' ? body.destination : '';
     const signature = req.headers.get('x-line-signature');
-    if (!verifyLineSignature(rawBody, signature)) {
+    if (!verifyLineWebhookSignature({ body: rawBody, signature, destination })) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
-    const body = JSON.parse(rawBody);
 
     const events = Array.isArray(body.events) ? body.events.slice(0, 100) : [];
-    const destination = typeof body.destination === 'string' ? body.destination : '';
     const metadata: RequestMetadata = {
       ipAddress: req.headers.get('x-forwarded-for')?.split(',')[0]?.trim().slice(0, 64) || null,
       userAgent: req.headers.get('user-agent')?.slice(0, 500) || null,
     };
 
-    for (const event of events) {
-      if (event?.mode === 'standby') continue;
-      if (event.type === 'message' && event.message.type === 'text') {
-        await handleMessage(event, destination, metadata);
-      } else if (event.type === 'message' && event.message.type === 'image') {
-        await handlePaymentSlip(event, destination);
-      } else if (event.type === 'postback') {
-        await handlePostback(event, destination, metadata);
-      } else if (event.type === 'follow') {
-        await replyWithAutomationMenu(event.replyToken);
+    await withLineAccount(destination, async () => {
+      for (const event of events) {
+        if (event?.mode === 'standby') continue;
+        if (event.type === 'message' && event.message.type === 'text') {
+          await handleMessage(event, destination, metadata);
+        } else if (event.type === 'message' && event.message.type === 'image') {
+          await handlePaymentSlip(event, destination);
+        } else if (event.type === 'postback') {
+          await handlePostback(event, destination, metadata);
+        } else if (event.type === 'follow') {
+          await replyWithAutomationMenu(event.replyToken);
+        }
       }
-    }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -96,7 +102,7 @@ async function handlePaymentSlip(event: any, destination: string) {
     });
     await replyMessage(
       replyToken,
-      `✅ ตรวจสอบการชำระเงินเรียบร้อย\n\nเลขที่ ${result.orderNumber}\nยอด ฿${result.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}\nระบบยืนยันออเดอร์ให้เรียบร้อยแล้ว\n\nเลข Tracking พัสดุจะสามารถเข้าไปเช็กได้ในระบบสมาชิกวันพรุ่งนี้นะคะ\nhttps://liff.line.me/2011511843-ReAPLsJH`,
+      `✅ ตรวจสอบการชำระเงินเรียบร้อย\n\nเลขที่ ${result.orderNumber}\nยอด ฿${result.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}\nระบบยืนยันออเดอร์ให้เรียบร้อยแล้ว\n\nเลข Tracking พัสดุจะสามารถเข้าไปเช็กได้ในระบบสมาชิกวันพรุ่งนี้นะคะ\n${getActiveMemberLiffUrl()}`,
     );
   } catch (error) {
     if (error instanceof OrderPaymentError) {
@@ -134,15 +140,6 @@ async function handlePaymentSlip(event: any, destination: string) {
     console.error('LINE payment slip processing failed');
     await replyMessage(replyToken, 'ระบบตรวจสลิปขัดข้องชั่วคราว ออเดอร์ยังไม่ได้รับการยืนยัน กรุณาติดต่อเจ้าหน้าที่นะคะ');
   }
-}
-
-function verifyLineSignature(body: string, signature: string | null): boolean {
-  const secret = process.env.LINE_CHANNEL_SECRET;
-  if (!secret || !signature) return false;
-  const expected = createHmac('sha256', secret).update(body).digest('base64');
-  const actualBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expected);
-  return actualBuffer.length === expectedBuffer.length && timingSafeEqual(actualBuffer, expectedBuffer);
 }
 
 // Handle text message
@@ -521,7 +518,7 @@ async function replyWithDraftOrder(
           action: {
             type: 'uri',
             label: 'ดูหรือแก้ไขออเดอร์',
-            uri: 'https://liff.line.me/2011511843-ReAPLsJH?next=orders',
+            uri: getActiveMemberLiffUrl('orders'),
           },
         },
       ],
@@ -658,13 +655,13 @@ function buildSalesQuickReply(context: SalesContext, primary: 'stock' | 'orders'
   } else if (context?.linked) {
     items.push({
       type: 'action',
-      action: { type: 'uri', label: 'เปิดออเดอร์ของฉัน', uri: 'https://liff.line.me/2011511843-ReAPLsJH?next=orders' },
+      action: { type: 'uri', label: 'เปิดออเดอร์ของฉัน', uri: getActiveMemberLiffUrl('orders') },
     });
   }
   if (!context?.linked) {
     items.push({
       type: 'action',
-      action: { type: 'uri', label: 'เข้าสู่ระบบสมาชิก', uri: MEMBER_LIFF_URL },
+      action: { type: 'uri', label: 'เข้าสู่ระบบสมาชิก', uri: getActiveMemberLiffUrl() },
     });
   }
   if (primary === 'orders' && !context?.linked) {
@@ -691,13 +688,13 @@ async function replyWithSalesPrompt(
 }
 
 async function replyWithAutomationMenu(replyToken: string) {
-  await sendReply(replyToken, buildAutomationMenuMessage());
+  await sendReply(replyToken, buildAutomationMenuMessage(getActiveLineAccount().alias));
 }
 
 async function replyWithGreeting(event: any, destination: string) {
   const replyToken = event.replyToken;
   const context = await resolveSalesContext(event, destination);
-  await sendReply(replyToken, buildGreetingMessage(context));
+  await sendReply(replyToken, buildGreetingMessage(context, getActiveLineAccount().alias));
 }
 
 async function replyWithOrderStatus(event: any, destination: string) {

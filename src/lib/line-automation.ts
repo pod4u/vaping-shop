@@ -1,8 +1,14 @@
+import {
+  buildMemberLiffUrl,
+  MEMBER_LIFF_URL,
+  type LineAccountAlias,
+} from './line-account-links.ts';
+
 export function includesAny(value: string, keywords: readonly string[]) {
   return keywords.some((keyword) => value.includes(keyword));
 }
 
-export const MEMBER_LIFF_URL = 'https://liff.line.me/2011511843-ReAPLsJH';
+export { MEMBER_LIFF_URL };
 
 export function isShippingQuestion(value: string) {
   return includesAny(value, ['ค่าส่ง', 'ค่าจัดส่ง', 'ส่งฟรี', 'ส่งกี่บาท']);
@@ -76,7 +82,11 @@ export function isExplicitProductOrder(value: string) {
   return includesAny(value, ['ต้องการสั่ง', 'ขอสั่ง', 'สั่ง ', 'สั่งซื้อ', 'ซื้อ ', 'รับ ']);
 }
 
-export function buildGreetingMessage(context: { linked: boolean; hasDefaultAddress: boolean } | null) {
+export function buildGreetingMessage(
+  context: { linked: boolean; hasDefaultAddress: boolean } | null,
+  accountAlias: LineAccountAlias = 'primary',
+) {
+  const memberUrl = buildMemberLiffUrl(accountAlias);
   const stockAction = {
     type: 'action',
     action: { type: 'uri', label: 'ดูสินค้าพร้อมส่ง', uri: 'https://www.pod4u.store/stock?source=line-greeting' },
@@ -91,7 +101,7 @@ export function buildGreetingMessage(context: { linked: boolean; hasDefaultAddre
           stockAction,
           {
             type: 'action',
-            action: { type: 'uri', label: 'เช็กออเดอร์', uri: `${MEMBER_LIFF_URL}?next=orders` },
+            action: { type: 'uri', label: 'เช็กออเดอร์', uri: buildMemberLiffUrl(accountAlias, 'orders') },
           },
         ],
       },
@@ -107,7 +117,7 @@ export function buildGreetingMessage(context: { linked: boolean; hasDefaultAddre
           stockAction,
           {
             type: 'action',
-            action: { type: 'uri', label: 'เปิดหน้าสมาชิก', uri: MEMBER_LIFF_URL },
+            action: { type: 'uri', label: 'เปิดหน้าสมาชิก', uri: memberUrl },
           },
         ],
       },
@@ -122,7 +132,7 @@ export function buildGreetingMessage(context: { linked: boolean; hasDefaultAddre
         stockAction,
         {
           type: 'action',
-          action: { type: 'uri', label: 'เข้าสู่ระบบสมาชิก', uri: MEMBER_LIFF_URL },
+          action: { type: 'uri', label: 'เข้าสู่ระบบสมาชิก', uri: memberUrl },
         },
       ],
     },
@@ -159,7 +169,7 @@ function automationStep(number: string, title: string, detail: string) {
   };
 }
 
-export function buildAutomationMenuMessage() {
+export function buildAutomationMenuMessage(accountAlias: LineAccountAlias = 'primary') {
   return {
     type: 'flex',
     altText: 'สั่งซื้อกับ Pod4U ง่าย ๆ ใน 3 ขั้นตอน',
@@ -202,7 +212,7 @@ export function buildAutomationMenuMessage() {
           {
             type: 'button',
             style: 'secondary',
-            action: { type: 'uri', label: 'เข้าสู่ระบบสมาชิก', uri: MEMBER_LIFF_URL },
+            action: { type: 'uri', label: 'เข้าสู่ระบบสมาชิก', uri: buildMemberLiffUrl(accountAlias) },
           },
         ],
       },

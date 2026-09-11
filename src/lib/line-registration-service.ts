@@ -4,6 +4,7 @@ import { createHmac, randomBytes } from "node:crypto";
 import { getServerSupabase } from "@/lib/supabase";
 import { createLineMemberAccessToken } from "@/lib/member-auth";
 import type { RegistrationInput } from "@/lib/customer-validation";
+import { getConfiguredLineAccounts } from "@/lib/line-account";
 
 const LINE_PROVIDER = "line";
 const REGISTRATION_TTL_MS = 10 * 60 * 1000;
@@ -74,7 +75,7 @@ export async function createLineRegistrationSession(input: {
   | { status: "created"; registrationUrl: string; expiresAt: string }
 > {
   const client = getServerSupabase();
-  const { data: identity, error: identityError } = await client
+  let { data: identity, error: identityError } = await client
     .from("customer_identities")
     .select("id,customer_id")
     .eq("provider", LINE_PROVIDER)
@@ -84,6 +85,41 @@ export async function createLineRegistrationSession(input: {
     .maybeSingle();
 
   if (identityError) throw identityError;
+  if (!identity) {
+    const trustedAccountIds = getConfiguredLineAccounts().map((account) => account.botUserId);
+    const { data: existingIdentity, error: existingError } = await client
+      .from("customer_identities")
+      .select("customer_id")
+      .eq("provider", LINE_PROVIDER)
+      .eq("provider_user_id", input.providerUserId)
+      .eq("status", "verified")
+      .in("provider_account_id", trustedAccountIds)
+      .limit(1)
+      .maybeSingle();
+    if (existingError) throw existingError;
+    if (existingIdentity) {
+      const { error: insertError } = await client.from("customer_identities").insert({
+        customer_id: Number(existingIdentity.customer_id),
+        provider: LINE_PROVIDER,
+        provider_account_id: input.providerAccountId,
+        provider_user_id: input.providerUserId,
+        status: "verified",
+        verified_at: new Date().toISOString(),
+        verified_by: "trusted-line-oa-alias",
+      });
+      if (insertError && insertError.code !== "23505") throw insertError;
+      const linked = await client
+        .from("customer_identities")
+        .select("id,customer_id")
+        .eq("provider", LINE_PROVIDER)
+        .eq("provider_account_id", input.providerAccountId)
+        .eq("provider_user_id", input.providerUserId)
+        .eq("status", "verified")
+        .maybeSingle();
+      if (linked.error) throw linked.error;
+      identity = linked.data;
+    }
+  }
   if (identity) {
     const token = createLineMemberAccessToken({
       customerId: Number(identity.customer_id),
@@ -134,6 +170,7 @@ export async function registerLineCustomerWithAddress(input: {
   userAgent: string | null;
 }): Promise<{
   customerId: number;
+  providerAccountId: string;
   providerUserId: string;
 }> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(input.sessionId)) {
@@ -176,12 +213,26 @@ export async function registerLineCustomerWithAddress(input: {
         : "invalid";
     throw new LineRegistrationError(reason, `LINE registration ${status}`);
   }
-  if (typeof result.customer_id !== "number" || typeof result.provider_user_id !== "string") {
+  if (
+    typeof result.customer_id !== "number"
+    || typeof result.customer_identity_id !== "string"
+    || typeof result.provider_user_id !== "string"
+  ) {
     throw new Error("LINE registration returned an invalid result");
   }
 
+  const { data: identity, error: identityError } = await getServerSupabase()
+    .from("customer_identities")
+    .select("provider_account_id")
+    .eq("id", result.customer_identity_id)
+    .eq("status", "verified")
+    .maybeSingle();
+  if (identityError) throw identityError;
+  if (!identity?.provider_account_id) throw new Error("LINE registration identity was not found");
+
   return {
     customerId: result.customer_id,
+    providerAccountId: String(identity.provider_account_id),
     providerUserId: result.provider_user_id,
   };
 }

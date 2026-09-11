@@ -6,6 +6,8 @@ import {
   MEMBER_SESSION_TTL_SECONDS,
 } from "@/lib/member-auth";
 import { createLineRegistrationSession } from "@/lib/line-registration-service";
+import { getConfiguredLineAccounts, getLineAccountByAlias } from "@/lib/line-account";
+import { parseLineAccountAlias } from "@/lib/line-account-links";
 
 export const dynamic = "force-dynamic";
 
@@ -40,9 +42,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "ยืนยันตัวตน LINE ไม่สำเร็จ" }, { status: 401 });
     }
 
-    const botUserId = process.env.LINE_BOT_USER_ID?.trim();
-    if (!botUserId) throw new Error("LINE_BOT_USER_ID is not configured");
-    const { data: identity, error } = await getServerSupabase()
+    const accountAlias = parseLineAccountAlias(body.account_alias);
+    const botUserId = getLineAccountByAlias(accountAlias).botUserId;
+    const client = getServerSupabase();
+    let { data: identity, error } = await client
       .from("customer_identities")
       .select("customer_id")
       .eq("provider", "line")
@@ -51,6 +54,46 @@ export async function POST(request: NextRequest) {
       .eq("status", "verified")
       .maybeSingle();
     if (error) throw error;
+
+    // LINE user IDs are stable across channels created under the same LINE
+    // Developers provider. When a known customer opens the trusted backup OA,
+    // create the second OA namespace link so they keep the same Member account.
+    if (!identity && accountAlias === "secondary") {
+      const trustedAccountIds = getConfiguredLineAccounts().map((account) => account.botUserId);
+      const { data: existingIdentity, error: existingError } = await client
+        .from("customer_identities")
+        .select("customer_id")
+        .eq("provider", "line")
+        .eq("provider_user_id", verified.providerUserId)
+        .eq("status", "verified")
+        .in("provider_account_id", trustedAccountIds)
+        .limit(1)
+        .maybeSingle();
+      if (existingError) throw existingError;
+      if (existingIdentity) {
+        const { error: insertError } = await client.from("customer_identities").insert({
+          customer_id: Number(existingIdentity.customer_id),
+          provider: "line",
+          provider_account_id: botUserId,
+          provider_user_id: verified.providerUserId,
+          status: "verified",
+          verified_at: new Date().toISOString(),
+          verified_by: "trusted-line-oa-alias",
+        });
+        if (insertError && insertError.code !== "23505") throw insertError;
+        const linked = await client
+          .from("customer_identities")
+          .select("customer_id")
+          .eq("provider", "line")
+          .eq("provider_account_id", botUserId)
+          .eq("provider_user_id", verified.providerUserId)
+          .eq("status", "verified")
+          .maybeSingle();
+        if (linked.error) throw linked.error;
+        identity = linked.data;
+      }
+    }
+
     if (!identity) {
       const registration = await createLineRegistrationSession({
         providerAccountId: botUserId,

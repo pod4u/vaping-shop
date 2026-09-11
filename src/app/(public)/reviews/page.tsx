@@ -5,7 +5,7 @@ import { mockReviewsPreviewData } from "./mockReviews";
 
 export const metadata: Metadata = {
   title: "รีวิวจากลูกค้า",
-  description: "รีวิวจากคำสั่งซื้อจริงของสมาชิก Pod4U ทั้งสินค้า การจัดส่ง บริการ และการใช้งานระบบ",
+  description: "อ่านรีวิวจากคำสั่งซื้อจริงของสมาชิก Pod4U ทั้งสินค้า การจัดส่ง บริการ และการใช้งานระบบได้ที่นี่ค่ะ",
   alternates: { canonical: getCanonical("/reviews") },
   openGraph: {
     title: "รีวิวจากลูกค้า Pod4U",
