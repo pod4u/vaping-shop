@@ -2248,3 +2248,4 @@ Executed the complete review reward lifecycle against the production Supabase sc
 - The preview does not query or write Supabase, is not linked from public navigation, and cannot alter the production review feed.
 - The public `/reviews` route remains restricted to approved real reviews only.
 - Verified the preview at 390×844; filters and responsive review cards render correctly. TypeScript and the full Next.js production build passed.
+- Added a four-hour, HTTP-only design-review cookie flow: the activation link redirects to the canonical `/reviews` URL and middleware renders the synthetic preview only for that browser. All other visitors continue to receive the real approved-review feed. A one-click exit clears the cookie.

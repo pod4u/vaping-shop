@@ -25,8 +25,9 @@ export function ReviewsExperience({ previewData, previewMode = false }: { previe
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_68%_4%,rgba(37,99,235,0.25),transparent_28%),radial-gradient(circle_at_10%_36%,rgba(20,92,158,0.16),transparent_34%),linear-gradient(180deg,#071a37_0%,#041124_100%)]" />
 
       {previewMode && (
-        <div className="border-b border-sky-300/10 bg-[#06152d] px-4 py-2 text-center text-[11px] font-bold tracking-wide text-slate-400">
-          ตัวอย่างดีไซน์ · ข้อมูลสมมติ
+        <div className="flex items-center justify-center gap-3 border-b border-sky-300/10 bg-[#06152d] px-4 py-2 text-center text-[11px] font-bold tracking-wide text-slate-400">
+          <span>ตัวอย่างดีไซน์ · ข้อมูลสมมติ</span>
+          <Link href="/api/review-design-preview?off=1" className="text-sky-300 underline underline-offset-2">ปิดโหมด</Link>
         </div>
       )}
 
