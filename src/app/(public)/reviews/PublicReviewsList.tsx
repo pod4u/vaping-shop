@@ -13,9 +13,9 @@ import {
   UsersRound,
 } from "lucide-react";
 
-type ReviewCategory = "product" | "delivery" | "service" | "overall";
+export type ReviewCategory = "product" | "delivery" | "service" | "overall";
 
-interface PublicReview {
+export interface PublicReview {
   id: string;
   rating: number;
   category: ReviewCategory;
@@ -27,7 +27,7 @@ interface PublicReview {
   items: Array<{ product_name: string; flavor_name: string; brand_name: string }>;
 }
 
-interface ReviewSummary {
+export interface ReviewSummary {
   average_rating: number;
   total_reviews: number;
   rating_distribution: { 1: number; 2: number; 3: number; 4: number; 5: number };
@@ -83,16 +83,34 @@ function ReviewStars({ rating, size = "small" }: { rating: number; size?: "small
   );
 }
 
-export default function PublicReviewsList() {
-  const [reviews, setReviews] = useState<PublicReview[]>([]);
-  const [summary, setSummary] = useState<ReviewSummary | null>(null);
+interface PublicReviewsListProps {
+  previewData?: {
+    reviews: PublicReview[];
+    summary: ReviewSummary;
+  };
+}
+
+export default function PublicReviewsList({ previewData }: PublicReviewsListProps = {}) {
+  const [reviews, setReviews] = useState<PublicReview[]>(previewData?.reviews ?? []);
+  const [summary, setSummary] = useState<ReviewSummary | null>(previewData?.summary ?? null);
   const [category, setCategory] = useState<"all" | ReviewCategory>("all");
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [total, setTotal] = useState(previewData?.reviews.length ?? 0);
+  const [isLoading, setIsLoading] = useState(!previewData);
   const [error, setError] = useState("");
 
   const loadReviews = useCallback(async () => {
+    if (previewData) {
+      const filtered = category === "all"
+        ? previewData.reviews
+        : previewData.reviews.filter((review) => review.category === category);
+      setReviews(filtered);
+      setSummary(previewData.summary);
+      setTotal(filtered.length);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError("");
     try {
@@ -107,7 +125,7 @@ export default function PublicReviewsList() {
     } finally {
       setIsLoading(false);
     }
-  }, [category, page]);
+  }, [category, page, previewData]);
 
   useEffect(() => { void loadReviews(); }, [loadReviews]);
   useEffect(() => { setPage(1); }, [category]);

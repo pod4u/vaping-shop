@@ -2242,3 +2242,9 @@ Executed the complete review reward lifecycle against the production Supabase sc
 - Kept review integrity unchanged: only approved database reviews are rendered; no demo or fabricated customer reviews were added.
 - Responsive verification: mobile 390×844 and production-safe desktop layout. TypeScript, review-system verification (43 passed), and Next.js production build passed.
 - Mobile filter repair: replaced the overflowing single-row scroller with a balanced 3+2 wrapped layout, removing overlap and the visible scrollbar on narrow screens.
+## Shareable Reviews Design Preview — 2026-09-11
+
+- Added an unlisted, `noindex` online design-preview route containing 10 clearly labelled synthetic reviews for stakeholder visual review.
+- The preview does not query or write Supabase, is not linked from public navigation, and cannot alter the production review feed.
+- The public `/reviews` route remains restricted to approved real reviews only.
+- Verified the preview at 390×844; filters and responsive review cards render correctly. TypeScript and the full Next.js production build passed.
