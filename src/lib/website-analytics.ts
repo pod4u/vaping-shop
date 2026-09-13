@@ -18,9 +18,45 @@ export function hasEnoughQueryDataForTrend(impressions: number): boolean {
 export function hasEnoughQueryDataForCtr(impressions: number): boolean {
   return impressions >= MIN_QUERY_CTR_IMPRESSIONS;
 }
+
+export function expectedMarboLandingPage(query: string): string | null {
+  const normalized = query.trim().toLowerCase().normalize("NFKC");
+  const compact = normalized.replace(/[\s,._-]+/g, "");
+  const mentionsMarbo = compact.includes("marbo") || compact.includes("มาโบ") || compact.includes("มาร์โบ");
+  const mentionsMbar = compact.includes("mbar") || compact.includes("เอ็มบาร์");
+  const isComparison = normalized.includes("เทียบ")
+    || normalized.includes("เปรียบเทียบ")
+    || normalized.includes("ต่างกัน")
+    || /\b(?:vs\.?|versus|compare)\b/.test(normalized);
+  const mentions9k = compact.includes("9k") || compact.includes("9000");
+  const mentions10k = compact.includes("10k") || compact.includes("10000");
+
+  if (isComparison && mentionsMarbo && mentionsMbar) {
+    return mentions9k && mentions10k ? "/blog/marbo-9k-vs-mbar-10k" : "/brands/marbo";
+  }
+  if (mentionsMarbo && (compact.includes("15k") || compact.includes("15000"))) return "/products/marbo-m-switch-15k";
+  if (mentionsMarbo && mentions9k) {
+    if (normalized.includes("รส") || normalized.includes("flavor")) return "/blog/marbo-9k-flavors";
+    return "/products/marbo-m-bar-9k";
+  }
+  if (mentionsMbar && (compact.includes("10k") || compact.includes("10000"))) {
+    if (normalized.includes("รส") || normalized.includes("flavor")) return "/blog/mbar-10k-flavors";
+    return "/products/mbar-10k";
+  }
+  if (mentionsMarbo && !/\d/.test(compact)) return "/brands/marbo";
+  if (mentionsMbar && !/\d/.test(compact)) return "/brands/mbar";
+  return null;
+}
+
+export function normalizeSearchLandingPath(path: string): string {
+  if (!path.startsWith("/")) return path;
+  return path.length > 1 ? path.replace(/\/+$/, "") : path;
+}
+
 export interface TrafficRow extends TrafficTotals { label: string }
 export interface SearchRow extends SearchTotals { date: string }
 export interface SearchDimensionRow extends SearchTotals { label: string }
+export interface SearchQueryPageRow extends SearchTotals { query: string; page: string }
 export interface TrafficReport {
   range: DateRange;
   previousRange: DateRange;
@@ -41,6 +77,7 @@ export interface SearchReport {
   daily: SearchRow[];
   queries?: SearchDimensionRow[];
   pages?: SearchDimensionRow[];
+  queryPages?: SearchQueryPageRow[];
   detailsError?: string | null;
   dataThrough: string | null;
 }

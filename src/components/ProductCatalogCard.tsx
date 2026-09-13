@@ -41,7 +41,7 @@ export default function ProductCatalogCard({ product }: ProductCatalogCardProps)
       <Link href={`/products/${product.slug}`} className="block relative aspect-square overflow-hidden bg-navy-deep/80">
         <img
           src={product.image_url || "/images/placeholder.svg"}
-          alt={`${primary} ${brandDisplay.primary}`}
+          alt={`ภาพสินค้า ${primary}${secondary ? ` (${secondary})` : ""}`}
           className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
           width={400}
           height={400}

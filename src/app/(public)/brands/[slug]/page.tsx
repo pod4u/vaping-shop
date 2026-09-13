@@ -2,10 +2,10 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { APP_URL, getCanonical, safeJsonLd } from "@/lib/seo";
 import { getServerSupabase } from "@/lib/supabase";
-import { getAggregatedProductsByBrand } from "@/lib/catalog-aggregate";
+import { getAggregatedProductsByBrand, type AggregatedProduct } from "@/lib/catalog-aggregate";
 import ProductGridServer from "@/components/ProductGridServer";
 import Link from "next/link";
-import { bilingualPrimary, bilingualName } from "@/lib/bilingual";
+import { bilingualPrimary, bilingualName, formatPuffs } from "@/lib/bilingual";
 
 interface BrandData {
   slug: string;
@@ -48,20 +48,31 @@ function isMarboOrMbar(slug: string): boolean {
   return slug === "marbo" || slug === "mbar";
 }
 
-const marboFaqs: FaqItem[] = [
-  {
-    question: "MARBO หรือ มาโบ คืออะไร?",
-    answer: "MARBO คือชื่อแบรนด์ที่คนไทยมักเรียกว่า มาโบหรือมาร์โบ ส่วน M BAR เป็นชื่อที่ใช้กับสินค้าบางรุ่น จึงควรดูชื่อรุ่นเต็มก่อนเลือกสินค้า",
-  },
-  {
-    question: "MARBO M BAR 9K มีกี่พัฟ?",
-    answer: "MARBO M BAR 9K ระบุจำนวนพัฟประมาณ 9,000 พัฟตามข้อมูลผู้ผลิต การใช้งานจริงต่างกันตามลักษณะการใช้งาน สามารถดูรายละเอียดเพิ่มเติมได้จากหน้าสินค้า",
-  },
-  {
-    question: "จำนวนรสชาติอัปเดตจากที่ไหน?",
-    answer: "หน้าสินค้าแต่ละรุ่นแสดงเฉพาะตัวเลือกรสชาติที่เปิดใช้งานในระบบ จำนวนจึงเปลี่ยนได้ตามข้อมูลสินค้าและสต็อกล่าสุด",
-  },
-];
+function getMarboFaqs(products: AggregatedProduct[]): FaqItem[] {
+  const modelNames = products.map((product) => product.name).filter(Boolean);
+  const modelsAnswer = modelNames.length
+    ? `รุ่นที่เปิดใช้งานในแคตตาล็อกขณะนี้คือ ${modelNames.join(" และ ")} รายการอาจเปลี่ยนได้เมื่อมีการอัปเดตสินค้า`
+    : "รุ่นที่เปิดใช้งานจะแสดงในหน้าแบรนด์นี้โดยอัตโนมัติเมื่อข้อมูลสินค้าอัปเดต";
+
+  return [
+    {
+      question: "MARBO หรือ มาโบ คืออะไร?",
+      answer: "MARBO คือชื่อแบรนด์ที่คนไทยมักเรียกว่า มาโบหรือมาร์โบ ควรดูชื่อรุ่นเต็มและจำนวนพัฟกำกับเพื่อเลือกรุ่นได้ถูกต้อง",
+    },
+    {
+      question: "MARBO มีรุ่นอะไรบ้าง?",
+      answer: modelsAnswer,
+    },
+    {
+      question: "MARBO กับ M BAR ต่างกันอย่างไร?",
+      answer: "เว็บไซต์แยก MARBO และ M BAR ตามชื่อแบรนด์และชื่อรุ่นในแคตตาล็อก เนื่องจากชื่อบางรุ่นมีคำว่า M BAR อยู่ด้วย จึงควรตรวจชื่อเต็ม เช่น MARBO M BAR 9K หรือ M BAR 10K ก่อนเลือกสินค้า",
+    },
+    {
+      question: "จำนวนรสชาติ ราคา และสต็อกอัปเดตจากที่ไหน?",
+      answer: "การ์ดสินค้าและหน้าสินค้าอ่านข้อมูลจากแคตตาล็อกปัจจุบัน จึงแสดงเฉพาะตัวเลือกที่เปิดใช้งาน พร้อมราคาและสถานะสต็อกล่าสุดในระบบ",
+    },
+  ];
+}
 
 const mbarFaqs: FaqItem[] = [
   {
@@ -83,7 +94,13 @@ function getMarboTitle(): string {
 }
 
 function getMarboDescription(): string {
-  return "รวมข้อมูลสินค้า MARBO หรือมาโบ ดูรุ่น MARBO M BAR 9K พร้อมรสชาติ ราคา และสถานะสินค้าล่าสุด";
+  return "รวมข้อมูลสินค้า MARBO หรือมาโบ ดูรุ่น MARBO M BAR 9K และ MARBO M SWITCH 15K พร้อมรสชาติ ราคา และสถานะสินค้าล่าสุด";
+}
+
+function formatPriceRange(product: AggregatedProduct): string {
+  return product.min_price === product.max_price
+    ? `฿${product.min_price.toLocaleString()}`
+    : `฿${product.min_price.toLocaleString()}–฿${product.max_price.toLocaleString()}`;
 }
 
 function getMbarTitle(): string {
@@ -136,6 +153,11 @@ export default async function BrandPage({ params }: { params: { slug: string } }
   const isMarboOrMbarBrand = isMarboOrMbar(brand.slug);
   const isMarbo = brand.slug === "marbo";
   const isMbar = brand.slug === "mbar";
+  const marboModels = isMarbo
+    ? products
+        .filter((product) => ["marbo-m-bar-9k", "marbo-m-switch-15k"].includes(product.slug))
+        .sort((a, b) => (a.puff_count ?? 0) - (b.puff_count ?? 0))
+    : [];
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -147,7 +169,7 @@ export default async function BrandPage({ params }: { params: { slug: string } }
     ],
   };
 
-  const faqs: FaqItem[] = isMarbo ? marboFaqs : (isMbar ? mbarFaqs : []);
+  const faqs: FaqItem[] = isMarbo ? getMarboFaqs(products) : (isMbar ? mbarFaqs : []);
 
   const faqJsonLd = faqs.length > 0
     ? {
@@ -207,6 +229,31 @@ export default async function BrandPage({ params }: { params: { slug: string } }
 
           <ProductGridServer products={products} emptyMessage="ยังไม่มีสินค้าจากแบรนด์นี้" />
 
+          {isMarbo && marboModels.length > 0 && (
+            <section id="compare-marbo-models" className="mt-16 scroll-mt-28" aria-labelledby="compare-marbo-heading">
+              <div className="mb-6 max-w-3xl">
+                <p className="text-xs font-mono uppercase tracking-[0.2em] text-acid-lime">CHOOSE A MARBO MODEL</p>
+                <h2 id="compare-marbo-heading" className="mt-2 text-2xl font-black text-white sm:text-3xl">MARBO 9K กับ 15K ต่างกันอย่างไร</h2>
+                <p className="mt-3 leading-7 text-white/60">จุดต่างที่ควรดูคือชื่อรุ่น จำนวนพัฟที่ผู้ผลิตระบุ ตัวเลือกรส ราคา และสถานะพร้อมส่ง ข้อมูลด้านล่างอ่านจากแคตตาล็อกปัจจุบันโดยตรง</p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {marboModels.map((product) => (
+                  <article key={product.slug} className="navy-card rounded-2xl border border-white/10 p-5 sm:p-6">
+                    <p className="text-xs font-mono text-acid-lime">{formatPuffs(product.puff_count) ? `${formatPuffs(product.puff_count)} PUFFS` : "MARBO"}</p>
+                    <h3 className="mt-2 text-xl font-black text-white">{bilingualName(product.name, product.name_th)}</h3>
+                    <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
+                      <div className="rounded-xl bg-white/[0.035] p-3"><dt className="text-white/40">รสในรายการ</dt><dd className="mt-1 font-bold text-white">{product.variant_count} รส</dd></div>
+                      <div className="rounded-xl bg-white/[0.035] p-3"><dt className="text-white/40">ราคาเริ่มต้น</dt><dd className="mt-1 font-bold text-white">{formatPriceRange(product)}</dd></div>
+                      <div className="col-span-2 rounded-xl bg-white/[0.035] p-3"><dt className="text-white/40">สถานะล่าสุด</dt><dd className={`mt-1 font-bold ${product.has_stock ? "text-emerald-300" : "text-white/60"}`}>{product.has_stock ? "มีตัวเลือกพร้อมส่ง" : "ยังไม่มีตัวเลือกพร้อมส่ง"}</dd></div>
+                    </dl>
+                    <Link href={`/products/${product.slug}`} className="mt-5 inline-flex text-sm font-bold text-acid-lime hover:underline">ดูรายละเอียด {product.name} →</Link>
+                  </article>
+                ))}
+              </div>
+              <p className="mt-4 text-xs leading-6 text-white/40">จำนวนพัฟเป็นค่าประมาณตามข้อมูลผู้ผลิต ส่วนจำนวนรส ราคา และสต็อกอาจเปลี่ยนตามการอัปเดตสินค้า</p>
+            </section>
+          )}
+
           {/* MARBO-specific content section */}
           {isMarbo && (
             <section className="mt-16 grid gap-8 lg:grid-cols-[1.2fr_1fr]" aria-labelledby="marbo-guide">
@@ -227,6 +274,9 @@ export default async function BrandPage({ params }: { params: { slug: string } }
                   <Link href="/blog/marbo-9k-flavors" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
                     ดูรสชาติ MARBO 9K
                   </Link>
+                  <Link href="/products/marbo-m-switch-15k" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
+                    ดูสินค้า MARBO M SWITCH 15K
+                  </Link>
                   <Link href="/brands/mbar" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
                     ดูสินค้า M BAR
                   </Link>
@@ -238,7 +288,7 @@ export default async function BrandPage({ params }: { params: { slug: string } }
 
               <div className="space-y-4">
                 <h2 className="text-2xl font-black text-white">คำถามที่พบบ่อย</h2>
-                {marboFaqs.map((faq) => (
+                {faqs.map((faq) => (
                   <details key={faq.question} className="navy-card rounded-xl border border-white/10 p-5">
                     <summary className="cursor-pointer font-bold text-white">{faq.question}</summary>
                     <p className="mt-3 text-sm leading-relaxed text-white/70">{faq.answer}</p>

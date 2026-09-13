@@ -96,7 +96,7 @@ async function getProductBySlug(slug: string): Promise<ProductData | null> {
 export const revalidate = 3600;
 
 function isMarboProduct(slug: string): boolean {
-  return slug === "marbo-m-bar-9k" || slug === "mbar-10k";
+  return slug === "marbo-m-bar-9k" || slug === "marbo-m-switch-15k" || slug === "mbar-10k";
 }
 
 function getProductFaqs(product: ProductData) {
@@ -106,28 +106,27 @@ function getProductFaqs(product: ProductData) {
     : "โปรดตรวจรายละเอียดของรุ่นและข้อมูลจากผู้ผลิตในหน้าสินค้า";
 
   if (isMarboProduct(product.slug)) {
-    const is9k = product.slug === "marbo-m-bar-9k";
-    const modelLabel = is9k ? "MARBO M BAR 9K" : "M BAR 10K";
-    const altNames = is9k
-      ? "มาโบ 9K, มาร์โบ 9K, MARBO 9K"
-      : "มาโบ 10K, เอ็มบาร์ 10K, mbar 10k";
-    const otherModel = is9k ? "M BAR 10K" : "MARBO M BAR 9K";
+    const model = product.slug === "marbo-m-bar-9k"
+      ? { label: "MARBO M BAR 9K", primaryAlias: "มาโบ 9K", aliases: "มาโบ 9K, มาร์โบ 9K และ MARBO 9K", otherModel: "MARBO M SWITCH 15K" }
+      : product.slug === "marbo-m-switch-15k"
+        ? { label: "MARBO M SWITCH 15K", primaryAlias: "มาโบ 15K", aliases: "มาโบ 15K และ MARBO 15K", otherModel: "MARBO M BAR 9K" }
+        : { label: "M BAR 10K", primaryAlias: "เอ็มบาร์ 10K", aliases: "เอ็มบาร์ 10K และ mbar 10k", otherModel: "MARBO M BAR 9K" };
 
     return [
       {
-        question: `${modelLabel} มีกี่พัฟ?`,
-        answer: `${Number(product.puff_count || 0).toLocaleString()} พัฟตามข้อมูลที่ผู้ผลิตระบุ โดยจำนวนใช้งานจริงอาจต่างกันตามลักษณะการใช้งาน`,
+        question: `${model.label} มีกี่พัฟ?`,
+        answer: puffText,
       },
       {
-        question: `${modelLabel} กับ ${altNames.split(", ")[0]} คือรุ่นเดียวกันหรือไม่?`,
-        answer: `ใช่ ${modelLabel} คือรุ่นเดียวกับที่ค้นกันในชื่อ ${altNames} ต่างกันที่การสะกดและรูปแบบคำค้น`,
+        question: `${model.label} กับ ${model.primaryAlias} คือรุ่นเดียวกันหรือไม่?`,
+        answer: `ใช่ เป็นสินค้ารุ่นเดียวกัน โดย ${model.label} เป็นชื่อเต็ม ส่วน ${model.aliases} เป็นชื่อที่คนมักใช้เรียกหรือพิมพ์ค้นหา`,
       },
       {
         question: `${displayName} มีรสชาติอะไรบ้าง?`,
         answer: `หน้านี้แสดงรสชาติที่เปิดใช้งานในระบบล่าสุดจำนวน ${product.variants.length} ตัวเลือก รายการอาจเปลี่ยนได้เมื่อข้อมูลสินค้าหรือสต็อกอัปเดต`,
       },
       {
-        question: `จะเปรียบเทียบ ${modelLabel} กับ ${otherModel} ได้อย่างไร?`,
+        question: `จะเปรียบเทียบ ${model.label} กับ ${model.otherModel} ได้อย่างไร?`,
         answer: `เปิดหน้าสินค้าทั้งสองรุ่นเพื่อดูรายละเอียดจำนวนพัฟ รสชาติ ราคา และสถานะสต็อกล่าสุด หรืออ่านบทความเปรียบเทียบเพื่อสรุปข้อมูลพื้นฐาน`,
       },
     ];
@@ -181,6 +180,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   } else if (isMarbo && product.slug === "mbar-10k") {
     title = "M BAR 10K - mbar มาโบ 10K เอ็มบาร์";
     description = "M BAR 10K หรือที่ค้นกันว่า mbar 10k มาโบ 10K เอ็มบาร์ 10K พร้อมรายละเอียดรสชาติและสถานะสต็อกล่าสุด";
+  } else if (isMarbo && product.slug === "marbo-m-switch-15k") {
+    title = "MARBO M SWITCH 15K - มาโบ 15K";
+    description = "MARBO M SWITCH 15K หรือมาโบ 15K ดูจำนวนพัฟ รสชาติ ราคา และสถานะสินค้าล่าสุด พร้อมเปรียบเทียบกับ MARBO M BAR 9K";
   } else {
     // Don't add brand to title if it's already in the product name
     title = brandInProductName ? displayName : `${displayName} - ${brandDisplay}`;
@@ -238,6 +240,37 @@ export default async function ProductPage({ params }: { params: { slug: string }
   const brandDisplay = bilingualPrimary(product.brand?.name, product.brand?.name_th);
   const puffFormatted = formatPuffs(product.puff_count);
   const productFaqs = getProductFaqs(product);
+  const marboGuide = product.slug === "marbo-m-bar-9k"
+    ? {
+        intro: "MARBO M BAR 9K เป็นชื่อเต็มของรุ่นที่หลายคนเรียกว่า มาโบ 9K หรือมาร์โบ 9K เป็นพอตใช้แล้วทิ้งที่ผู้ผลิตระบุจำนวนพัฟไว้ประมาณ 9,000 พัฟ",
+        links: [
+          { href: "/brands/marbo", label: "ดูสินค้า MARBO ทุกรุ่น" },
+          { href: "/blog/marbo-9k-flavors", label: "ดูรสชาติ MARBO 9K" },
+          { href: "/products/marbo-m-switch-15k", label: "ดู MARBO M SWITCH 15K" },
+          { href: "/blog/marbo-9k-vs-mbar-10k", label: "เปรียบเทียบ MARBO 9K กับ M BAR 10K" },
+        ],
+      }
+    : product.slug === "marbo-m-switch-15k"
+      ? {
+          intro: "MARBO M SWITCH 15K เป็นชื่อเต็มของรุ่นที่หลายคนเรียกว่า มาโบ 15K จุดสังเกตสำคัญคือชื่อ M SWITCH และจำนวนพัฟที่ผู้ผลิตระบุไว้ประมาณ 15,000 พัฟ",
+          links: [
+            { href: "/brands/marbo", label: "ดูสินค้า MARBO ทุกรุ่น" },
+            { href: "/brands/marbo#compare-marbo-models", label: "เปรียบเทียบ MARBO 9K กับ 15K" },
+            { href: "/products/marbo-m-bar-9k", label: "ดู MARBO M BAR 9K" },
+            { href: "/categories/flavor-pod", label: "ดูหัวน้ำยาและหัวพอตรุ่นอื่น" },
+          ],
+        }
+      : product.slug === "mbar-10k"
+        ? {
+            intro: "M BAR 10K เป็นชื่อเต็มของรุ่นที่อาจเห็นเขียนว่า mbar 10k หรือเรียกว่า เอ็มบาร์ 10K เป็นพอตใช้แล้วทิ้งที่ผู้ผลิตระบุจำนวนพัฟไว้ประมาณ 10,000 พัฟ",
+            links: [
+              { href: "/brands/mbar", label: "ดูสินค้า M BAR" },
+              { href: "/blog/mbar-10k-flavors", label: "ดูรสชาติ M BAR 10K" },
+              { href: "/products/marbo-m-bar-9k", label: "ดู MARBO M BAR 9K" },
+              { href: "/blog/marbo-9k-vs-mbar-10k", label: "เปรียบเทียบ MARBO 9K กับ M BAR 10K" },
+            ],
+          }
+        : null;
 
   const displayNameFull = bilingualName(product.name, product.name_th);
   const brandNameFull = bilingualName(product.brand?.name, product.brand?.name_th);
@@ -331,7 +364,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
               <div className="relative aspect-square vapor-card rounded-3xl overflow-hidden border border-brand-border bg-brand-void/80 flex items-center justify-center">
                 <img
                   src={product.image_url || "https://placehold.co/600x600/120d20/5b13ec?text=Pod4U"}
-                  alt={`${namePrimary} ${brandDisplay.primary}`}
+                  alt={`ภาพสินค้า ${namePrimary}${nameSecondary ? ` (${nameSecondary})` : ""}`}
                   className="w-full h-full object-cover"
                   width={600}
                   height={600}
@@ -432,29 +465,20 @@ export default async function ProductPage({ params }: { params: { slug: string }
               <h2 id="product-guide" className="text-2xl font-black text-white mb-4">
                 ข้อมูล {displayNameFull}
               </h2>
-              {isMarboProduct(product.slug) ? (
+              {marboGuide ? (
                 <>
                   <p className="text-white/70 leading-relaxed mb-4">
-                    {product.slug === "marbo-m-bar-9k"
-                      ? "MARBO M BAR 9K เป็นชื่อเต็มของรุ่นที่หลายคนเรียกว่า มาโบ 9K หรือมาร์โบ 9K เป็นพอตใช้แล้วทิ้งที่ผู้ผลิตระบุจำนวนพัฟไว้ประมาณ 9,000 พัฟ"
-                      : "M BAR 10K เป็นชื่อเต็มของรุ่นที่อาจเห็นเขียนว่า mbar 10k หรือเรียกว่า เอ็มบาร์ 10K เป็นพอตใช้แล้วทิ้งที่ผู้ผลิตระบุจำนวนพัฟไว้ประมาณ 10,000 พัฟ"}
+                    {marboGuide.intro}
                   </p>
                   <p className="text-white/70 leading-relaxed mb-6">
                     รุ่นนี้มีรสชาติที่เปิดใช้งานในระบบขณะนี้ {product.variants.length} ตัวเลือก จำนวนพัฟและระยะเวลาใช้งานจริงอาจต่างกันตามรูปแบบการใช้งาน
                   </p>
                   <nav aria-label={`ข้อมูลที่เกี่ยวข้องกับ ${displayNameFull}`} className="grid gap-3 sm:grid-cols-2 mb-4">
-                    <Link href={`/brands/${product.brand?.slug}`} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
-                      ดูแบรนด์ {brandDisplay.primary}
-                    </Link>
-                    <Link href={product.slug === "marbo-m-bar-9k" ? "/blog/marbo-9k-flavors" : "/blog/mbar-10k-flavors"} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
-                      {product.slug === "marbo-m-bar-9k" ? "ดูรสชาติ MARBO 9K" : "ดูรสชาติ M BAR 10K"}
-                    </Link>
-                    <Link href={product.slug === "marbo-m-bar-9k" ? "/products/mbar-10k" : "/products/marbo-m-bar-9k"} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
-                      {product.slug === "marbo-m-bar-9k" ? "M BAR 10K" : "MARBO M BAR 9K"}
-                    </Link>
-                    <Link href="/blog/marbo-9k-vs-mbar-10k" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
-                      เปรียบเทียบ MARBO 9K กับ M BAR 10K
-                    </Link>
+                    {marboGuide.links.map((link) => (
+                      <Link key={link.href} href={link.href} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
+                        {link.label}
+                      </Link>
+                    ))}
                   </nav>
                 </>
               ) : (

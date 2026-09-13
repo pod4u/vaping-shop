@@ -1,8 +1,8 @@
 import "server-only";
 import { createHash, createSign } from "node:crypto";
 import {
-  reportingRanges, searchTotals,
-  type AnalyticsSource, type DateRange, type PeriodDays, type SearchDimensionRow, type SearchReport, type SearchRow,
+  normalizeSearchLandingPath, reportingRanges, searchTotals,
+  type AnalyticsSource, type DateRange, type PeriodDays, type SearchDimensionRow, type SearchQueryPageRow, type SearchReport, type SearchRow,
   type TrafficReport, type TrafficRow, type TrafficTotals, type HealthReport,
 } from "@/lib/website-analytics";
 
@@ -78,9 +78,30 @@ export function parseSearchDimensionRows(result: Record<string, unknown>, dimens
     if (dimension === "page") {
       const url = new URL(label);
       if (!["pod4u.store", "www.pod4u.store"].includes(url.hostname)) throw new Error("Unexpected page host");
-      label = url.pathname.slice(0, 240);
+      label = normalizeSearchLandingPath(url.pathname).slice(0, 240);
     }
     return { label, clicks: metric(row.clicks), impressions, ctr: metric(row.ctr), position: impressions ? metric(row.position) : null };
+  });
+}
+
+export function parseSearchQueryPageRows(result: Record<string, unknown>): SearchQueryPageRow[] {
+  if (result.rows === undefined) return [];
+  if (!Array.isArray(result.rows)) throw new Error("Invalid rows");
+  return result.rows.map((row) => {
+    if (!row || !Array.isArray(row.keys) || typeof row.keys[0] !== "string" || !row.keys[0].trim() || typeof row.keys[1] !== "string") {
+      throw new Error("Invalid query-page dimensions");
+    }
+    const url = new URL(row.keys[1]);
+    if (!["pod4u.store", "www.pod4u.store"].includes(url.hostname)) throw new Error("Unexpected page host");
+    const impressions = metric(row.impressions);
+    return {
+      query: row.keys[0].trim().slice(0, 240),
+      page: normalizeSearchLandingPath(url.pathname).slice(0, 240),
+      clicks: metric(row.clicks),
+      impressions,
+      ctr: metric(row.ctr),
+      position: impressions ? metric(row.position) : null,
+    };
   });
 }
 
@@ -118,10 +139,11 @@ export async function fetchSearchReport(days: PeriodDays, now = new Date()): Pro
     try { return { result: await query(body), error: null }; }
     catch (error) { return { result: {}, error: safeAnalyticsError(error) }; }
   };
-  const [dateResult, queryDetail, pageDetail] = await Promise.all([
+  const [dateResult, queryDetail, pageDetail, queryPageDetail] = await Promise.all([
     query({ startDate: ranges.previous.start, endDate: ranges.current.end, dimensions: ["date"], aggregationType: "byProperty" }),
     detail({ startDate: ranges.current.start, endDate: ranges.current.end, dimensions: ["query"], aggregationType: "byProperty", rowLimit: 25 }),
     detail({ startDate: ranges.current.start, endDate: ranges.current.end, dimensions: ["page"], aggregationType: "auto", rowLimit: 25 }),
+    detail({ startDate: ranges.current.start, endDate: ranges.current.end, dimensions: ["query", "page"], aggregationType: "auto", rowLimit: 50 }),
   ]);
   const rows = parseSearchRows(dateResult);
   const daily = rows.filter((row) => row.date >= ranges.current.start && row.date <= ranges.current.end);
@@ -129,7 +151,8 @@ export async function fetchSearchReport(days: PeriodDays, now = new Date()): Pro
   return {
     range: ranges.current, previousRange: ranges.previous, totals: searchTotals(daily), previous: searchTotals(previous), daily,
     queries: parseSearchDimensionRows(queryDetail.result, "query"), pages: parseSearchDimensionRows(pageDetail.result, "page"),
-    detailsError: [queryDetail.error, pageDetail.error].filter(Boolean).join(" · ") || null,
+    queryPages: parseSearchQueryPageRows(queryPageDetail.result),
+    detailsError: [queryDetail.error, pageDetail.error, queryPageDetail.error].filter(Boolean).join(" · ") || null,
     dataThrough: daily.at(-1)?.date ?? null,
   };
 }

@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Activity, ArrowUpRight, CheckCircle2, Clock3, Cloud, Globe2, Lightbulb, RefreshCw, Search, ShieldCheck, TriangleAlert } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import {
-  analyticsNotices, hasEnoughQueryDataForCtr, hasEnoughQueryDataForTrend, percentChange, shiftDate,
-  type AnalyticsDashboard, type DateRange, type PeriodDays, type SearchDimensionRow, type SearchReport, type SourceStatus, type SourceView, type TrafficRow,
+  analyticsNotices, expectedMarboLandingPage, hasEnoughQueryDataForCtr, hasEnoughQueryDataForTrend, normalizeSearchLandingPath, percentChange, shiftDate,
+  type AnalyticsDashboard, type DateRange, type PeriodDays, type SearchDimensionRow, type SearchQueryPageRow, type SearchReport, type SourceStatus, type SourceView, type TrafficRow,
 } from "@/lib/website-analytics";
 
 const panel = "rounded-2xl border border-white/10 bg-white/[0.025] p-5 sm:p-6";
@@ -114,6 +114,36 @@ function SearchBreakdown({ title, rows, pageLinks = false, showQueryStatus = fal
   </section>;
 }
 
+function QueryPageStatus({ row }: { row: SearchQueryPageRow }) {
+  const expected = expectedMarboLandingPage(row.query);
+  if (!expected) return <span className="text-white/35">ยังไม่อยู่ในแผน MARBO</span>;
+  if (!hasEnoughQueryDataForTrend(row.impressions)) return <span className="text-amber-200/80">ข้อมูลยังน้อย · เป้าหมาย {expected}</span>;
+  if (normalizeSearchLandingPath(row.page) === expected) return <span className="text-emerald-300">ตรงหน้าเป้าหมาย</span>;
+  return <span className="text-amber-300">ควรตรวจ · เป้าหมาย {expected}</span>;
+}
+
+function QueryPageBreakdown({ rows }: { rows?: SearchQueryPageRow[] }) {
+  return <section className={`${panel} min-w-0`}>
+    <h2 className="font-medium text-white">คำค้นเข้าสู่หน้าใด</h2>
+    <p className="mt-2 text-xs leading-6 text-white/45">ใช้ตารางนี้ยืนยัน Query → Landing Page โดยตรง สถานะจะเตือนเมื่อคำค้นในแผน MARBO มีอย่างน้อย 10 impressions แล้วเข้าผิดหน้า</p>
+    <div className="mt-4 space-y-3 lg:hidden">
+      {rows?.map((row, index) => <div key={`${row.query}-${row.page}-${index}`} className="rounded-xl border border-white/7 bg-white/[0.018] p-4">
+        <p className="text-sm font-medium text-white">{row.query}</p>
+        <a href={row.page} target="_blank" rel="noreferrer" className="mt-1 block break-all text-xs text-acid-lime hover:underline">{row.page}</a>
+        <p className="mt-2 text-xs"><QueryPageStatus row={row} /></p>
+        <p className="mt-3 text-xs text-white/45">แสดง {format(row.impressions)} ครั้ง · คลิก {format(row.clicks)} · อันดับเฉลี่ยย้อนหลัง {format(row.position)}</p>
+      </div>)}
+    </div>
+    <div className="mt-4 hidden overflow-x-auto lg:block">
+      <table className="w-full text-left text-sm">
+        <thead><tr className="border-b border-white/10 text-xs text-white/45"><th className="pb-3 font-normal">คำค้น</th><th className="pb-3 pl-3 font-normal">หน้าปลายทาง</th><th className="pb-3 pl-3 text-right font-normal">ครั้งที่แสดง</th><th className="pb-3 pl-3 text-right font-normal">คลิก</th><th className="pb-3 pl-3 text-right font-normal">อันดับเฉลี่ย</th><th className="pb-3 pl-3 font-normal">ผลตรวจ</th></tr></thead>
+        <tbody>{rows?.map((row, index) => <tr key={`${row.query}-${row.page}-${index}`} className="border-b border-white/5 last:border-0"><td className="max-w-[220px] break-words py-3 pr-3 text-white/85">{row.query}</td><td className="max-w-[260px] break-all py-3 pl-3"><a href={row.page} target="_blank" rel="noreferrer" className="text-acid-lime hover:underline">{row.page}</a></td><td className="py-3 pl-3 text-right tabular-nums text-white/65">{format(row.impressions)}</td><td className="py-3 pl-3 text-right tabular-nums text-white">{format(row.clicks)}</td><td className="py-3 pl-3 text-right tabular-nums text-white/55">{format(row.position)}</td><td className="min-w-[210px] py-3 pl-3 text-xs"><QueryPageStatus row={row} /></td></tr>)}</tbody>
+      </table>
+    </div>
+    {!rows?.length && <p className="py-8 text-center text-sm leading-6 text-white/40">ยังไม่มีข้อมูล Query → Landing Page ใน snapshot นี้<br />กดซิงก์หลัง deploy หรือรอรอบอัตโนมัติถัดไป</p>}
+  </section>;
+}
+
 function seoActions(search?: SearchReport | null) {
   if (!search) return [];
   const queries = search.queries ?? [];
@@ -205,6 +235,7 @@ export function WebsiteAnalyticsDashboard() {
 
       <div><h2 className="flex items-center gap-2 text-lg font-medium"><Search size={19} />คนค้นหาอะไรใน Google</h2><RangeLabel range={search?.range} /><p className="mt-2 text-xs leading-6 text-white/45">Google อาจซ่อนคำค้นบางส่วนเพื่อความเป็นส่วนตัว ยอดในตารางจึงไม่จำเป็นต้องรวมเท่ากับยอดด้านบน และอันดับที่เห็นเป็นค่าเฉลี่ยย้อนหลัง ไม่ใช่อันดับปัจจุบันแบบเรียลไทม์</p></div>
       <div className="grid gap-5 xl:grid-cols-2"><SearchBreakdown title="คำค้นที่ทำให้เว็บไซต์ปรากฏ" rows={search?.queries} showQueryStatus /><SearchBreakdown title="หน้าที่ปรากฏใน Google" rows={search?.pages} pageLinks /></div>
+      <QueryPageBreakdown rows={search?.queryPages} />
 
       <section className={panel}>
         <h2 className="flex items-center gap-2 text-lg font-medium"><Lightbulb size={19} className="text-acid-lime" />ควรทำอะไรต่อ</h2>
