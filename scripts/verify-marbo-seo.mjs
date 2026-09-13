@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 const root = resolve(new URL("..", import.meta.url).pathname);
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 const brandPage = read("src/app/(public)/brands/[slug]/page.tsx");
+const legacyBrandPage = read("src/app/(public)/brand/[slug]/page.tsx");
 const productPage = read("src/app/(public)/products/[slug]/page.tsx");
 const productsPage = read("src/app/(public)/products/page.tsx");
 const homeBlogSection = read("src/components/BlogSectionNavy.tsx");
@@ -35,6 +36,7 @@ const checks = [
   ["product guide uses buyer-facing language", !productPage.includes("ผู้ค้นอาจใช้คำว่า")],
   ["brand guide uses buyer-facing language", !brandPage.includes("ผู้ค้นอาจใช้คำว่า")],
   ["MARBO article image alts describe visible products", blogData.includes('imageAlt: "MARBO M BAR 9K รสองุ่นลิ้นจี่ พร้อมกล่องและตัวเครื่อง"') && blogData.includes('imageAlt: "M BAR 10K รสองุ่นเคียวโฮ พร้อมกล่องและตัวเครื่อง"')],
+  ["legacy brand route uses a permanent redirect", legacyBrandPage.includes('permanentRedirect(`/brands/${params.slug}`)')],
 ];
 
 for (const [name, condition] of checks) {
