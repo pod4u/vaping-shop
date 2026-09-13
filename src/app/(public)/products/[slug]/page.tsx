@@ -436,25 +436,26 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 <>
                   <p className="text-white/70 leading-relaxed mb-4">
                     {product.slug === "marbo-m-bar-9k"
-                      ? "ผู้ค้นอาจใช้คำว่า MARBO M BAR 9K, มาโบ 9K, มาร์โบ 9K หรือ MARBO 9K เพื่อค้นหารุ่นนี้ เป็นพอตใช้แล้วทิ้งที่ระบุจำนวนพัฟประมาณ 9,000 พัฟตามข้อมูลผู้ผลิต"
-                      : "ผู้ค้นอาจใช้คำว่า M BAR 10K, mbar 10k, มาโบ 10K หรือ เอ็มบาร์ 10K เพื่อค้นหารุ่นนี้ เป็นพอตใช้แล้วทิ้งที่ระบุจำนวนพัฟประมาณ 10,000 พัฟตามข้อมูลผู้ผลิต"}
+                      ? "MARBO M BAR 9K เป็นชื่อเต็มของรุ่นที่หลายคนเรียกว่า มาโบ 9K หรือมาร์โบ 9K เป็นพอตใช้แล้วทิ้งที่ผู้ผลิตระบุจำนวนพัฟไว้ประมาณ 9,000 พัฟ"
+                      : "M BAR 10K เป็นชื่อเต็มของรุ่นที่อาจเห็นเขียนว่า mbar 10k หรือเรียกว่า เอ็มบาร์ 10K เป็นพอตใช้แล้วทิ้งที่ผู้ผลิตระบุจำนวนพัฟไว้ประมาณ 10,000 พัฟ"}
                   </p>
                   <p className="text-white/70 leading-relaxed mb-6">
                     รุ่นนี้มีรสชาติที่เปิดใช้งานในระบบขณะนี้ {product.variants.length} ตัวเลือก จำนวนพัฟและระยะเวลาใช้งานจริงอาจต่างกันตามรูปแบบการใช้งาน
                   </p>
-                  <div className="flex flex-wrap gap-3 mb-4">
-                    <Link href={`/brands/${product.brand?.slug}`} className="text-acid-lime font-semibold hover:underline">
+                  <nav aria-label={`ข้อมูลที่เกี่ยวข้องกับ ${displayNameFull}`} className="grid gap-3 sm:grid-cols-2 mb-4">
+                    <Link href={`/brands/${product.brand?.slug}`} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
                       ดูแบรนด์ {brandDisplay.primary}
                     </Link>
-                    <span className="text-white/20">|</span>
-                    <Link href={product.slug === "marbo-m-bar-9k" ? "/products/mbar-10k" : "/products/marbo-m-bar-9k"} className="text-acid-lime font-semibold hover:underline">
+                    <Link href={product.slug === "marbo-m-bar-9k" ? "/blog/marbo-9k-flavors" : "/blog/mbar-10k-flavors"} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
+                      {product.slug === "marbo-m-bar-9k" ? "ดูรสชาติ MARBO 9K" : "ดูรสชาติ M BAR 10K"}
+                    </Link>
+                    <Link href={product.slug === "marbo-m-bar-9k" ? "/products/mbar-10k" : "/products/marbo-m-bar-9k"} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
                       {product.slug === "marbo-m-bar-9k" ? "M BAR 10K" : "MARBO M BAR 9K"}
                     </Link>
-                    <span className="text-white/20">|</span>
-                    <Link href="/blog/marbo-9k-vs-mbar-10k" className="text-acid-lime font-semibold hover:underline">
+                    <Link href="/blog/marbo-9k-vs-mbar-10k" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
                       เปรียบเทียบ MARBO 9K กับ M BAR 10K
                     </Link>
-                  </div>
+                  </nav>
                 </>
               ) : (
                 <>

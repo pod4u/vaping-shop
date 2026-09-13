@@ -4,6 +4,7 @@ import { getAggregatedProducts, matchText, matchArray, matchPuffCount } from "@/
 import { getServerSupabase } from "@/lib/supabase";
 import ProductGridServer from "@/components/ProductGridServer";
 import ProductFilterClient from "./ProductFilterClient";
+import Link from "next/link";
 
 interface PageProps {
   searchParams: Promise<{
@@ -103,6 +104,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
   const stockParam = params.stock || null;
   const sortParam = params.sort || null;
   const searchParam = params.search || "";
+  const isCatalogLanding = !(categoryParam || brandParam || puffsParam || stockParam || sortParam || searchParam);
 
   // Single query for products, separate query for brands
   const [allProducts, brandOptions] = await Promise.all([
@@ -187,6 +189,20 @@ export default async function ProductsPage({ searchParams }: PageProps) {
             <span>ดูสินค้าพร้อมส่ง</span>
           </a>
         </div>
+
+        {isCatalogLanding && (
+          <aside className="mb-10 flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.025] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6" aria-labelledby="marbo-catalog-guide">
+            <div>
+              <p className="text-xs font-mono uppercase tracking-widest text-acid-lime">MARBO GUIDE</p>
+              <h2 id="marbo-catalog-guide" className="mt-2 text-xl font-black text-white">กำลังมองหา MARBO (มาโบ)?</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">ดูสินค้าทุกรุ่นในหน้าแบรนด์ หรือเปิดหน้ารุ่น 9K เพื่อเช็กรสชาติ ราคา และสถานะล่าสุด</p>
+            </div>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <Link href="/brands/marbo" className="rounded-full border border-white/20 px-5 py-3 text-center text-sm font-semibold text-white hover:border-acid-lime/50 hover:text-acid-lime">ดูสินค้า MARBO</Link>
+              <Link href="/products/marbo-m-bar-9k" className="rounded-full bg-acid-lime px-5 py-3 text-center text-sm font-bold text-navy-deep hover:brightness-110">ดู MARBO M BAR 9K</Link>
+            </div>
+          </aside>
+        )}
 
         <ProductFilterClient
           selectedCategory={categoryParam}

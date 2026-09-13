@@ -50,6 +50,18 @@ export default function BlogSectionNavy() {
             </Link>
           ))}
         </div>
+
+        <aside className="mt-10 flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.025] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6" aria-labelledby="home-marbo-guide">
+          <div>
+            <p className="text-xs font-mono uppercase tracking-widest text-acid-lime">MARBO PRODUCT GUIDE</p>
+            <h3 id="home-marbo-guide" className="mt-2 text-xl font-black text-white">ดูข้อมูล MARBO (มาโบ) ให้ครบก่อนเลือกรุ่น</h3>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">รวมรุ่นสินค้า รสชาติ ราคา และคู่มือเปรียบเทียบ MARBO M BAR 9K กับ M BAR 10K</p>
+          </div>
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            <Link href="/brands/marbo" className="rounded-full bg-acid-lime px-5 py-3 text-center text-sm font-bold text-navy-deep hover:brightness-110">ดูสินค้า MARBO</Link>
+            <Link href="/blog/marbo-9k-flavors" className="rounded-full border border-white/20 px-5 py-3 text-center text-sm font-semibold text-white hover:border-acid-lime/50 hover:text-acid-lime">ดูรสชาติ MARBO 9K</Link>
+          </div>
+        </aside>
       </div>
     </section>
   );

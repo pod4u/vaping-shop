@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "test:website-analytics": "node scripts/verify-website-analytics.mjs",
+    "test:marbo-seo": "node scripts/verify-marbo-seo.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

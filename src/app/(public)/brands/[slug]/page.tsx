@@ -51,7 +51,7 @@ function isMarboOrMbar(slug: string): boolean {
 const marboFaqs: FaqItem[] = [
   {
     question: "MARBO หรือ มาโบ คืออะไร?",
-    answer: "ผู้ค้นอาจใช้คำว่า MARBO, มาโบ หรือ มาร์โบ เพื่อค้นหารุ่นที่เกี่ยวข้องบน Pod4U ควรตรวจชื่อรุ่นเต็มบนหน้าสินค้าก่อนเลือกสินค้า",
+    answer: "MARBO คือชื่อแบรนด์ที่คนไทยมักเรียกว่า มาโบหรือมาร์โบ ส่วน M BAR เป็นชื่อที่ใช้กับสินค้าบางรุ่น จึงควรดูชื่อรุ่นเต็มก่อนเลือกสินค้า",
   },
   {
     question: "MARBO M BAR 9K มีกี่พัฟ?",
@@ -66,7 +66,7 @@ const marboFaqs: FaqItem[] = [
 const mbarFaqs: FaqItem[] = [
   {
     question: "M BAR หรือ mbar คืออะไร?",
-    answer: "ผู้ค้นอาจใช้คำว่า M BAR, mbar หรือ เอ็มบาร์ เพื่อค้นหารุ่นที่เกี่ยวข้องบน Pod4U ควรตรวจชื่อรุ่นเต็มบนหน้าสินค้าก่อนเลือกสินค้า",
+    answer: "M BAR เป็นชื่อรุ่นสินค้าที่มักเขียนติดกันว่า mbar หรืออ่านว่า เอ็มบาร์ ควรดูจำนวนพัฟและชื่อรุ่นเต็มเพื่อไม่ให้สับสนกับสินค้า MARBO รุ่นอื่น",
   },
   {
     question: "M BAR 10K มีกี่พัฟ?",
@@ -79,19 +79,19 @@ const mbarFaqs: FaqItem[] = [
 ];
 
 function getMarboTitle(): string {
-  return "MARBO (มาโบ/มาร์โบ) และ M BAR";
+  return "MARBO (มาโบ) รวมรุ่น รสชาติ และข้อมูลสินค้า";
 }
 
 function getMarboDescription(): string {
-  return "รวมสินค้า MARBO หรือที่ค้นกันว่า มาโบและมาร์โบ พร้อมข้อมูลรุ่น MARBO M BAR 9K และ M BAR 10K รสชาติ ราคา และสถานะล่าสุด";
+  return "รวมข้อมูลสินค้า MARBO หรือมาโบ ดูรุ่น MARBO M BAR 9K พร้อมรสชาติ ราคา และสถานะสินค้าล่าสุด";
 }
 
 function getMbarTitle(): string {
-  return "M BAR (mbar/เอ็มบาร์) และรุ่น 10K";
+  return "M BAR 10K (เอ็มบาร์) รุ่น รสชาติ และข้อมูลสินค้า";
 }
 
 function getMbarDescription(): string {
-  return "รวมสินค้า M BAR หรือ mbar พร้อมข้อมูล M BAR 10K ที่ผู้ค้นอาจเรียกว่า มาโบ 10K ดูรสชาติ ราคา และสถานะล่าสุด";
+  return "รวมข้อมูล M BAR 10K หรือเอ็มบาร์ ดูรสชาติ ราคา และสถานะสินค้า พร้อมข้อมูลชื่อรุ่นสำหรับคนที่พิมพ์ค้นหาว่า mbar";
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -184,9 +184,9 @@ export default async function BrandPage({ params }: { params: { slug: string } }
               {brand.color && (
                 <div className="w-4 h-4 rounded-full" style={{ backgroundColor: brand.color }} />
               )}
-              <h1 className="text-3xl sm:text-4xl font-black text-white">{namePrimary}</h1>
+              <h1 className="text-3xl sm:text-4xl font-black text-white">{isMarbo ? "MARBO (มาโบ)" : namePrimary}</h1>
             </div>
-            {nameSecondary && (
+            {nameSecondary && !isMarbo && (
               <p className="text-white/60 text-lg mb-2">{nameSecondary}</p>
             )}
             {isMarbo && (
@@ -215,28 +215,25 @@ export default async function BrandPage({ params }: { params: { slug: string } }
                   เกี่ยวกับ MARBO
                 </h2>
                 <p className="text-white/70 leading-relaxed mb-4">
-                  ผู้ค้นอาจใช้คำว่า MARBO, มาโบ, มาร์โบ, M BAR หรือ mbar เพื่อค้นหารุ่นที่เกี่ยวข้องบน Pod4U ควรตรวจชื่อรุ่นเต็มบนหน้าสินค้าก่อนเลือกสินค้า
+                  MARBO คือชื่อแบรนด์ที่หลายคนเรียกว่า มาโบหรือมาร์โบ ส่วน M BAR เป็นชื่อที่ใช้กับสินค้าบางรุ่น การดูชื่อเต็มจะช่วยให้เลือกรุ่นและจำนวนพัฟได้ตรงกับที่ต้องการ
                 </p>
                 <p className="text-white/70 leading-relaxed mb-6">
                   เลือกรุ่นเพื่อดูรายละเอียดจำนวนพัฟที่ผู้ผลิตระบุ ตัวเลือกรสชาติที่เปิดใช้งาน ราคา และสถานะสต็อกล่าสุด
                 </p>
-                <div className="flex flex-wrap gap-3">
-                  <Link href="/products/marbo-m-bar-9k" className="text-acid-lime font-semibold hover:underline">
-                    MARBO M BAR 9K
+                <nav aria-label="ข้อมูลสินค้าและคู่มือ MARBO" className="grid gap-3 sm:grid-cols-2">
+                  <Link href="/products/marbo-m-bar-9k" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
+                    ดูสินค้า MARBO M BAR 9K
                   </Link>
-                  <span className="text-white/20">|</span>
-                  <Link href="/products/mbar-10k" className="text-acid-lime font-semibold hover:underline">
-                    M BAR 10K
+                  <Link href="/blog/marbo-9k-flavors" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
+                    ดูรสชาติ MARBO 9K
                   </Link>
-                  <span className="text-white/20">|</span>
-                  <Link href="/brands/mbar" className="text-acid-lime font-semibold hover:underline">
-                    M BAR
+                  <Link href="/brands/mbar" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
+                    ดูสินค้า M BAR
                   </Link>
-                  <span className="text-white/20">|</span>
-                  <Link href="/blog/marbo-9k-vs-mbar-10k" className="text-acid-lime font-semibold hover:underline">
+                  <Link href="/blog/marbo-9k-vs-mbar-10k" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
                     เปรียบเทียบ MARBO 9K กับ M BAR 10K
                   </Link>
-                </div>
+                </nav>
               </div>
 
               <div className="space-y-4">
@@ -259,28 +256,25 @@ export default async function BrandPage({ params }: { params: { slug: string } }
                   เกี่ยวกับ M BAR
                 </h2>
                 <p className="text-white/70 leading-relaxed mb-4">
-                  ผู้ค้นอาจใช้คำว่า M BAR, mbar, เอ็มบาร์ หรือมาโบ 10K เพื่อค้นหารุ่นที่เกี่ยวข้องบน Pod4U ชื่อรุ่นที่เว็บไซต์ใช้คือ M BAR 10K
+                  M BAR 10K เป็นชื่อเต็มของรุ่นที่หลายคนเขียนติดกันว่า mbar หรือเรียกว่า เอ็มบาร์ 10K การดูชื่อเต็มและจำนวนพัฟจะช่วยแยกรุ่นนี้ออกจากสินค้า MARBO รุ่นอื่นได้ง่ายขึ้น
                 </p>
                 <p className="text-white/70 leading-relaxed mb-6">
                   เลือกรุ่นเพื่อดูรายละเอียดจำนวนพัฟที่ผู้ผลิตระบุ ตัวเลือกรสชาติที่เปิดใช้งาน ราคา และสถานะสต็อกล่าสุด
                 </p>
-                <div className="flex flex-wrap gap-3">
-                  <Link href="/products/mbar-10k" className="text-acid-lime font-semibold hover:underline">
-                    M BAR 10K
+                <nav aria-label="ข้อมูลสินค้าและคู่มือ M BAR" className="grid gap-3 sm:grid-cols-2">
+                  <Link href="/products/mbar-10k" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
+                    ดูสินค้า M BAR 10K
                   </Link>
-                  <span className="text-white/20">|</span>
-                  <Link href="/products/marbo-m-bar-9k" className="text-acid-lime font-semibold hover:underline">
-                    MARBO M BAR 9K
+                  <Link href="/blog/mbar-10k-flavors" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
+                    ดูรสชาติ M BAR 10K
                   </Link>
-                  <span className="text-white/20">|</span>
-                  <Link href="/brands/marbo" className="text-acid-lime font-semibold hover:underline">
-                    MARBO
+                  <Link href="/brands/marbo" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
+                    ดูสินค้า MARBO
                   </Link>
-                  <span className="text-white/20">|</span>
-                  <Link href="/blog/marbo-9k-vs-mbar-10k" className="text-acid-lime font-semibold hover:underline">
+                  <Link href="/blog/marbo-9k-vs-mbar-10k" className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-semibold text-acid-lime hover:border-acid-lime/40 hover:bg-acid-lime/5">
                     เปรียบเทียบ MARBO 9K กับ M BAR 10K
                   </Link>
-                </div>
+                </nav>
               </div>
 
               <div className="space-y-4">

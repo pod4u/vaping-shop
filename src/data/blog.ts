@@ -317,6 +317,8 @@ M BAR คือรูปแบบชื่อภาษาอังกฤษ ส�
     relatedLinks: [
       { href: "/products/marbo-m-bar-9k", label: "เปิดหน้า MARBO M BAR 9K" },
       { href: "/products/mbar-10k", label: "เปิดหน้า M BAR 10K" },
+      { href: "/brands/marbo", label: "ดูสินค้าแบรนด์ MARBO" },
+      { href: "/brands/mbar", label: "ดูสินค้าแบรนด์ M BAR" },
       { href: "/blog/marbo-9k-flavors", label: "ดูคู่มือรส MARBO 9K" },
       { href: "/blog/mbar-10k-flavors", label: "ดูคู่มือรส M BAR 10K" },
     ],
