@@ -5,6 +5,19 @@ export type SourceStatus = "not_configured" | "pending" | "ready" | "empty" | "e
 export interface DateRange { start: string; end: string; timezone: string }
 export interface TrafficTotals { pageviews: number; visitors: number }
 export interface SearchTotals { clicks: number; impressions: number; ctr: number; position: number | null }
+
+// A position based on only a handful of impressions is a weak historical signal,
+// not evidence that the page holds that rank now.
+export const MIN_QUERY_TREND_IMPRESSIONS = 10;
+export const MIN_QUERY_CTR_IMPRESSIONS = 20;
+
+export function hasEnoughQueryDataForTrend(impressions: number): boolean {
+  return impressions >= MIN_QUERY_TREND_IMPRESSIONS;
+}
+
+export function hasEnoughQueryDataForCtr(impressions: number): boolean {
+  return impressions >= MIN_QUERY_CTR_IMPRESSIONS;
+}
 export interface TrafficRow extends TrafficTotals { label: string }
 export interface SearchRow extends SearchTotals { date: string }
 export interface SearchDimensionRow extends SearchTotals { label: string }

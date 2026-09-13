@@ -61,6 +61,13 @@ try {
     assert.equal(totals.position, 9.2);
     assert.equal(core.searchTotals([]).position, null);
   });
+  await test("Query recommendations require enough impressions", () => {
+    assert.equal(core.hasEnoughQueryDataForTrend(1), false);
+    assert.equal(core.hasEnoughQueryDataForTrend(9), false);
+    assert.equal(core.hasEnoughQueryDataForTrend(10), true);
+    assert.equal(core.hasEnoughQueryDataForCtr(19), false);
+    assert.equal(core.hasEnoughQueryDataForCtr(20), true);
+  });
   await test("Provider schemas distinguish empty data from corrupt payloads", () => {
     assert.deepEqual(provider.parseSearchRows({}), []);
     assert.throws(() => provider.parseSearchRows({ rows: [{}] }));
@@ -244,7 +251,7 @@ try {
     const source = (data) => ({ status: "ready", configured: true, missing: [], lastSuccessAt: new Date().toISOString(), lastAttemptAt: new Date().toISOString(), error: null, stale: false, data });
     const fixture = {
       days: 7, generatedAt: new Date().toISOString(), storageReady: true, storageError: null, scheduleConfigured: true,
-      google: source(search), vercel: source(traffic), health: source({ checkedAt: new Date().toISOString(), checks: [{ path: "/", ok: true, status: 200, durationMs: 160 }], deployments: [{ id: "test", createdAt: "2026-09-04T12:00:00Z", state: "READY", commit: "TEST123", url: null }], deploymentError: null }), runs: [],
+      google: source({ ...search, queries: [{ label: "9k แตงโม", clicks: 1, impressions: 1, ctr: 1, position: 2 }, ...search.queries] }), vercel: source(traffic), health: source({ checkedAt: new Date().toISOString(), checks: [{ path: "/", ok: true, status: 200, durationMs: 160 }], deployments: [{ id: "test", createdAt: "2026-09-04T12:00:00Z", state: "READY", commit: "TEST123", url: null }], deploymentError: null }), runs: [],
     };
     const directory = resolve(root, "output/playwright");
     mkdirSync(directory, { recursive: true });

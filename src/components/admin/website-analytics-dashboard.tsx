@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Activity, ArrowUpRight, CheckCircle2, Clock3, Cloud, Globe2, Lightbulb, RefreshCw, Search, ShieldCheck, TriangleAlert } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import {
-  analyticsNotices, percentChange, shiftDate,
+  analyticsNotices, hasEnoughQueryDataForCtr, hasEnoughQueryDataForTrend, percentChange, shiftDate,
   type AnalyticsDashboard, type DateRange, type PeriodDays, type SearchDimensionRow, type SearchReport, type SourceStatus, type SourceView, type TrafficRow,
 } from "@/lib/website-analytics";
 
@@ -75,16 +75,42 @@ function Breakdown({ title, rows }: { title: string; rows?: TrafficRow[] }) {
   </section>;
 }
 
-function SearchBreakdown({ title, rows, pageLinks = false }: { title: string; rows?: SearchDimensionRow[]; pageLinks?: boolean }) {
+function QueryDataStatus({ impressions }: { impressions: number }) {
+  if (!hasEnoughQueryDataForTrend(impressions)) {
+    return <p className="mt-1 text-xs leading-5 text-amber-200/80">ข้อมูลยังน้อย · ยังสรุปอันดับไม่ได้</p>;
+  }
+  if (!hasEnoughQueryDataForCtr(impressions)) {
+    return <p className="mt-1 text-xs leading-5 text-sky-200/75">เริ่มเห็นแนวโน้ม · ควรรอข้อมูลเพิ่ม</p>;
+  }
+  return <p className="mt-1 text-xs leading-5 text-emerald-200/70">มีข้อมูลพอวิเคราะห์เบื้องต้น</p>;
+}
+
+function SearchBreakdown({ title, rows, pageLinks = false, showQueryStatus = false }: { title: string; rows?: SearchDimensionRow[]; pageLinks?: boolean; showQueryStatus?: boolean }) {
+  const rowTitle = (row: SearchDimensionRow) => pageLinks
+    ? <a href={row.label} target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-4 hover:text-acid-lime">{row.label}</a>
+    : row.label;
   return <section className={`${panel} min-w-0`}>
     <h2 className="font-medium text-white">{title}</h2>
-    <div className="mt-4 overflow-x-auto">
-      <table className="w-full text-left text-sm">
-        <thead><tr className="border-b border-white/10 text-xs text-white/45"><th className="pb-3 font-normal">รายการ</th><th className="pb-3 pl-3 text-right font-normal">คลิก</th><th className="pb-3 pl-3 text-right font-normal">แสดงผล</th><th className="pb-3 pl-3 text-right font-normal">CTR</th><th className="pb-3 pl-3 text-right font-normal">อันดับ</th></tr></thead>
-        <tbody>{rows?.map((row, index) => <tr key={`${row.label}-${index}`} className="border-b border-white/5 last:border-0"><td className="max-w-[300px] break-words py-3 pr-3 text-white/80">{pageLinks ? <a href={row.label} target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-4 hover:text-acid-lime">{row.label}</a> : row.label}</td><td className="py-3 pl-3 text-right text-white tabular-nums">{format(row.clicks)}</td><td className="py-3 pl-3 text-right text-white/65 tabular-nums">{format(row.impressions)}</td><td className="py-3 pl-3 text-right text-white/55 tabular-nums">{format(row.ctr * 100)}%</td><td className="py-3 pl-3 text-right text-white/55 tabular-nums">{format(row.position)}</td></tr>)}</tbody>
-      </table>
-      {!rows?.length && <p className="py-8 text-center text-sm leading-6 text-white/40">ยังไม่มีรายการที่ Google เปิดเผยในช่วงนี้<br />คำค้นปริมาณน้อยอาจถูกซ่อนเพื่อความเป็นส่วนตัว</p>}
+    {showQueryStatus && <p className="mt-2 text-xs leading-6 text-white/45">อันดับเฉลี่ยเป็นข้อมูลย้อนหลัง ไม่ใช่อันดับที่เห็นเมื่อค้นหาในขณะนี้</p>}
+    <div className="mt-4 space-y-3 sm:hidden">
+      {rows?.map((row, index) => <div key={`${row.label}-${index}`} className="rounded-xl border border-white/7 bg-white/[0.018] p-4">
+        <div className="break-words text-sm text-white/85">{rowTitle(row)}</div>
+        {showQueryStatus && <QueryDataStatus impressions={row.impressions} />}
+        <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
+          <div><dt className="text-xs text-white/40">คลิก</dt><dd className="mt-1 text-sm tabular-nums text-white">{format(row.clicks)}</dd></div>
+          <div><dt className="text-xs text-white/40">ครั้งที่แสดง</dt><dd className="mt-1 text-sm tabular-nums text-white">{format(row.impressions)}</dd></div>
+          <div><dt className="text-xs text-white/40">อัตราคลิก</dt><dd className="mt-1 text-sm tabular-nums text-white">{format(row.ctr * 100)}%</dd></div>
+          <div><dt className="text-xs text-white/40">อันดับเฉลี่ยย้อนหลัง</dt><dd className="mt-1 text-sm tabular-nums text-white">{format(row.position)}</dd></div>
+        </dl>
+      </div>)}
     </div>
+    <div className="mt-4 hidden overflow-x-auto sm:block">
+      <table className="w-full text-left text-sm">
+        <thead><tr className="border-b border-white/10 text-xs text-white/45"><th className="pb-3 font-normal">{pageLinks ? "หน้าเว็บ" : "คำค้น"}</th><th className="pb-3 pl-3 text-right font-normal">คลิก</th><th className="pb-3 pl-3 text-right font-normal">ครั้งที่แสดง</th><th className="pb-3 pl-3 text-right font-normal whitespace-nowrap">อัตราคลิก</th><th className="pb-3 pl-3 text-right font-normal whitespace-nowrap">อันดับเฉลี่ย</th></tr></thead>
+        <tbody>{rows?.map((row, index) => <tr key={`${row.label}-${index}`} className="border-b border-white/5 last:border-0"><td className="max-w-[300px] break-words py-3 pr-3 text-white/80"><span>{rowTitle(row)}</span>{showQueryStatus && <QueryDataStatus impressions={row.impressions} />}</td><td className="py-3 pl-3 text-right text-white tabular-nums">{format(row.clicks)}</td><td className="py-3 pl-3 text-right text-white/65 tabular-nums">{format(row.impressions)}</td><td className="py-3 pl-3 text-right text-white/55 tabular-nums">{format(row.ctr * 100)}%</td><td className="py-3 pl-3 text-right text-white/55 tabular-nums">{format(row.position)}</td></tr>)}</tbody>
+      </table>
+    </div>
+    {!rows?.length && <p className="py-8 text-center text-sm leading-6 text-white/40">ยังไม่มีรายการที่ Google เปิดเผยในช่วงนี้<br />คำค้นปริมาณน้อยอาจถูกซ่อนเพื่อความเป็นส่วนตัว</p>}
   </section>;
 }
 
@@ -93,11 +119,12 @@ function seoActions(search?: SearchReport | null) {
   const queries = search.queries ?? [];
   if (!queries.length) return search.totals.impressions > 0 ? [{ title: "รอให้ข้อมูลคำค้นมากขึ้น", detail: "Google แสดงยอดรวมแล้ว แต่ยังไม่เปิดเผยคำค้นรายคำ อย่าเดาว่าคนค้นคำใดจากยอดรวมนี้" }] : [];
   const actions: { title: string; detail: string }[] = [];
-  const nearPageOne = [...queries].filter((row) => row.position != null && row.position > 3 && row.position <= 20).sort((a, b) => b.impressions - a.impressions)[0];
-  if (nearPageOne) actions.push({ title: `ขยับคำว่า “${nearPageOne.label}”`, detail: `มี ${format(nearPageOne.impressions)} impressions อันดับเฉลี่ย ${format(nearPageOne.position)} — ตรวจ title, H1 และเนื้อหาของหน้าที่ตรงกับคำนี้ก่อนเพิ่มบทความใหม่` });
-  const lowCtr = [...queries].filter((row) => row.impressions >= 5 && row.ctr < 0.03).sort((a, b) => b.impressions - a.impressions)[0];
-  if (lowCtr && lowCtr.label !== nearPageOne?.label) actions.push({ title: `ปรับข้อความค้นหาสำหรับ “${lowCtr.label}”`, detail: `มี ${format(lowCtr.impressions)} impressions แต่ CTR ${format(lowCtr.ctr * 100)}% — ตรวจว่า title และ description ตอบสิ่งที่คนค้นจริง` });
-  if (!actions.length) actions.push({ title: "ติดตามต่อก่อนเปลี่ยนเนื้อหา", detail: "ยังไม่มีคำค้นที่มีข้อมูลพอให้ชี้จุดแก้ชัดเจน ดูแนวโน้มอย่างน้อย 2–4 สัปดาห์และอย่าตัดสินจากคลิกจำนวนน้อย" });
+  const promisingQuery = [...queries].filter((row) => hasEnoughQueryDataForTrend(row.impressions) && row.position != null && row.position > 3 && row.position <= 20).sort((a, b) => b.impressions - a.impressions)[0];
+  if (promisingQuery) actions.push({ title: `พัฒนาคำค้น “${promisingQuery.label}” ต่อ`, detail: `คำนี้แสดงผล ${format(promisingQuery.impressions)} ครั้ง และมีอันดับเฉลี่ยย้อนหลัง ${format(promisingQuery.position)} ลองตรวจชื่อหน้า หัวข้อหลัก และเนื้อหาของหน้าที่ตรงกับคำค้นนี้ก่อนสร้างบทความเพิ่ม` });
+  const lowCtr = [...queries].filter((row) => hasEnoughQueryDataForCtr(row.impressions) && row.ctr < 0.03).sort((a, b) => b.impressions - a.impressions)[0];
+  if (lowCtr && lowCtr.label !== promisingQuery?.label) actions.push({ title: `ทำให้ผลค้นหาของ “${lowCtr.label}” น่าคลิกขึ้น`, detail: `คำนี้แสดงผล ${format(lowCtr.impressions)} ครั้ง แต่อัตราคลิกอยู่ที่ ${format(lowCtr.ctr * 100)}% ลองตรวจว่าชื่อหน้าและคำอธิบายตอบสิ่งที่คนกำลังค้นหาหรือไม่` });
+  if (!actions.length && queries.every((row) => !hasEnoughQueryDataForTrend(row.impressions))) actions.push({ title: "รอข้อมูลเพิ่มก่อนปรับ SEO", detail: "คำค้นแต่ละคำยังแสดงผลไม่ถึง 10 ครั้ง ตัวเลขอันดับในตอนนี้เป็นเพียงสัญญาณเบื้องต้น ควรรอดูต่อก่อนเปลี่ยนชื่อหน้าหรือเนื้อหา" });
+  else if (!actions.length) actions.push({ title: "ติดตามต่อก่อนเปลี่ยนเนื้อหา", detail: "ยังไม่มีคำค้นที่ชี้จุดแก้ได้ชัดเจน ควรดูแนวโน้มต่ออีก 2–4 สัปดาห์และอย่าตัดสินจากคลิกเพียงไม่กี่ครั้ง" });
   return actions.slice(0, 3);
 }
 
@@ -174,10 +201,10 @@ export function WebsiteAnalyticsDashboard() {
         <Trend title="คลิกจาก Google รายวัน" rows={search?.daily} range={search?.range} comparison={search?.previousRange} valueKey="clicks" color="#a78bfa" />
       </div>
       <p className="text-xs leading-6 text-white/45">Google ใช้ข้อมูล final และเว้น 3 วันล่าสุด ส่วน Vercel ใช้วันเต็มตาม UTC จึงอาจมีช่วงวันที่ต่างกัน · ช่องว่างในกราฟหมายถึงไม่มีแถวข้อมูล · เส้น deploy แสดงวันที่สร้าง deployment ที่มีสถานะ Ready ตาม UTC ไม่ใช่เวลาที่ผู้ใช้ทุกคนเริ่มเห็นเวอร์ชันนั้น</p>
-      {search && <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-white/65"><span>CTR: {format(search.totals.ctr * 100)}%</span><span>อันดับเฉลี่ย: {format(search.totals.position)}</span><span>วันที่ล่าสุดที่ Google ส่งแถวข้อมูล: {search.dataThrough ?? "ยังไม่มี"}</span></div>}
+      {search && <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-white/65"><span>อัตราคลิก (CTR): {format(search.totals.ctr * 100)}%</span><span>อันดับเฉลี่ยรวมย้อนหลัง: {format(search.totals.position)}</span><span>ข้อมูลล่าสุดจาก Google: {search.dataThrough ?? "ยังไม่มี"}</span></div>}
 
-      <div><h2 className="flex items-center gap-2 text-lg font-medium"><Search size={19} />คนค้นหาอะไรใน Google</h2><RangeLabel range={search?.range} /><p className="mt-2 text-xs leading-6 text-white/45">ตารางคำค้นและหน้าปลายทางเป็นข้อมูลที่ Google เปิดเผย ไม่จำเป็นต้องรวมเท่ากับยอดด้านบน เพราะ Google ซ่อนคำค้นบางส่วนเพื่อความเป็นส่วนตัว</p></div>
-      <div className="grid gap-5 xl:grid-cols-2"><SearchBreakdown title="คำค้นที่พาให้เว็บไซต์ปรากฏ" rows={search?.queries} /><SearchBreakdown title="หน้าที่ปรากฏใน Google" rows={search?.pages} pageLinks /></div>
+      <div><h2 className="flex items-center gap-2 text-lg font-medium"><Search size={19} />คนค้นหาอะไรใน Google</h2><RangeLabel range={search?.range} /><p className="mt-2 text-xs leading-6 text-white/45">Google อาจซ่อนคำค้นบางส่วนเพื่อความเป็นส่วนตัว ยอดในตารางจึงไม่จำเป็นต้องรวมเท่ากับยอดด้านบน และอันดับที่เห็นเป็นค่าเฉลี่ยย้อนหลัง ไม่ใช่อันดับปัจจุบันแบบเรียลไทม์</p></div>
+      <div className="grid gap-5 xl:grid-cols-2"><SearchBreakdown title="คำค้นที่ทำให้เว็บไซต์ปรากฏ" rows={search?.queries} showQueryStatus /><SearchBreakdown title="หน้าที่ปรากฏใน Google" rows={search?.pages} pageLinks /></div>
 
       <section className={panel}>
         <h2 className="flex items-center gap-2 text-lg font-medium"><Lightbulb size={19} className="text-acid-lime" />ควรทำอะไรต่อ</h2>
