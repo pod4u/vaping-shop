@@ -142,7 +142,7 @@ async function buildOrderMessage(orderId: string) {
   const [orderResult, itemsResult] = await Promise.all([
     client
       .from("orders")
-      .select("id,order_number,order_source,status,subtotal,shipping_fee,discount_amount,total,shipping_name,shipping_phone,created_at")
+      .select("id,order_number,order_source,status,subtotal,shipping_fee,discount_amount,total,shipping_name,shipping_phone,admin_note,created_at")
       .eq("id", orderId)
       .single(),
     client
@@ -156,6 +156,8 @@ async function buildOrderMessage(orderId: string) {
   const order = orderResult.data;
   const items = itemsResult.data ?? [];
   const quantity = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  const adminNote = String(order.admin_note ?? "");
+  const isTestOrder = adminNote.includes("ทดสอบ") || /(?:^|\s)\[?test\]?(?:\s|$)/i.test(adminNote);
   const itemLines = items.slice(0, 8).map((item, index) =>
     `${index + 1}. ${escapeHtml(item.brand_name)} · ${escapeHtml(item.product_name)} · ${escapeHtml(item.flavor_name)} × ${Number(item.quantity)}`,
   );
@@ -163,11 +165,14 @@ async function buildOrderMessage(orderId: string) {
   const createdAt = new Date(order.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium", timeStyle: "short" });
   return {
     text: [
-      "🛒 <b>ออเดอร์ใหม่</b>",
+      isTestOrder
+        ? "🧪 <b>ออเดอร์ทดสอบ — ห้ามแพ็กหรือจัดส่ง</b>"
+        : "🛒 <b>ออเดอร์ใหม่</b>",
+      isTestOrder ? "⚠️ รายการนี้สร้างเพื่อตรวจระบบเท่านั้น ไม่ใช่คำสั่งซื้อของลูกค้า" : null,
       "",
       `<b>เลขที่:</b> ${escapeHtml(order.order_number)}`,
       `<b>ลูกค้า:</b> ${escapeHtml(order.shipping_name)} (${escapeHtml(maskPhone(order.shipping_phone))})`,
-      `<b>ช่องทาง:</b> ${order.order_source === "line" ? "LINE" : "เว็บไซต์"}`,
+      `<b>ช่องทาง:</b> ${order.order_source === "line" ? "LINE OA" : "แอดมินกรอกเอง"}`,
       `<b>จำนวน:</b> ${quantity} ชิ้น`,
       "",
       ...itemLines,
