@@ -9,6 +9,10 @@ const shipment = read("src/app/api/warehouse/orders/[orderId]/shipment/route.ts"
 const detail = read("src/app/warehouse/orders/[orderId]/page.tsx");
 const warehouseService = read("src/lib/warehouse-service.ts");
 const supabase = read("src/lib/supabase.ts");
+const credentialsMigration = read("supabase/migrations/20260914075708_warehouse_account_credentials.sql");
+const credentials = read("src/lib/warehouse-credentials.ts");
+const adminCredentialsRoute = read("src/app/api/admin/warehouse-credentials/route.ts");
+const adminSettings = read("src/app/admin/settings/page.tsx");
 
 assert.match(migration, /enable row level security/i, "warehouse table must enable RLS");
 assert.match(migration, /revoke all on table public\.warehouse_fulfillments from public, anon, authenticated/i);
@@ -25,5 +29,13 @@ assert.match(detail, /window\.confirm/, "shipment must require a confirmation st
 assert.doesNotMatch(detail, /payment|slip|discount|review/i, "warehouse UI must not expose payment or customer-history fields");
 assert.match(warehouseService, /getUncachedServerSupabase/, "warehouse reads must bypass the Next.js fetch cache");
 assert.match(supabase, /cache:\s*['\"]no-store['\"]/, "uncached server client must disable the fetch cache");
+assert.match(credentialsMigration, /alter table public\.warehouse_accounts enable row level security/i, "warehouse credentials must use RLS");
+assert.match(credentialsMigration, /revoke all on table public\.warehouse_accounts from public, anon, authenticated/i, "warehouse credentials must not be available to public API roles");
+assert.match(credentialsMigration, /grant select, insert, update on table public\.warehouse_accounts to service_role/i, "only the server role manages warehouse credentials");
+assert.match(credentials, /scryptSync/, "warehouse passwords must be stored with a slow one-way digest");
+assert.doesNotMatch(credentials, /password:\s*input\.password/, "plaintext warehouse passwords must never be persisted");
+assert.match(adminCredentialsRoute, /requireAdminApiPermission\(request, "settings\.manage"\)/, "credential changes require settings management permission");
+assert.match(adminCredentialsRoute, /requireSameOrigin/, "credential changes must reject cross-origin requests");
+assert.match(adminSettings, /เปลี่ยนรหัสผ่านคลังสินค้า/, "admin settings must expose the warehouse password form");
 
-console.log("Warehouse portal verification passed (14 checks)");
+console.log("Warehouse portal verification passed (22 checks)");

@@ -23,6 +23,7 @@ export const ADMIN_PERMISSIONS = [
   "stock.view",
   "stock.manage",
   "settings.view",
+  "settings.manage",
   "reviews.moderate",
 ] as const;
 

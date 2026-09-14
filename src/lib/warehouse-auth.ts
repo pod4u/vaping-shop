@@ -4,7 +4,7 @@ const SESSION_VERSION = 1;
 const SESSION_TTL_SECONDS = 12 * 60 * 60;
 export const WAREHOUSE_COOKIE_NAME = "warehouse_session";
 
-interface WarehouseAccount {
+export interface WarehouseAccount {
   id: string;
   username: string;
   password: string;
@@ -62,7 +62,7 @@ async function hmac(value: string, secret: string): Promise<string> {
   return Array.from(new Uint8Array(signature), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-function parseAccounts(): WarehouseAccount[] {
+export function getConfiguredWarehouseAccounts(): WarehouseAccount[] {
   const raw = process.env.WAREHOUSE_ACCOUNTS_JSON;
   if (raw) {
     try {
@@ -93,12 +93,12 @@ function parseAccounts(): WarehouseAccount[] {
 }
 
 export function isWarehouseConfigured(): boolean {
-  return parseAccounts().length > 0 && sessionSecret() !== null;
+  return getConfiguredWarehouseAccounts().length > 0 && sessionSecret() !== null;
 }
 
-export async function authenticateWarehouse(username: string, password: string): Promise<WarehouseAccount | null> {
+export async function authenticateConfiguredWarehouse(username: string, password: string): Promise<WarehouseAccount | null> {
   const normalized = username.trim().toLowerCase();
-  const account = parseAccounts().find((candidate) => candidate.username === normalized);
+  const account = getConfiguredWarehouseAccounts().find((candidate) => candidate.username === normalized);
   if (!account || !constantTimeEqual(password, account.password)) return null;
   return account;
 }
@@ -136,7 +136,7 @@ export async function getWarehouseSession(cookieValue: string | undefined): Prom
       || typeof value.exp !== "number"
       || value.exp <= now
       || value.iat > now + 60
-      || !parseAccounts().some((account) => account.id === value.sub)
+      || (value.sub !== "warehouse" && !getConfiguredWarehouseAccounts().some((account) => account.id === value.sub))
     ) return null;
     return { accountId: value.sub, displayName: value.name, issuedAt: value.iat, expiresAt: value.exp };
   } catch {

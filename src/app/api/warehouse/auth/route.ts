@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  authenticateWarehouse,
   createWarehouseSessionToken,
   getWarehouseSession,
-  isWarehouseConfigured,
   publicWarehouseSession,
   WAREHOUSE_COOKIE_NAME,
 } from "@/lib/warehouse-auth";
+import { authenticateWarehouse } from "@/lib/warehouse-credentials";
 import { requireSameOrigin } from "@/lib/warehouse-api";
 
 export const dynamic = "force-dynamic";
@@ -20,9 +19,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const csrf = requireSameOrigin(request);
   if (csrf) return csrf;
-  if (!isWarehouseConfigured()) {
-    return NextResponse.json({ success: false, error: "ยังไม่ได้ตั้งค่าบัญชีคลังสินค้า" }, { status: 503 });
-  }
   let body: Record<string, unknown>;
   try {
     body = await request.json() as Record<string, unknown>;
@@ -31,7 +27,12 @@ export async function POST(request: NextRequest) {
   }
   const username = typeof body.username === "string" ? body.username.slice(0, 100) : "";
   const password = typeof body.password === "string" ? body.password.slice(0, 200) : "";
-  const account = await authenticateWarehouse(username, password);
+  let account;
+  try {
+    account = await authenticateWarehouse(username, password);
+  } catch {
+    return NextResponse.json({ success: false, error: "ระบบล็อกอินคลังสินค้าขัดข้อง กรุณาลองใหม่" }, { status: 503 });
+  }
   if (!account) {
     return NextResponse.json({ success: false, error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" }, { status: 401 });
   }
