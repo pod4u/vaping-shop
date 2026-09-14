@@ -115,3 +115,10 @@ export async function sendTelegramMessage(input: {
   });
   return { messageId: result.message_id };
 }
+
+export async function deleteTelegramMessage(chatId: string, messageId: number): Promise<void> {
+  await telegramRequest<boolean>("deleteMessage", {
+    chat_id: chatId,
+    message_id: messageId,
+  });
+}

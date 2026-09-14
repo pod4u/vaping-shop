@@ -2,6 +2,7 @@ import "server-only";
 
 import { getUncachedServerSupabase } from "@/lib/supabase";
 import {
+  deleteTelegramMessage,
   discoverTelegramChats,
   isTelegramTokenConfigured,
   sendTelegramMessage,
@@ -104,6 +105,30 @@ export async function sendTelegramTestMessage(): Promise<void> {
     text: "✅ <b>เชื่อมต่อ Pod4U สำเร็จ</b>\n\nห้องนี้พร้อมรับการแจ้งเตือนออเดอร์ใหม่แล้วค่ะ",
     button: { label: "เปิดระบบแอดมิน", url: `${APP_URL}/admin/orders` },
   });
+}
+
+export async function deleteTestOrderTelegramMessage(orderId: string): Promise<boolean> {
+  const client = getUncachedServerSupabase();
+  const [{ data: order, error: orderError }, settings, { data: event, error: eventError }] = await Promise.all([
+    client.from("orders").select("status,admin_note").eq("id", orderId).single(),
+    getTelegramSettings(),
+    client
+      .from("telegram_notification_events")
+      .select("telegram_message_id")
+      .eq("order_id", orderId)
+      .eq("event_type", "order_created")
+      .maybeSingle(),
+  ]);
+  if (orderError) throw orderError;
+  if (eventError) throw eventError;
+  const note = String(order.admin_note ?? "");
+  const isTestOrder = note.includes("ทดสอบ") || /(?:^|\s)\[?test\]?(?:\s|$)/i.test(note);
+  if (order.status !== "draft" || !isTestOrder) {
+    throw new Error("ลบได้เฉพาะข้อความของออเดอร์ทดสอบสถานะ Draft เท่านั้น");
+  }
+  if (!settings?.chat_id || !event?.telegram_message_id) return false;
+  await deleteTelegramMessage(settings.chat_id, Number(event.telegram_message_id));
+  return true;
 }
 
 async function claimOrderCreatedEvent(orderId: string) {

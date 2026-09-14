@@ -4,6 +4,7 @@ import { requireAdminApiPermission } from "@/lib/admin-api";
 import { requireSameOrigin } from "@/lib/warehouse-api";
 import {
   connectTelegramDestination,
+  deleteTestOrderTelegramMessage,
   findTelegramDestinations,
   getTelegramAdminStatus,
   sendTelegramTestMessage,
@@ -56,6 +57,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : "เชื่อมต่อ Telegram ไม่สำเร็จ",
+    }, { status: 502, headers: { "Cache-Control": "no-store" } });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const sameOriginError = requireSameOrigin(request);
+  if (sameOriginError) return sameOriginError;
+  const unauthorized = await requireAdminApiPermission(request, "settings.manage");
+  if (unauthorized) return unauthorized;
+  try {
+    const body = await request.json() as Record<string, unknown>;
+    const orderId = typeof body.orderId === "string" ? body.orderId.trim().toLowerCase() : "";
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(orderId)) {
+      return NextResponse.json({ success: false, error: "รหัสออเดอร์ไม่ถูกต้อง" }, { status: 400 });
+    }
+    const deleted = await deleteTestOrderTelegramMessage(orderId);
+    return NextResponse.json({ success: true, deleted });
+  } catch (error) {
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : "ลบข้อความ Telegram ไม่สำเร็จ",
     }, { status: 502, headers: { "Cache-Control": "no-store" } });
   }
 }
