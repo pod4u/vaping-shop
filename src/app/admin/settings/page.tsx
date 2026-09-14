@@ -2,17 +2,31 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, CheckCircle2, Database, FileSpreadsheet, KeyRound, Loader2, Save, ShoppingCart, Warehouse, XCircle } from "lucide-react";
+import { BellRing, Bot, CheckCircle2, Database, FileSpreadsheet, KeyRound, Loader2, RefreshCw, Save, Send, ShoppingCart, Warehouse, XCircle } from "lucide-react";
 
 interface SystemStatus {
   services: {
     admin: { configured: boolean };
     database: { configured: boolean; connected: boolean };
     line: { configured: boolean };
+    telegram: { tokenConfigured: boolean };
     orders: { connected: boolean; channel: string };
     stockImport: { configured: boolean; source: string; schedule: string; autoApply: boolean };
   };
   checkedAt: string;
+}
+
+interface TelegramDestination {
+  id: string;
+  title: string;
+  type: "private" | "group" | "supergroup" | "channel";
+}
+
+interface TelegramStatus {
+  tokenConfigured: boolean;
+  connected: boolean;
+  destination: (TelegramDestination & { enabled: boolean; updatedAt: string }) | null;
+  latestDelivery: { status: string; sent_at: string | null; last_error: string | null; updated_at: string } | null;
 }
 
 interface WarehouseAccountSummary {
@@ -40,6 +54,11 @@ export default function AdminSettingsPage() {
   const [warehouseMessage, setWarehouseMessage] = useState("");
   const [warehouseError, setWarehouseError] = useState("");
   const [savingWarehouse, setSavingWarehouse] = useState(false);
+  const [telegramStatus, setTelegramStatus] = useState<TelegramStatus | null>(null);
+  const [telegramDestinations, setTelegramDestinations] = useState<TelegramDestination[]>([]);
+  const [telegramMessage, setTelegramMessage] = useState("");
+  const [telegramError, setTelegramError] = useState("");
+  const [telegramBusy, setTelegramBusy] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/system-status", { cache: "no-store" })
@@ -61,7 +80,59 @@ export default function AdminSettingsPage() {
         setWarehouseUsername(account.username);
       })
       .catch((loadError) => setWarehouseError(loadError instanceof Error ? loadError.message : "โหลดบัญชีคลังสินค้าไม่สำเร็จ"));
+
+    fetch("/api/admin/telegram", { cache: "no-store" })
+      .then(async (response) => {
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "ตรวจสอบ Telegram ไม่สำเร็จ");
+        return result.status as TelegramStatus;
+      })
+      .then(setTelegramStatus)
+      .catch((loadError) => setTelegramError(loadError instanceof Error ? loadError.message : "ตรวจสอบ Telegram ไม่สำเร็จ"));
   }, []);
+
+  async function discoverTelegram() {
+    setTelegramBusy(true);
+    setTelegramError("");
+    setTelegramMessage("");
+    try {
+      const response = await fetch("/api/admin/telegram?discover=1", { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "ค้นหาห้อง Telegram ไม่สำเร็จ");
+      setTelegramStatus(result.status);
+      setTelegramDestinations(result.destinations || []);
+      if ((result.destinations || []).length === 0) {
+        setTelegramError("ยังไม่พบห้อง กรุณาเปิด Telegram ส่ง /start ให้ Bot หรือเพิ่ม Bot เข้ากลุ่มแล้วส่งข้อความ 1 ครั้ง");
+      }
+    } catch (discoverError) {
+      setTelegramError(discoverError instanceof Error ? discoverError.message : "ค้นหาห้อง Telegram ไม่สำเร็จ");
+    } finally {
+      setTelegramBusy(false);
+    }
+  }
+
+  async function telegramAction(action: "connect" | "test", chatId?: string) {
+    setTelegramBusy(true);
+    setTelegramError("");
+    setTelegramMessage("");
+    try {
+      const response = await fetch("/api/admin/telegram", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, chatId }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "ดำเนินการไม่สำเร็จ");
+      setTelegramMessage(result.message);
+      const refreshed = await fetch("/api/admin/telegram", { cache: "no-store" });
+      const refreshedResult = await refreshed.json();
+      if (refreshed.ok) setTelegramStatus(refreshedResult.status);
+    } catch (actionError) {
+      setTelegramError(actionError instanceof Error ? actionError.message : "ดำเนินการไม่สำเร็จ");
+    } finally {
+      setTelegramBusy(false);
+    }
+  }
 
   async function saveWarehouseCredentials(event: React.FormEvent) {
     event.preventDefault();
@@ -135,6 +206,68 @@ export default function AdminSettingsPage() {
       )}
 
       {status && <p className="text-xs text-white/30">ตรวจสอบล่าสุด {new Date(status.checkedAt).toLocaleString("th-TH")}</p>}
+
+      <Card className="border-sky-400/25 bg-sky-400/[0.04]">
+        <CardHeader className="flex flex-row items-start gap-3">
+          <BellRing className="mt-0.5 h-5 w-5 text-sky-300" />
+          <div>
+            <CardTitle className="text-white">แจ้งเตือนออเดอร์ทาง Telegram</CardTitle>
+            <CardDescription className="mt-1 text-white/50">รับออเดอร์ใหม่ทันที พร้อมปุ่มเปิดออเดอร์ในแอดมิน</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!telegramStatus && !telegramError ? (
+            <div className="flex items-center gap-2 py-4 text-sm text-white/50"><Loader2 className="h-4 w-4 animate-spin" />กำลังตรวจสอบ Telegram...</div>
+          ) : telegramStatus && (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <p className="text-xs text-white/40">Bot Token</p>
+                  <div className="mt-2"><StatusLabel ready={telegramStatus.tokenConfigured} readyText="ตั้งค่า Token แล้ว" pendingText="ยังไม่ได้ตั้งค่า Token" /></div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <p className="text-xs text-white/40">ห้องรับแจ้งเตือน</p>
+                  <div className="mt-2"><StatusLabel ready={telegramStatus.connected} readyText={telegramStatus.destination?.title || "เชื่อมต่อแล้ว"} pendingText="ยังไม่ได้เลือกห้อง" /></div>
+                </div>
+              </div>
+
+              {!telegramStatus.connected && (
+                <div className="rounded-2xl border border-sky-300/15 bg-sky-300/[0.05] p-4 text-sm leading-6 text-white/65">
+                  <p className="font-bold text-white">เชื่อมต่อง่าย ๆ 2 ขั้นตอน</p>
+                  <p className="mt-1">1. ส่ง <strong className="text-sky-200">/start</strong> ให้ Bot ใน Telegram หรือเพิ่ม Bot เข้ากลุ่มแล้วส่งข้อความ 1 ครั้ง</p>
+                  <p>2. กลับมากด “ค้นหาห้อง Telegram” แล้วเลือกห้องด้านล่าง</p>
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-3">
+                <button type="button" disabled={telegramBusy || !telegramStatus.tokenConfigured} onClick={() => void discoverTelegram()} className="btn-liquid-glass inline-flex min-h-11 items-center gap-2 px-4 py-2.5 font-bold text-white disabled:opacity-40">
+                  {telegramBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  ค้นหาห้อง Telegram
+                </button>
+                {telegramStatus.connected && (
+                  <button type="button" disabled={telegramBusy} onClick={() => void telegramAction("test")} className="btn-liquid-acid inline-flex min-h-11 items-center gap-2 px-4 py-2.5 font-bold text-navy-deep disabled:opacity-40">
+                    <Send className="h-4 w-4" />ส่งข้อความทดสอบ
+                  </button>
+                )}
+              </div>
+
+              {telegramDestinations.length > 0 && (
+                <div className="grid gap-2">
+                  <p className="text-sm font-bold text-white/80">เลือกห้องที่จะรับออเดอร์</p>
+                  {telegramDestinations.map((destination) => (
+                    <button key={destination.id} type="button" disabled={telegramBusy} onClick={() => void telegramAction("connect", destination.id)} className="flex min-h-14 items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition hover:border-sky-300/40 hover:bg-sky-300/[0.07] disabled:opacity-40">
+                      <span><strong className="block text-white">{destination.title}</strong><span className="text-xs text-white/40">{destination.type === "private" ? "แชตส่วนตัว" : "กลุ่ม Telegram"}</span></span>
+                      <span className="text-sm font-bold text-sky-200">เลือกห้องนี้</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+          {telegramError && <p role="alert" className="rounded-xl border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{telegramError}</p>}
+          {telegramMessage && <p role="status" className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-3 text-sm text-emerald-100">{telegramMessage}</p>}
+        </CardContent>
+      </Card>
 
       <Card className="border-acid-lime/20 bg-acid-lime/[0.035]">
         <CardHeader className="flex flex-row items-start gap-3">

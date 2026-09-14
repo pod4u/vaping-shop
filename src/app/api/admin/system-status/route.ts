@@ -41,6 +41,9 @@ export async function GET(request: NextRequest) {
           && process.env.CUSTOMER_LINK_TOKEN_SECRET.length >= 32,
         ),
       },
+      telegram: {
+        tokenConfigured: Boolean(process.env.TELEGRAM_BOT_TOKEN?.trim()),
+      },
       orders: {
         connected: ordersStorageConnected,
         channel: "LINE",
