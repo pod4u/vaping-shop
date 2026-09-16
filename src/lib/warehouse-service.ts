@@ -9,7 +9,7 @@ export type WarehouseAction = "start" | "pack" | "problem" | "resume";
 const LIST_SELECT = [
   "id", "order_id", "status", "assigned_to", "problem_code", "problem_note",
   "started_at", "packed_at", "shipped_at", "created_at", "updated_at",
-  "order:orders!inner(id,order_number,status,shipping_name,shipping_phone,shipping_province,shipping_postal_code,total,carrier,tracking_number,created_at)",
+  "order:orders!inner(id,order_number,status,shipping_name,shipping_phone,shipping_province,shipping_postal_code,total,created_at)",
 ].join(",");
 
 export class WarehouseInputError extends Error {}
@@ -60,7 +60,7 @@ export async function getWarehouseOrder(orderId: string) {
   const [jobResult, orderResult, itemsResult] = await Promise.all([
     client.from("warehouse_fulfillments").select("*").eq("order_id", orderId).maybeSingle(),
     client.from("orders")
-      .select("id,order_number,status,shipping_name,shipping_phone,shipping_address,shipping_province,shipping_postal_code,total,carrier,tracking_number,shipped_at,created_at")
+      .select("id,order_number,status,shipping_name,shipping_phone,shipping_address,shipping_province,shipping_postal_code,total,shipped_at,created_at")
       .eq("id", orderId)
       .maybeSingle(),
     client.from("order_items")
@@ -95,20 +95,10 @@ export async function updateWarehouseFulfillment(input: {
 
 export async function shipWarehouseOrder(input: {
   orderId: string;
-  carrier: string;
-  trackingNumber: string;
   actor: string;
 }) {
-  if (!input.carrier.trim() || input.carrier.trim().length > 100) {
-    throw new WarehouseInputError("กรุณาเลือกบริษัทขนส่ง");
-  }
-  if (!/^[A-Za-z0-9-]{6,50}$/u.test(input.trackingNumber.trim())) {
-    throw new WarehouseInputError("เลขพัสดุต้องมี 6–50 ตัว และใช้เฉพาะตัวอักษร ตัวเลข หรือขีดกลาง");
-  }
   const { data, error } = await getUncachedServerSupabase().rpc("mark_warehouse_order_shipped", {
     p_order_id: input.orderId,
-    p_carrier: input.carrier.trim(),
-    p_tracking_number: input.trackingNumber.trim().toUpperCase(),
     p_actor: input.actor,
   });
   if (error) throw error;

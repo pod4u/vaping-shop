@@ -11,13 +11,6 @@ export const dynamic = "force-dynamic";
 
 type OrderAction = "cancel" | "ship" | "deliver";
 
-function parseText(value: unknown, label: string, maximum: number): string {
-  if (typeof value !== "string" || !value.trim() || value.trim().length > maximum) {
-    throw new OrderInputError(`${label}ไม่ถูกต้อง`);
-  }
-  return value.trim();
-}
-
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { orderId: string } },
@@ -43,12 +36,7 @@ export async function PATCH(
     const result = action === "cancel"
       ? await cancelOrder(orderId, actor)
       : action === "ship"
-        ? await markOrderShipped(
-          orderId,
-          parseText(body.carrier, "บริษัทขนส่ง", 100),
-          parseText(body.trackingNumber, "เลขพัสดุ", 200),
-          actor,
-        )
+        ? await markOrderShipped(orderId, actor)
         : await markOrderDelivered(orderId, actor);
 
     let lineNotificationSent: boolean | null = null;
@@ -58,7 +46,7 @@ export async function PATCH(
         lineNotificationSent = recipient
           ? await pushMessage(recipient.providerUserId, {
             type: "text",
-            text: `📦 จัดส่งสินค้าแล้วค่ะ\n\nบริษัทขนส่ง: ${String(body.carrier).trim()}\nเลขพัสดุ: ${String(body.trackingNumber).trim()}\n\nดูรายละเอียดและติดตามพัสดุได้ในระบบสมาชิกค่ะ\n${getMemberLiffUrlForBotUserId(recipient.providerAccountId, "orders")}`,
+            text: `📦 จัดส่งสินค้าแล้วค่ะ\n\nกรุณารอรับสินค้าภายในไม่เกิน 2 วัน\nสามารถตรวจสอบสถานะล่าสุดได้ในระบบสมาชิกค่ะ\n${getMemberLiffUrlForBotUserId(recipient.providerAccountId, "orders")}`,
           }, recipient.providerAccountId)
           : null;
       } catch {

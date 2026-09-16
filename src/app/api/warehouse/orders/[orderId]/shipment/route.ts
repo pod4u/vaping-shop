@@ -11,14 +11,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { orderI
   const auth = await requireWarehouseSession(request);
   if (auth.response) return auth.response;
   try {
-    const body = await request.json() as Record<string, unknown>;
-    const carrier = typeof body.carrier === "string" ? body.carrier : "";
-    const trackingNumber = typeof body.trackingNumber === "string" ? body.trackingNumber : "";
     const orderId = parseWarehouseOrderId(params.orderId);
     const result = await shipWarehouseOrder({
       orderId,
-      carrier,
-      trackingNumber,
       actor: `warehouse:${auth.session.accountId}`,
     });
 
@@ -28,7 +23,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { orderI
         const recipient = await getOrderLineRecipient(orderId);
         lineNotificationSent = recipient ? await pushMessage(recipient.providerUserId, {
           type: "text",
-          text: `📦 จัดส่งสินค้าแล้วค่ะ\n\nบริษัทขนส่ง: ${carrier.trim()}\nเลขพัสดุ: ${trackingNumber.trim().toUpperCase()}\n\nดูรายละเอียดและติดตามพัสดุได้ในระบบสมาชิกค่ะ\n${getMemberLiffUrlForBotUserId(recipient.providerAccountId, "orders")}`,
+          text: `📦 จัดส่งสินค้าแล้วค่ะ\n\nกรุณารอรับสินค้าภายในไม่เกิน 2 วัน\nสามารถตรวจสอบสถานะล่าสุดได้ในระบบสมาชิกค่ะ\n${getMemberLiffUrlForBotUserId(recipient.providerAccountId, "orders")}`,
         }, recipient.providerAccountId) : null;
       } catch {
         console.error("Warehouse LINE shipment notification failed");
@@ -40,8 +35,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { orderI
       ...result,
       lineNotificationSent,
       message: lineNotificationSent === false
-        ? "บันทึกเลขพัสดุแล้ว แต่ส่ง LINE ไม่สำเร็จ ลูกค้ายังเห็นเลขในระบบสมาชิกค่ะ"
-        : "บันทึกเลขพัสดุและจัดส่งสำเร็จค่ะ",
+        ? "ยืนยันการจัดส่งแล้ว แต่ส่ง LINE ไม่สำเร็จ ลูกค้ายังเห็นสถานะในระบบสมาชิกค่ะ"
+        : "ยืนยันการจัดส่งสำเร็จค่ะ",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof WarehouseInputError || error instanceof SyntaxError) {
@@ -51,6 +46,6 @@ export async function PATCH(request: NextRequest, { params }: { params: { orderI
     if (db.code === "P0002") return NextResponse.json({ success: false, error: "ไม่พบงานคลัง" }, { status: 404 });
     if (db.code === "55000") return NextResponse.json({ success: false, error: "ต้องแพ็กสินค้าให้เสร็จก่อนยืนยันจัดส่ง" }, { status: 409 });
     console.error("Warehouse shipment failed", { code: db.code ?? "unknown" });
-    return NextResponse.json({ success: false, error: "บันทึกเลขพัสดุไม่สำเร็จ" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "ยืนยันการจัดส่งไม่สำเร็จ" }, { status: 500 });
   }
 }

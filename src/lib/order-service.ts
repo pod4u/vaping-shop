@@ -23,8 +23,6 @@ const ORDER_FIELDS = [
   "discount_credit_id",
   "total",
   "admin_note",
-  "carrier",
-  "tracking_number",
   "shipped_at",
   "shipped_by",
   "delivered_at",
@@ -127,14 +125,10 @@ export async function cancelOrder(orderId: string, actor: string) {
 
 export async function markOrderShipped(
   orderId: string,
-  carrier: string,
-  trackingNumber: string,
   actor: string,
 ) {
   const { data, error } = await getServerSupabase().rpc("mark_order_shipped", {
     p_order_id: orderId,
-    p_carrier: carrier,
-    p_tracking_number: trackingNumber,
     p_shipped_by: actor,
   });
   if (error) throw error;

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, CheckCircle, ClipboardCheck, Loader2, PackageCheck, Send, Truck, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2, PackageCheck, Truck, XCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AdminPermission } from "@/lib/admin-permissions";
 
@@ -39,8 +39,6 @@ interface Order {
   discount_credit_id: string | null;
   total: number | string;
   admin_note: string | null;
-  carrier: string | null;
-  tracking_number: string | null;
   shipped_at: string | null;
   delivered_at: string | null;
   cancelled_at: string | null;
@@ -64,8 +62,6 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: "ยกเลิก",
 };
 
-const CARRIER_OPTIONS = ["Flash Express", "ไปรษณีย์ไทย / EMS", "KEX Express", "J&T Express", "BEST Express", "Ninja Van"];
-
 export default function AdminOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<Order | null>(null);
@@ -77,8 +73,6 @@ export default function AdminOrderDetailPage() {
   const [isReserving, setIsReserving] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [carrier, setCarrier] = useState("");
-  const [trackingNumber, setTrackingNumber] = useState("");
   const [permissions, setPermissions] = useState<AdminPermission[]>([]);
 
   const loadOrder = useCallback(async () => {
@@ -167,6 +161,7 @@ export default function AdminOrderDetailPage() {
 
   async function updateStatus(action: "cancel" | "ship" | "deliver") {
     if (action === "cancel" && !window.confirm("ยืนยันยกเลิกออเดอร์นี้? หากตัดสต็อกแล้วระบบจะคืนให้อัตโนมัติ")) return;
+    if (action === "ship" && !window.confirm("ยืนยันว่ามอบสินค้าให้ผู้จัดส่งแล้วใช่ไหมคะ\n\nลูกค้าจะเห็นสถานะ “จัดส่งแล้ว” และได้รับแจ้งให้รอรับสินค้าภายในไม่เกิน 2 วัน")) return;
     setIsUpdatingStatus(true);
     setError("");
     setSuccess("");
@@ -174,7 +169,7 @@ export default function AdminOrderDetailPage() {
       const response = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, carrier, trackingNumber }),
+        body: JSON.stringify({ action }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "เปลี่ยนสถานะไม่สำเร็จ");
@@ -287,26 +282,13 @@ export default function AdminOrderDetailPage() {
               <CardContent className="py-5 sm:py-6">
                 <div className="flex items-start gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-acid-lime text-navy-deep"><Truck className="h-6 w-6" /></span>
-                  <div><p className="text-xs font-black text-acid-lime">ขั้นตอนถัดไป</p><h2 className="mt-1 text-xl font-black text-white">ใส่เลขพัสดุและแจ้งลูกค้า</h2><p className="mt-1 text-sm text-white/55">เมื่อบันทึกแล้ว หน้า member จะเปลี่ยนเป็น “จัดส่งแล้ว” และระบบจะแจ้งลูกค้าทาง LINE หนึ่งครั้ง</p></div>
-                </div>
-                <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  <label className="text-sm font-bold text-white">
-                    1. เลือกบริษัทขนส่ง
-                    <select value={carrier} onChange={(event) => setCarrier(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-navy-deep px-4 py-3 text-white outline-none focus:border-acid-lime">
-                      <option value="">เลือกบริษัทขนส่ง</option>
-                      {CARRIER_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
-                    </select>
-                  </label>
-                  <label className="text-sm font-bold text-white">
-                    2. กรอกเลขพัสดุ
-                    <input value={trackingNumber} onChange={(event) => setTrackingNumber(event.target.value)} placeholder="เช่น TH0123456789" autoCapitalize="characters" className="mt-2 w-full rounded-xl border border-white/15 bg-navy-deep px-4 py-3 font-mono text-lg uppercase text-white outline-none focus:border-acid-lime" />
-                  </label>
+                  <div><p className="text-xs font-black text-acid-lime">ขั้นตอนถัดไป</p><h2 className="mt-1 text-xl font-black text-white">ยืนยันการจัดส่ง</h2><p className="mt-1 text-sm text-white/55">ใช้เมื่อมอบสินค้าให้ผู้จัดส่งแล้ว หน้า Member จะเปลี่ยนเป็น “จัดส่งแล้ว” และระบบจะแจ้งลูกค้าทาง LINE หนึ่งครั้ง</p></div>
                 </div>
                 <div className="mt-5 flex flex-col gap-3 rounded-xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-start gap-2 text-sm text-white/65"><ClipboardCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" /><span>ตรวจเลขให้ถูกต้องก่อนบันทึก ระบบจะเปลี่ยนสถานะออเดอร์ทันที</span></div>
-                  <button type="button" onClick={() => updateStatus("ship")} disabled={isUpdatingStatus || !carrier.trim() || !trackingNumber.trim()} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-acid-lime px-5 font-black text-navy-deep disabled:cursor-not-allowed disabled:opacity-40">
-                    {isUpdatingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                    {isUpdatingStatus ? "กำลังบันทึก..." : "บันทึกและแจ้งลูกค้า"}
+                  <div className="text-sm text-white/65">หลังยืนยัน ลูกค้าจะได้รับข้อความให้รอรับสินค้าภายในไม่เกิน 2 วันค่ะ</div>
+                  <button type="button" onClick={() => updateStatus("ship")} disabled={isUpdatingStatus} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-acid-lime px-5 font-black text-navy-deep disabled:cursor-not-allowed disabled:opacity-40">
+                    {isUpdatingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : <Truck className="h-4 w-4" />}
+                    {isUpdatingStatus ? "กำลังยืนยัน..." : "ยืนยันว่าจัดส่งแล้ว"}
                   </button>
                 </div>
               </CardContent>
@@ -317,8 +299,8 @@ export default function AdminOrderDetailPage() {
             <Card className="border-emerald-300/20 bg-emerald-300/10">
               <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-sm text-emerald-100">
-                  <p className="font-black">จัดส่งแล้ว · {order.carrier}</p>
-                  <p className="mt-2 break-all font-mono text-xl font-black text-white">{order.tracking_number}</p>
+                  <p className="font-black">จัดส่งแล้ว</p>
+                  <p className="mt-1 text-white/70">ลูกค้าจะได้รับสินค้าภายในไม่เกิน 2 วันหลังจัดส่งค่ะ</p>
                   {order.shipped_at && <p className="mt-1 text-white/50">ส่งเมื่อ {new Date(order.shipped_at).toLocaleString("th-TH")}</p>}
                 </div>
                 {can("orders.ship") && (

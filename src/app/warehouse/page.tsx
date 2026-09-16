@@ -6,11 +6,11 @@ import { AlertTriangle, Box, CheckCircle2, ChevronRight, Loader2, PackageCheck, 
 import { WarehouseHeader } from "@/components/warehouse/WarehouseHeader";
 
 type Status = "ready_to_pack" | "packing" | "packed" | "problem" | "shipped";
-interface Job { id: string; order_id: string; status: Status; assigned_to: string | null; problem_note: string | null; updated_at: string; order: { order_number: string; shipping_name: string; shipping_province: string; total: number | string; tracking_number: string | null; created_at: string } }
+interface Job { id: string; order_id: string; status: Status; assigned_to: string | null; problem_note: string | null; updated_at: string; order: { order_number: string; shipping_name: string; shipping_province: string; total: number | string; created_at: string } }
 const TABS: Array<{ value: Status; label: string; icon: typeof Box }> = [
   { value: "ready_to_pack", label: "งานใหม่", icon: Box },
   { value: "packing", label: "กำลังแพ็ก", icon: PackageCheck },
-  { value: "packed", label: "รอเลขพัสดุ", icon: CheckCircle2 },
+  { value: "packed", label: "แพ็กเสร็จ", icon: CheckCircle2 },
   { value: "problem", label: "มีปัญหา", icon: AlertTriangle },
   { value: "shipped", label: "จัดส่งแล้ว", icon: Truck },
 ];

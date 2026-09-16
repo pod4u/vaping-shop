@@ -256,7 +256,7 @@ export async function getLineOrderStatus(input: {
 
   const { data: orders, error: orderError } = await client
     .from("orders")
-    .select("order_number,status,total,created_at,carrier,tracking_number")
+    .select("order_number,status,total,created_at,shipped_at")
     .eq("customer_id", identity.customer_id)
     .order("created_at", { ascending: false })
     .limit(3);

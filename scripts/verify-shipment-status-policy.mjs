@@ -1,0 +1,37 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+
+const member = read("src/app/(public)/member/page.tsx");
+const memberService = read("src/lib/member-service.ts");
+const adminDetail = read("src/app/admin/orders/[orderId]/page.tsx");
+const adminStatusApi = read("src/app/api/admin/orders/[orderId]/status/route.ts");
+const warehouseDetail = read("src/app/warehouse/orders/[orderId]/page.tsx");
+const warehouseShipmentApi = read("src/app/api/warehouse/orders/[orderId]/shipment/route.ts");
+const lineWebhook = read("src/app/api/line/webhook/route.ts");
+const payment = read("src/lib/order-payment-service.ts");
+const lineRegistration = read("src/lib/line-registration-service.ts");
+const migration = read("supabase/migrations/20260916103747_remove_tracking_requirement.sql");
+
+for (const [name, source] of [
+  ["member UI", member],
+  ["member query", memberService],
+  ["admin shipment UI", adminDetail],
+  ["admin shipment API", adminStatusApi],
+  ["warehouse UI", warehouseDetail],
+  ["warehouse shipment API", warehouseShipmentApi],
+  ["LINE order query", lineRegistration],
+]) {
+  assert.doesNotMatch(source, /tracking_number|trackingNumber|p_tracking_number/, `${name} still depends on tracking data`);
+}
+
+assert.match(member, /กรุณารอรับสินค้าภายในไม่เกิน 2 วันค่ะ/, "member UI must show the delivery window");
+assert.match(lineWebhook, /กรุณารอรับสินค้าภายในไม่เกิน 2 วัน/, "LINE must show the delivery window");
+assert.match(payment, /กรุณารอรับสินค้าภายในไม่เกิน 2 วันหลังจัดส่งค่ะ/, "payment message must explain the delivery window");
+assert.match(adminDetail, /ยืนยันว่าจัดส่งแล้ว/, "admin UI must provide a shipment confirmation action");
+assert.match(warehouseDetail, /ยืนยันว่าจัดส่งแล้ว/, "warehouse UI must provide a shipment confirmation action");
+assert.match(migration, /create function public\.mark_order_shipped\([\s\S]*p_shipped_by text/, "migration must add a status-only order transition");
+assert.match(migration, /create function public\.mark_warehouse_order_shipped\([\s\S]*p_actor text/, "migration must add a status-only warehouse transition");
+
+console.log("Shipment status policy verification passed (15 checks)");

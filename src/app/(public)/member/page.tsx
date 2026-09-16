@@ -8,7 +8,6 @@ import MemberLoginForm from "./MemberLoginForm";
 import MemberOrderActions from "./MemberOrderActions";
 import MemberPasswordSettings from "./MemberPasswordSettings";
 import MemberProfileEditor from "./MemberProfileEditor";
-import MemberTrackingActions from "./MemberTrackingActions";
 import MemberReviewForm from "./MemberReviewForm";
 import OrderSlipUpload from "@/components/OrderSlipUpload";
 
@@ -82,6 +81,13 @@ function OrderProgress({ status }: { status: string }) {
   );
 }
 
+function deliveryDeadline(shippedAt: string | null): string | null {
+  if (!shippedAt) return null;
+  const deadline = new Date(shippedAt);
+  deadline.setDate(deadline.getDate() + 2);
+  return deadline.toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium" });
+}
+
 export default async function MemberPage() {
   const session = verifyMemberSessionToken(cookies().get(MEMBER_COOKIE_NAME)?.value);
   const dashboard = session ? await getMemberDashboard(session.customerId) : null;
@@ -95,7 +101,7 @@ export default async function MemberPage() {
           </div>
           <h1 className="text-2xl font-black text-white">เข้าสู่ระบบสมาชิก</h1>
           <p className="mt-3 text-xs leading-6 text-white/60">
-            ใช้เบอร์โทรศัพท์และรหัสผ่านเพื่อดูออเดอร์ ติดตามพัสดุ และตรวจสอบสิทธิประโยชน์ของคุณบน Pod4U
+            ใช้เบอร์โทรศัพท์และรหัสผ่านเพื่อดูออเดอร์ เช็กสถานะการจัดส่ง และตรวจสอบสิทธิประโยชน์ของคุณบน Pod4U
           </p>
           <MemberLoginForm />
           <p className="mt-6 border-t border-white/10 pt-4 text-[11px] leading-5 text-white/40">
@@ -187,7 +193,7 @@ export default async function MemberPage() {
             </div>
             <div>
               <span className="text-sm font-bold block">ออเดอร์ของฉัน</span>
-              <span className="text-[10px] text-white/50 block">ติดตามพัสดุ / สลิป →</span>
+              <span className="text-[10px] text-white/50 block">สถานะจัดส่ง / สลิป →</span>
             </div>
           </a>
 
@@ -314,7 +320,7 @@ export default async function MemberPage() {
                 <span className="text-2xl bg-white/5 p-2 rounded-xl">🛒</span>
                 <div>
                   <p className="text-xs font-bold text-white">1. สั่งซื้อสินค้า</p>
-                  <p className="text-[11px] text-white/50">จัดส่งฟรีเมื่อซื้อ 3 ชิ้นขึ้นไป</p>
+                  <p className="text-[11px] text-white/50">ดูดแล้วทิ้งครบ 3 ชิ้น ส่งฟรี</p>
                 </div>
               </div>
 
@@ -370,7 +376,7 @@ export default async function MemberPage() {
         </div>
       </section>
 
-      {/* 5. ORDERS TRACKING SECTION (`#orders`) */}
+      {/* 5. ORDER STATUS SECTION (`#orders`) */}
       <section id="orders" className="scroll-mt-24 pt-4">
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
@@ -414,7 +420,7 @@ export default async function MemberPage() {
                 <article
                   key={order.id}
                   className={`overflow-hidden rounded-3xl border p-5 sm:p-7 transition-all backdrop-blur-xl relative shadow-2xl ${
-                    order.tracking_number
+                    order.status === "shipped"
                       ? "border-acid-lime/40 bg-gradient-to-b from-acid-lime/[0.08] via-white/[0.02] to-slate-950/80 shadow-acid/10"
                       : isPending
                       ? "border-sky-400/40 bg-gradient-to-b from-sky-500/[0.08] via-white/[0.02] to-slate-950/80 shadow-sky-500/10"
@@ -458,9 +464,9 @@ export default async function MemberPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-[11px] text-white/40 font-bold block">สถานะพัสดุ</span>
-                      {order.tracking_number ? (
-                        <p className="mt-0.5 text-sm font-black text-emerald-300">จัดส่งแล้ว มีเลขพัสดุ</p>
+                      <span className="text-[11px] text-white/40 font-bold block">สถานะจัดส่ง</span>
+                      {order.status === "shipped" ? (
+                        <p className="mt-0.5 text-sm font-black text-emerald-300">จัดส่งแล้ว</p>
                       ) : isConfirmed ? (
                         <p className="mt-0.5 text-sm font-black text-sky-200">กำลังเตรียมจัดส่ง</p>
                       ) : (
@@ -535,35 +541,35 @@ export default async function MemberPage() {
                     </div>
                   )}
 
-                  {/* CONFIRMED: WAITING TRACKING */}
-                  {order.status === "confirmed" && !order.tracking_number && (
+                  {/* CONFIRMED: PREPARING SHIPMENT */}
+                  {order.status === "confirmed" && (
                     <div className="mt-4 rounded-2xl border border-sky-400/30 bg-sky-500/10 p-4 text-xs">
                       <p className="font-black text-white flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
                         <span>คลังสินค้ากำลังเตรียมแพ็คพัสดุ</span>
                       </p>
                       <p className="mt-1 text-white/60 leading-relaxed">
-                        ยอดชำระได้รับการยืนยันแล้ว เลขพัสดุจะอัปเดตในหน้านี้ทันทีที่จัดส่งออกค่ะ
+                        ยอดชำระได้รับการยืนยันแล้ว สถานะจะอัปเดตในหน้านี้ทันทีที่จัดส่งออกค่ะ
                       </p>
                     </div>
                   )}
 
-                  {/* SHIPPED: TRACKING CARD */}
-                  {order.tracking_number && (
+                  {/* SHIPPED: DELIVERY STATUS */}
+                  {order.status === "shipped" && (
                     <div className="mt-4 rounded-2xl border border-acid-lime/30 bg-black/40 p-4 shadow-lg">
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-xs text-white/50">{order.carrier || "บริษัทขนส่ง"}</p>
+                        <p className="text-xs text-white/50">สถานะการจัดส่งล่าสุด</p>
                         <span className="rounded-full bg-acid-lime px-2.5 py-1 text-[10px] font-black text-navy-deep">
-                          มีเลขพัสดุแล้ว
+                          จัดส่งแล้ว
                         </span>
                       </div>
-                      <p className="mt-2 break-all font-mono text-2xl sm:text-3xl font-black tracking-wider text-white">
-                        {order.tracking_number}
-                      </p>
-                      <MemberTrackingActions carrier={order.carrier} trackingNumber={order.tracking_number} />
+                      <p className="mt-3 text-lg font-black text-white">กรุณารอรับสินค้าภายในไม่เกิน 2 วันค่ะ</p>
+                      {deliveryDeadline(order.shipped_at) && (
+                        <p className="mt-1 text-sm text-acid-lime">คาดว่าจะได้รับภายใน {deliveryDeadline(order.shipped_at)}</p>
+                      )}
                       {order.shipped_at && (
                         <p className="mt-3 text-[11px] text-white/40">
-                          อัปเดตล่าสุด {new Date(order.shipped_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}
+                          จัดส่งเมื่อ {new Date(order.shipped_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}
                         </p>
                       )}
                     </div>

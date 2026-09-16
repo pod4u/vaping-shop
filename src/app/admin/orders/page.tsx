@@ -23,7 +23,7 @@ type QueueFilter = "active" | "draft" | "pending" | "confirmed" | "shipped" | "h
 const STATUS_META: Record<string, { label: string; next: string; className: string }> = {
   draft: { label: "รอตรวจออเดอร์", next: "ตรวจสินค้า ราคา และที่อยู่ แล้วส่งยอดชำระ", className: "border-amber-300/30 bg-amber-300/10 text-amber-100" },
   pending: { label: "รอลูกค้าชำระ", next: "ไม่ต้องทำอะไร ระบบกำลังรอสลิปจากลูกค้า", className: "border-sky-300/30 bg-sky-300/10 text-sky-100" },
-  confirmed: { label: "ชำระแล้ว · เตรียมส่ง", next: "แพ็กสินค้าและกรอกเลขพัสดุ", className: "border-emerald-300/30 bg-emerald-300/10 text-emerald-100" },
+  confirmed: { label: "ชำระแล้ว · เตรียมส่ง", next: "รอคลังแพ็กและยืนยันการจัดส่ง", className: "border-emerald-300/30 bg-emerald-300/10 text-emerald-100" },
   shipped: { label: "จัดส่งแล้ว", next: "รอสินค้าถึงลูกค้า", className: "border-violet-300/30 bg-violet-300/10 text-violet-100" },
   delivered: { label: "สำเร็จ", next: "ปิดงานแล้ว", className: "border-emerald-300/20 bg-emerald-300/5 text-emerald-200" },
   cancelled: { label: "ยกเลิก", next: "ไม่ต้องดำเนินการ", className: "border-white/10 bg-white/5 text-white/50" },
@@ -129,7 +129,7 @@ export default function AdminOrdersPage() {
 
       <Card className="border-sky-300/20 bg-sky-300/10">
         <CardContent className="py-4 text-sm text-sky-100">
-          <strong>ขั้นตอนทำงาน:</strong> ตรวจออเดอร์และส่งยอดครั้งเดียว → รอลูกค้าส่งสลิป → ระบบยืนยันการชำระ → แพ็กและใส่เลขพัสดุ<br />
+          <strong>ขั้นตอนทำงาน:</strong> ตรวจออเดอร์และส่งยอดครั้งเดียว → รอลูกค้าส่งสลิป → ระบบยืนยันการชำระ → แพ็กและยืนยันการจัดส่ง<br />
           <span className="text-white/60">ถ้าลูกค้าไม่ส่งสลิปภายในเวลาที่แจ้ง ระบบจะยกเลิกออเดอร์อัตโนมัติ โดยไม่ส่งข้อความเตือนซ้ำ</span>
         </CardContent>
       </Card>

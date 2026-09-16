@@ -103,7 +103,7 @@ async function handlePaymentSlip(event: any, destination: string) {
     });
     await replyMessage(
       replyToken,
-      `✅ ตรวจสอบการชำระเงินเรียบร้อย\n\nเลขที่ ${result.orderNumber}\nยอด ฿${result.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}\nระบบยืนยันออเดอร์ให้เรียบร้อยแล้ว\n\nเลข Tracking พัสดุจะสามารถเข้าไปเช็กได้ในระบบสมาชิกวันพรุ่งนี้นะคะ\n${getActiveMemberLiffUrl()}`,
+      `✅ ตรวจสอบการชำระเงินเรียบร้อย\n\nเลขที่ ${result.orderNumber}\nยอด ฿${result.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}\nระบบยืนยันออเดอร์ให้เรียบร้อยแล้วค่ะ\n\nเมื่อตะกร้าถูกจัดส่ง สถานะจะอัปเดตในระบบสมาชิก และกรุณารอรับสินค้าภายในไม่เกิน 2 วันหลังจัดส่งค่ะ\n${getActiveMemberLiffUrl()}`,
     );
   } catch (error) {
     if (error instanceof OrderPaymentError) {
@@ -247,7 +247,7 @@ async function handleMessage(
   if (isTrackingQuestion(normalizedMessage)) {
     await replyWithSalesPrompt(
       replyToken,
-      '📦 เลขพัสดุจะแสดงในระบบสมาชิกหลังร้านบันทึกการจัดส่งค่ะ ลูกค้าสามารถกลับมาเช็กสถานะได้เองโดยไม่ต้องแจ้งเลขออเดอร์ซ้ำ',
+      '📦 ทางร้านใช้สถานะการจัดส่งในระบบสมาชิกแทนเลขพัสดุค่ะ หากสถานะขึ้นว่า “จัดส่งแล้ว” กรุณารอรับสินค้าภายในไม่เกิน 2 วัน',
       await resolveSalesContext(event, destination),
       'ต้องการเปิดหน้าออเดอร์เพื่อตรวจสอบตอนนี้เลยไหมคะ',
       'orders',
@@ -651,9 +651,9 @@ function salesContextCopy(context: SalesContext): string {
     return 'บัญชีสมาชิกเชื่อมเรียบร้อยแล้วค่ะ เหลือเพิ่มที่อยู่จัดส่งหลักก่อนยืนยันออเดอร์';
   }
   if (context && !context.linked) {
-    return 'ตอนนี้ LINE นี้ยังไม่ได้เชื่อมสมาชิกค่ะ เชื่อมครั้งเดียวแล้วระบบจะจำข้อมูล ออเดอร์ และเลขพัสดุให้';
+    return 'ตอนนี้ LINE นี้ยังไม่ได้เชื่อมสมาชิกค่ะ เชื่อมครั้งเดียวแล้วระบบจะจำข้อมูล ออเดอร์ และสถานะการจัดส่งให้';
   }
-  return 'เชื่อมสมาชิกครั้งแรกเพียงครั้งเดียว แล้วระบบจะช่วยจำข้อมูล ออเดอร์ และเลขพัสดุให้ค่ะ';
+  return 'เชื่อมสมาชิกครั้งแรกเพียงครั้งเดียว แล้วระบบจะช่วยจำข้อมูล ออเดอร์ และสถานะการจัดส่งให้ค่ะ';
 }
 
 function buildSalesQuickReply(context: SalesContext, primary: 'stock' | 'orders') {
@@ -723,7 +723,7 @@ async function replyWithOrderStatus(event: any, destination: string) {
     if (!result.linked) {
       await sendReply(replyToken, {
         type: 'text',
-        text: 'ตอนนี้ LINE นี้ยังไม่ได้เชื่อมสมาชิกค่ะ เชื่อมครั้งเดียวแล้วลูกค้าจะดูออเดอร์และเลขพัสดุได้เองโดยไม่ต้องแจ้งข้อมูลซ้ำ\n\nต้องการเข้าสู่ระบบสมาชิกตอนนี้ไหมคะ',
+        text: 'ตอนนี้ LINE นี้ยังไม่ได้เชื่อมสมาชิกค่ะ เชื่อมครั้งเดียวแล้วลูกค้าจะดูออเดอร์และสถานะการจัดส่งได้เองโดยไม่ต้องแจ้งข้อมูลซ้ำ\n\nต้องการเข้าสู่ระบบสมาชิกตอนนี้ไหมคะ',
         quickReply: { items: buildSalesQuickReply({ linked: false, hasDefaultAddress: false }, 'orders') },
       });
       return;
@@ -737,15 +737,12 @@ async function replyWithOrderStatus(event: any, destination: string) {
       return;
     }
 
-    const lines = result.orders.map((order) => {
-      const tracking = order.tracking_number
-        ? `\n  พัสดุ: ${order.carrier || '-'} ${order.tracking_number}`
-        : '';
-      return `• ${order.order_number}\n  สถานะ: ${formatOrderStatus(order.status)}${tracking}`;
-    });
+    const lines = result.orders.map((order) =>
+      `• ${order.order_number}\n  สถานะ: ${formatOrderStatus(order.status)}`,
+    );
     await sendReply(replyToken, {
       type: 'text',
-      text: `📦 ออเดอร์ล่าสุด\n\n${lines.join('\n\n')}\n\nต้องการเปิดดูรายละเอียดหรือเช็กเลขพัสดุของออเดอร์ไหนคะ`,
+      text: `📦 ออเดอร์ล่าสุด\n\n${lines.join('\n\n')}\n\nต้องการเปิดดูรายละเอียดออเดอร์ไหนคะ`,
       quickReply: { items: buildSalesQuickReply({ linked: true, hasDefaultAddress: true }, 'orders') },
     });
   } catch {
@@ -758,8 +755,8 @@ function formatOrderStatus(status: unknown): string {
   const labels: Record<string, string> = {
     draft: 'รอลูกค้ายืนยันสต๊อก',
     pending: 'จองสินค้า/รอตรวจสลิป',
-    confirmed: 'ยืนยันแล้ว',
-    shipped: 'จัดส่งแล้ว',
+    confirmed: 'ชำระแล้ว / กำลังเตรียมจัดส่ง',
+    shipped: 'จัดส่งแล้ว · รอรับสินค้าไม่เกิน 2 วัน',
     delivered: 'ส่งถึงแล้ว',
     cancelled: 'ยกเลิก',
   };

@@ -107,7 +107,7 @@ export async function requestLineOrderPayment(orderId: string, actor: string) {
   const sent = await pushMessage(recipient.providerUserId, {
     type: "text",
     text:
-      `💳 เช็กและจองสต๊อกเรียบร้อยแล้ว\n\nเลขที่ออเดอร์: ${order.order_number}${discountAmount > 0 ? `\n🎁 ใช้ส่วนลดจากรีวิว: −฿${discountAmount.toLocaleString("th-TH", { minimumFractionDigits: 2 })}` : ""}\nยอดชำระ: ฿${amount.toLocaleString("th-TH", { minimumFractionDigits: 2 })}\n\n${instructions}\n\nกรุณาโอนยอดให้ตรงและส่งรูปสลิปในแชทนี้ภายใน ${expiresAt.toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}\nหากไม่ส่งสลิปภายในเวลานี้ ออเดอร์จะยกเลิกอัตโนมัติและต้องสั่งใหม่อีกครั้ง\n\nระบบจะยืนยันออเดอร์ให้กับลูกค้าหลังจากตรวจเช็กสลิปเรียบร้อยแล้ว\nเลข Tracking พัสดุจะสามารถเข้าไปเช็กได้ในระบบสมาชิกวันพรุ่งนี้นะคะ`,
+      `💳 เช็กและจองสต๊อกเรียบร้อยแล้ว\n\nเลขที่ออเดอร์: ${order.order_number}${discountAmount > 0 ? `\n🎁 ใช้ส่วนลดจากรีวิว: −฿${discountAmount.toLocaleString("th-TH", { minimumFractionDigits: 2 })}` : ""}\nยอดชำระ: ฿${amount.toLocaleString("th-TH", { minimumFractionDigits: 2 })}\n\n${instructions}\n\nกรุณาโอนยอดให้ตรงและส่งรูปสลิปในแชทนี้ภายใน ${expiresAt.toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}\nหากไม่ส่งสลิปภายในเวลานี้ ออเดอร์จะยกเลิกอัตโนมัติและต้องสั่งใหม่อีกครั้ง\n\nระบบจะยืนยันออเดอร์ให้หลังจากตรวจเช็กสลิปเรียบร้อยแล้วค่ะ\nเมื่อตะกร้าถูกจัดส่ง สถานะจะอัปเดตในระบบสมาชิก และกรุณารอรับสินค้าภายในไม่เกิน 2 วันหลังจัดส่งค่ะ`,
   }, recipient.providerAccountId);
 
   return {

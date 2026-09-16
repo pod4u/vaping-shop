@@ -421,11 +421,8 @@ export async function getOrders(status?: string) {
   return data;
 }
 
-export async function updateOrderStatus(orderId: number, status: string, trackingNumber?: string) {
+export async function updateOrderStatus(orderId: number, status: string) {
   const updateData: any = { status };
-  if (trackingNumber) {
-    updateData.tracking_number = trackingNumber;
-  }
 
   const { data, error } = await getServerSupabase()
     .from('orders')
