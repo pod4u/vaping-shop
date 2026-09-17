@@ -22,6 +22,7 @@ assert.match(route, /requireSameOrigin/, "Telegram mutations must reject cross-o
 assert.match(route, /body\.action === "notify-payment"/, "admins need a protected paid-alert recovery action");
 assert.match(notifications, /claimTelegramEvent\(orderId, "payment_received"\)/, "paid alerts must use the payment_received idempotency key");
 assert.match(notifications, /✅ <b>รับออเดอร์แล้ว<\/b>/, "paid alerts need the approved Thai heading");
+assert.match(notifications, /ตรวจสอบสลิปผ่าน Thunder แล้ว · ยอดชำระถูกต้อง/, "paid alerts must state that Thunder verified the payment");
 assert.match(notifications, /รายการสินค้า/, "paid alerts must list ordered products");
 assert.match(notifications, /ชิ้น × ฿/, "paid alerts must show quantity and unit price");
 assert.match(notifications, /ยอดรวม ฿/, "paid alerts must show the order total");
@@ -34,4 +35,4 @@ assert.doesNotMatch(orders, /notifyOrderCreatedSafely/, "draft order creation mu
 assert.match(linePayment, /notifyPaymentReceivedSafely\(payment\.order_id\)/, "LINE slip verification must alert Telegram after confirmation");
 assert.match(memberSlip, /notifyPaymentReceivedSafely\(order\.id\)/, "member slip verification must alert Telegram after confirmation");
 
-console.log("Telegram paid-order notification verification passed (23 checks)");
+console.log("Telegram paid-order notification verification passed (24 checks)");

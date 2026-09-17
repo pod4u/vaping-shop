@@ -194,6 +194,7 @@ async function buildPaymentReceivedMessage(orderId: string) {
   return {
     text: [
       "✅ <b>รับออเดอร์แล้ว</b>",
+      "💳 ตรวจสอบสลิปผ่าน Thunder แล้ว · ยอดชำระถูกต้อง",
       "",
       `เลขที่ ${escapeHtml(order.order_number)}`,
       "",
