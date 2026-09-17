@@ -32,9 +32,10 @@ assert.match(lineWebhook, /กรุณารอรับสินค้าภ�
 assert.match(payment, /กรุณารอรับสินค้าภายในไม่เกิน 2 วันหลังจัดส่งค่ะ/, "payment message must explain the delivery window");
 assert.match(adminDetail, /ยืนยันว่าจัดส่งแล้ว/, "admin UI must provide a shipment confirmation action");
 assert.match(warehouseDetail, /ยืนยันว่าจัดส่งแล้ว/, "warehouse UI must provide a shipment confirmation action");
+assert.match(adminStatusApi, /action === "ship" && !result\.idempotentReplay/, "admin must not send duplicate LINE shipment notifications");
 assert.match(migration, /create function public\.mark_order_shipped\([\s\S]*p_shipped_by text/, "migration must add a status-only order transition");
 assert.match(migration, /create function public\.mark_warehouse_order_shipped\([\s\S]*p_actor text/, "migration must add a status-only warehouse transition");
 assert.match(cleanupMigration, /drop function if exists public\.mark_order_shipped\(uuid, text, text, text\)/, "legacy order shipment transition must be removed");
 assert.match(cleanupMigration, /drop function if exists public\.mark_warehouse_order_shipped\(uuid, text, text, text\)/, "legacy warehouse shipment transition must be removed");
 
-console.log("Shipment status policy verification passed (17 checks)");
+console.log("Shipment status policy verification passed (18 checks)");

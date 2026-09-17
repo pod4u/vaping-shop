@@ -40,7 +40,7 @@ export async function PATCH(
         : await markOrderDelivered(orderId, actor);
 
     let lineNotificationSent: boolean | null = null;
-    if (action === "ship") {
+    if (action === "ship" && !result.idempotentReplay) {
       try {
         const recipient = await getOrderLineRecipient(orderId);
         lineNotificationSent = recipient
@@ -57,7 +57,9 @@ export async function PATCH(
 
     const messages: Record<OrderAction, string> = {
       cancel: result.stockRestored ? "ยกเลิกออเดอร์และคืนสต็อกสำเร็จ" : "ยกเลิกออเดอร์สำเร็จ",
-      ship: "บันทึกการจัดส่งสำเร็จ",
+      ship: result.idempotentReplay
+        ? "ออเดอร์นี้บันทึกการจัดส่งไว้แล้ว จึงไม่ส่ง LINE ซ้ำ"
+        : "บันทึกการจัดส่งสำเร็จ",
       deliver: "บันทึกว่าส่งถึงลูกค้าสำเร็จ",
     };
     return NextResponse.json(
