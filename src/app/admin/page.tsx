@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, Boxes, Package, PackageCheck, Users } from "lucide-react";
+import { AlertTriangle, Boxes, CalendarDays, Package, PackageCheck, ReceiptText, Truck, Users, WalletCards } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { AdminPermission } from "@/lib/admin-permissions";
 
@@ -45,6 +45,23 @@ interface DashboardData {
   lastUpdated: string | null;
 }
 
+interface DailyRevenueRow {
+  date: string;
+  orderCount: number;
+  revenue: number;
+  merchandise: number;
+  shipping: number;
+  discount: number;
+}
+
+interface RevenueReport {
+  generatedAt: string;
+  timeZone: string;
+  today: DailyRevenueRow;
+  totals: Omit<DailyRevenueRow, "date">;
+  daily: DailyRevenueRow[];
+}
+
 const fallbackColors = ["#d4ff14", "#5b13ec", "#3b82f6", "#f472b6", "#22c55e", "#f59e0b", "#ef4444"];
 
 export default function AdminDashboard() {
@@ -52,6 +69,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<AdminPermission[]>([]);
+  const [revenue, setRevenue] = useState<RevenueReport | null>(null);
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -62,16 +80,19 @@ export default function AdminDashboard() {
         const allowed: AdminPermission[] = authResult.session?.permissions ?? [];
         setPermissions(allowed);
 
-        const [stockResponse, customersResponse] = await Promise.all([
+        const [stockResponse, customersResponse, revenueResponse] = await Promise.all([
           allowed.includes("stock.view") ? fetch("/api/admin/stock", { cache: "no-store" }) : null,
           allowed.includes("customers.view") ? fetch("/api/admin/customers", { cache: "no-store" }) : null,
+          allowed.includes("analytics.view") ? fetch("/api/admin/revenue", { cache: "no-store" }) : null,
         ]);
         if (stockResponse && !stockResponse.ok) throw new Error("โหลดข้อมูลสต็อกไม่สำเร็จ");
         if (customersResponse && !customersResponse.ok) throw new Error("โหลดข้อมูลลูกค้าไม่สำเร็จ");
+        if (revenueResponse && !revenueResponse.ok) throw new Error("โหลดรายงานยอดรับไม่สำเร็จ");
 
-        const [stockResult, customersResult] = await Promise.all([
+        const [stockResult, customersResult, revenueResult] = await Promise.all([
           stockResponse ? stockResponse.json() : { success: true, data: [], lastUpdated: null },
           customersResponse ? customersResponse.json() : { success: true, customers: [] },
+          revenueResponse ? revenueResponse.json() : null,
         ]);
 
         setData({
@@ -79,6 +100,7 @@ export default function AdminDashboard() {
           customers: customersResult.customers || [],
           lastUpdated: stockResult.lastUpdated || new Date().toISOString(),
         });
+        setRevenue(revenueResult);
       } catch (loadError) {
         console.error("Error loading dashboard", loadError);
         setError(loadError instanceof Error ? loadError.message : "โหลดข้อมูลไม่สำเร็จ");
@@ -149,6 +171,8 @@ export default function AdminDashboard() {
   const recentCustomers = data.customers.slice(0, 5);
   const canViewStock = permissions.includes("stock.view");
   const canViewCustomers = permissions.includes("customers.view");
+  const canViewRevenue = permissions.includes("analytics.view");
+  const maxDailyRevenue = Math.max(...(revenue?.daily.map((row) => row.revenue) ?? [0]), 1);
   const statCards = [
     { title: "สต็อกรวม", value: summary.totalStock.toLocaleString(), note: `${summary.availableVariants} รายการพร้อมส่ง`, icon: Package, color: "text-blue-400", bg: "bg-blue-500/20", visible: canViewStock },
     { title: "รายการพร้อมส่ง", value: summary.availableVariants.toLocaleString(), note: `จาก ${summary.totalVariants.toLocaleString()} variants`, icon: PackageCheck, color: "text-acid-lime", bg: "bg-acid-lime/20", visible: canViewStock },
@@ -178,6 +202,58 @@ export default function AdminDashboard() {
       </div>
 
       {error && <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-red-300">{error}</div>}
+
+      {canViewRevenue && revenue && (
+        <Card className="overflow-hidden border-acid-lime/20 bg-gradient-to-br from-[#102447] via-[#0b1731] to-[#071126]">
+          <CardHeader className="border-b border-white/10">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-xl text-white"><WalletCards className="h-5 w-5 text-acid-lime" />รายงานยอดรับรายวัน</CardTitle>
+                <CardDescription className="mt-1 text-white/50">นับจากสลิปที่ตรวจสอบผ่านแล้ว ตามเวลาไทย</CardDescription>
+              </div>
+              <p className="text-xs text-white/40">อัปเดต {new Date(revenue.generatedAt).toLocaleString("th-TH")}</p>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-5 p-4 sm:p-6">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-2xl border border-acid-lime/25 bg-acid-lime/[0.08] p-4">
+                <p className="flex items-center gap-2 text-xs font-bold text-white/60"><ReceiptText className="h-4 w-4 text-acid-lime" />ยอดรับวันนี้</p>
+                <p className="mt-2 font-mono text-3xl font-black text-acid-lime">฿{revenue.today.revenue.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
+                <p className="mt-1 text-xs text-white/45">{revenue.today.orderCount.toLocaleString("th-TH")} ออเดอร์ชำระแล้ว</p>
+              </div>
+              <div className="rounded-2xl border border-sky-300/20 bg-sky-300/[0.06] p-4">
+                <p className="flex items-center gap-2 text-xs font-bold text-white/60"><CalendarDays className="h-4 w-4 text-sky-300" />ยอดรับ 7 วัน</p>
+                <p className="mt-2 font-mono text-2xl font-black text-sky-200">฿{revenue.totals.revenue.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
+                <p className="mt-1 text-xs text-white/45">รวม {revenue.totals.orderCount.toLocaleString("th-TH")} ออเดอร์</p>
+              </div>
+              <div className="rounded-2xl border border-violet-300/20 bg-violet-300/[0.06] p-4">
+                <p className="flex items-center gap-2 text-xs font-bold text-white/60"><Truck className="h-4 w-4 text-violet-300" />ค่าส่งที่รับวันนี้</p>
+                <p className="mt-2 font-mono text-2xl font-black text-violet-200">฿{revenue.today.shipping.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
+                <p className="mt-1 text-xs text-white/45">รวมอยู่ในยอดรับวันนี้แล้ว</p>
+              </div>
+              <div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] p-4">
+                <p className="text-xs font-bold text-white/60">ส่วนลดที่ใช้วันนี้</p>
+                <p className="mt-2 font-mono text-2xl font-black text-amber-200">฿{revenue.today.discount.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
+                <p className="mt-1 text-xs text-white/45">หักออกก่อนรับชำระแล้ว</p>
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-3 flex items-center justify-between"><p className="text-sm font-black text-white">ยอดรับย้อนหลัง 7 วัน</p><p className="text-xs text-white/40">บาท / วัน</p></div>
+              <div className="space-y-2">
+                {revenue.daily.map((row) => (
+                  <div key={row.date} className="grid grid-cols-[72px_1fr_auto] items-center gap-3 rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2.5">
+                    <div><p className="text-xs font-bold text-white/75">{new Date(`${row.date}T00:00:00+07:00`).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}</p><p className="text-[10px] text-white/35">{row.orderCount} ออเดอร์</p></div>
+                    <div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-sky-400 to-acid-lime" style={{ width: `${Math.max(row.revenue > 0 ? 4 : 0, (row.revenue / maxDailyRevenue) * 100)}%` }} /></div>
+                    <p className="min-w-[84px] text-right font-mono text-sm font-black text-white">฿{row.revenue.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p className="text-xs leading-5 text-white/40">ยอดนี้คือเงินที่ระบบตรวจชำระผ่านแล้ว รวมค่าส่งและหักส่วนลดแล้ว แต่ยังไม่หักต้นทุนหรือรายการคืนเงิน จึงไม่ใช่กำไรสุทธิค่ะ</p>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (

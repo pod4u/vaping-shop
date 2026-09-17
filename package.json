@@ -18,7 +18,8 @@
     "test:review-credit": "node scripts/verify-review-credit.mjs",
     "test:warehouse": "node scripts/verify-warehouse-portal.mjs",
     "test:shipment-status": "node scripts/verify-shipment-status-policy.mjs",
-    "test:telegram": "node scripts/verify-telegram-notifications.mjs"
+    "test:telegram": "node scripts/verify-telegram-notifications.mjs",
+    "test:revenue-report": "node scripts/verify-revenue-report.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
