@@ -8,6 +8,7 @@ import {
   findTelegramDestinations,
   getTelegramAdminStatus,
   notifyPaymentReceived,
+  resendPaymentReceived,
   sendTelegramTestMessage,
 } from "@/lib/telegram-notifications";
 
@@ -67,6 +68,20 @@ export async function POST(request: NextRequest) {
           : delivery === "skipped"
             ? "ออเดอร์นี้เคยแจ้ง Telegram แล้ว"
             : "ยังไม่ได้เชื่อมต่อ Telegram",
+      });
+    }
+    if (body.action === "resend-payment") {
+      const orderId = typeof body.orderId === "string" ? body.orderId.trim().toLowerCase() : "";
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(orderId)) {
+        return NextResponse.json({ success: false, error: "รหัสออเดอร์ไม่ถูกต้อง" }, { status: 400 });
+      }
+      const delivery = await resendPaymentReceived(orderId);
+      return NextResponse.json({
+        success: true,
+        delivery,
+        message: delivery === "sent"
+          ? "ส่งออเดอร์ที่ชำระแล้วเข้า Telegram ซ้ำสำเร็จ"
+          : "ยังไม่ได้เชื่อมต่อ Telegram",
       });
     }
     return NextResponse.json({ success: false, error: "คำสั่งไม่ถูกต้อง" }, { status: 400 });

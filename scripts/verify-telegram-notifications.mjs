@@ -20,6 +20,8 @@ assert.match(client, /AbortSignal\.timeout/, "Telegram requests must have a time
 assert.match(route, /requireAdminApiPermission\(request, "settings\.manage"\)/, "connect and test require settings permission");
 assert.match(route, /requireSameOrigin/, "Telegram mutations must reject cross-origin requests");
 assert.match(route, /body\.action === "notify-payment"/, "admins need a protected paid-alert recovery action");
+assert.match(route, /body\.action === "resend-payment"/, "admins need an explicit paid-alert resend action");
+assert.match(notifications, /export async function resendPaymentReceived/, "manual resend must be implemented separately from automatic idempotent delivery");
 assert.match(notifications, /claimTelegramEvent\(orderId, "payment_received"\)/, "paid alerts must use the payment_received idempotency key");
 assert.match(notifications, /✅ <b>ชำระเงินแล้ว · พร้อมแพ็กและจัดส่ง<\/b>/, "paid alerts need an unambiguous ready-to-pack heading");
 assert.match(notifications, /ตรวจสอบสลิปผ่าน Thunder แล้ว · ยอดชำระถูกต้อง/, "paid alerts must state that Thunder verified the payment");
@@ -38,4 +40,4 @@ assert.doesNotMatch(orders, /notifyOrderCreatedSafely/, "draft order creation mu
 assert.match(linePayment, /notifyPaymentReceivedSafely\(payment\.order_id\)/, "LINE slip verification must alert Telegram after confirmation");
 assert.match(memberSlip, /notifyPaymentReceivedSafely\(order\.id\)/, "member slip verification must alert Telegram after confirmation");
 
-console.log("Telegram paid-order notification verification passed (27 checks)");
+console.log("Telegram paid-order notification verification passed (29 checks)");

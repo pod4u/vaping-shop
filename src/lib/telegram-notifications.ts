@@ -262,6 +262,53 @@ export async function notifyPaymentReceived(orderId: string): Promise<"sent" | "
   }
 }
 
+export async function resendPaymentReceived(orderId: string): Promise<"sent" | "not_configured"> {
+  const settings = await getTelegramSettings();
+  if (!isTelegramTokenConfigured() || !settings?.enabled) return "not_configured";
+
+  const client = getUncachedServerSupabase();
+  const [{ data: event, error: eventError }, message] = await Promise.all([
+    client
+      .from("telegram_notification_events")
+      .select("id,attempt_count")
+      .eq("order_id", orderId)
+      .eq("event_type", "payment_received")
+      .maybeSingle(),
+    buildPaymentReceivedMessage(orderId),
+  ]);
+  if (eventError) throw eventError;
+
+  const result = await sendTelegramMessage({
+    chatId: settings.chat_id,
+    text: message.text,
+    button: { label: "เปิดงานในระบบคลัง", url: message.url },
+  });
+
+  const sentAt = new Date().toISOString();
+  const eventWrite = event?.id
+    ? client.from("telegram_notification_events").update({
+      status: "sent",
+      attempt_count: Number(event.attempt_count) + 1,
+      telegram_message_id: result.messageId,
+      sent_at: sentAt,
+      last_error: null,
+    }).eq("id", event.id)
+    : client.from("telegram_notification_events").insert({
+      order_id: orderId,
+      event_type: "payment_received",
+      status: "sent",
+      attempt_count: 1,
+      telegram_message_id: result.messageId,
+      sent_at: sentAt,
+      last_error: null,
+    });
+  const { error: eventWriteError } = await eventWrite;
+  if (eventWriteError) {
+    console.error("Telegram manual resend audit update failed", { message: safeDeliveryError(eventWriteError) });
+  }
+  return "sent";
+}
+
 export async function notifyPaymentReceivedSafely(orderId: string): Promise<void> {
   try {
     await notifyPaymentReceived(orderId);
