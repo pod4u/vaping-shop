@@ -30,14 +30,12 @@ function escapeHtml(value: unknown): string {
     .replaceAll('"', "&quot;");
 }
 
-function maskPhone(value: unknown): string {
-  const phone = String(value ?? "").replace(/\s+/g, "");
-  if (phone.length < 4) return "ไม่ระบุ";
-  return `${phone.slice(0, 3)}-xxx-${phone.slice(-4)}`;
-}
-
 function currency(value: unknown): string {
   return Number(value || 0).toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function itemPrice(value: unknown): string {
+  return Number(value || 0).toLocaleString("th-TH", { maximumFractionDigits: 2 });
 }
 
 function safeDeliveryError(error: unknown): string {
@@ -166,59 +164,48 @@ async function claimTelegramEvent(orderId: string, eventType: TelegramOrderEvent
 
 async function buildPaymentReceivedMessage(orderId: string) {
   const client = getUncachedServerSupabase();
-  const [orderResult, itemsResult, paymentResult] = await Promise.all([
+  const [orderResult, itemsResult] = await Promise.all([
     client
       .from("orders")
-      .select("id,order_number,order_source,status,subtotal,shipping_fee,discount_amount,total,shipping_name,shipping_phone")
+      .select("id,order_number,status,total,shipping_name,shipping_phone,shipping_address,shipping_province,shipping_postal_code")
       .eq("id", orderId)
       .single(),
     client
       .from("order_items")
-      .select("brand_name,product_name,flavor_name,quantity")
+      .select("brand_name,product_name,flavor_name,unit_price,quantity")
       .eq("order_id", orderId)
       .order("created_at", { ascending: true }),
-    client
-      .from("order_payment_requests")
-      .select("verified_at")
-      .eq("order_id", orderId)
-      .eq("status", "verified")
-      .maybeSingle(),
   ]);
   if (orderResult.error) throw orderResult.error;
   if (itemsResult.error) throw itemsResult.error;
-  if (paymentResult.error) throw paymentResult.error;
   const order = orderResult.data;
   if (!["confirmed", "shipped", "delivered"].includes(order.status)) {
     throw new Error("Telegram payment alert requires a confirmed order");
   }
   const items = itemsResult.data ?? [];
-  const quantity = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-  const itemLines = items.slice(0, 8).map((item, index) =>
-    `${index + 1}. ${escapeHtml(item.brand_name)} · ${escapeHtml(item.product_name)} · ${escapeHtml(item.flavor_name)} × ${Number(item.quantity)}`,
+  const itemLines = items.slice(0, 20).map((item, index) =>
+    `${index + 1}. ${escapeHtml(item.brand_name)} · ${escapeHtml(item.product_name)} · ${escapeHtml(item.flavor_name)}\n   ${Number(item.quantity)} ชิ้น × ฿${itemPrice(item.unit_price)}`,
   );
-  if (items.length > 8) itemLines.push(`…และอีก ${items.length - 8} รายการ`);
-  const paidAt = new Date(paymentResult.data?.verified_at ?? Date.now()).toLocaleString("th-TH", {
-    timeZone: "Asia/Bangkok",
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  if (items.length > 20) itemLines.push(`…และอีก ${items.length - 20} รายการ กรุณาเปิดดูในระบบคลัง`);
+  const address = [order.shipping_address, order.shipping_province, order.shipping_postal_code]
+    .filter(Boolean)
+    .map(escapeHtml)
+    .join(" ");
   return {
     text: [
-      "✅ <b>ชำระเงินแล้ว · พร้อมแพ็ก</b>",
+      "✅ <b>รับออเดอร์แล้ว</b>",
       "",
-      `<b>เลขที่:</b> ${escapeHtml(order.order_number)}`,
-      `<b>ลูกค้า:</b> ${escapeHtml(order.shipping_name)} (${escapeHtml(maskPhone(order.shipping_phone))})`,
-      `<b>ช่องทาง:</b> ${order.order_source === "line" ? "LINE OA" : "แอดมินกรอกเอง"}`,
-      `<b>จำนวน:</b> ${quantity} ชิ้น`,
+      `เลขที่ ${escapeHtml(order.order_number)}`,
       "",
+      "🛍️ <b>รายการสินค้า</b>",
       ...itemLines,
       "",
-      `<b>ยอดสินค้า:</b> ฿${currency(order.subtotal)}`,
-      `<b>ค่าส่ง:</b> ฿${currency(order.shipping_fee)}`,
-      Number(order.discount_amount || 0) > 0 ? `<b>ส่วนลด:</b> ฿${currency(order.discount_amount)}` : null,
-      `<b>ยอดชำระ:</b> ฿${currency(order.total)}`,
-      `<b>สถานะ:</b> รอคลังรับงาน`,
-      `<b>ชำระเมื่อ:</b> ${escapeHtml(paidAt)}`,
+      `ยอดรวม ฿${currency(order.total)}`,
+      "",
+      "📍 <b>ข้อมูลจัดส่ง</b>",
+      `ผู้รับ: ${escapeHtml(order.shipping_name)}`,
+      `โทร: ${escapeHtml(order.shipping_phone)}`,
+      `ที่อยู่: ${address}`,
     ].filter(Boolean).join("\n"),
     url: `${APP_URL}/warehouse/orders/${encodeURIComponent(order.id)}`,
   };

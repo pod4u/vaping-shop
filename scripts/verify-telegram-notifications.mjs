@@ -20,14 +20,18 @@ assert.match(client, /AbortSignal\.timeout/, "Telegram requests must have a time
 assert.match(route, /requireAdminApiPermission\(request, "settings\.manage"\)/, "connect and test require settings permission");
 assert.match(route, /requireSameOrigin/, "Telegram mutations must reject cross-origin requests");
 assert.match(route, /body\.action === "notify-payment"/, "admins need a protected paid-alert recovery action");
-assert.match(notifications, /maskPhone/, "alerts must mask customer phone numbers");
 assert.match(notifications, /claimTelegramEvent\(orderId, "payment_received"\)/, "paid alerts must use the payment_received idempotency key");
-assert.match(notifications, /ชำระเงินแล้ว · พร้อมแพ็ก/, "paid alerts need an actionable Thai heading");
-assert.match(notifications, /สถานะ:<\/b> รอคลังรับงาน/, "paid alerts need the warehouse queue status");
+assert.match(notifications, /✅ <b>รับออเดอร์แล้ว<\/b>/, "paid alerts need the approved Thai heading");
+assert.match(notifications, /รายการสินค้า/, "paid alerts must list ordered products");
+assert.match(notifications, /ชิ้น × ฿/, "paid alerts must show quantity and unit price");
+assert.match(notifications, /ยอดรวม ฿/, "paid alerts must show the order total");
+assert.match(notifications, /ข้อมูลจัดส่ง/, "paid alerts must include the shipping block");
+assert.match(notifications, /โทร: \$\{escapeHtml\(order\.shipping_phone\)\}/, "paid alerts must provide the warehouse phone number");
+assert.match(notifications, /ที่อยู่: \$\{address\}/, "paid alerts must provide the complete warehouse address");
 assert.match(notifications, /เปิดงานในระบบคลัง/, "paid alerts must link to the warehouse job");
 assert.match(notifications, /พร้อมรับแจ้งเตือนทันทีเมื่อลูกค้าชำระเงิน/, "test message must explain the paid-order trigger");
 assert.doesNotMatch(orders, /notifyOrderCreatedSafely/, "draft order creation must not alert Telegram");
 assert.match(linePayment, /notifyPaymentReceivedSafely\(payment\.order_id\)/, "LINE slip verification must alert Telegram after confirmation");
 assert.match(memberSlip, /notifyPaymentReceivedSafely\(order\.id\)/, "member slip verification must alert Telegram after confirmation");
 
-console.log("Telegram paid-order notification verification passed (20 checks)");
+console.log("Telegram paid-order notification verification passed (23 checks)");
