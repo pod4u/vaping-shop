@@ -5,6 +5,7 @@ import {
   OrderPaymentError,
   verifySlipBufferWithThunder,
 } from "@/lib/order-payment-service";
+import { notifyPaymentReceivedSafely } from "@/lib/telegram-notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +86,7 @@ export async function POST(
 
   // 3. Idempotent check: if already confirmed
   if (order.status === "confirmed") {
+    await notifyPaymentReceivedSafely(order.id);
     return NextResponse.json(
       {
         success: true,
@@ -300,6 +302,8 @@ export async function POST(
       console.error("Payment request upsert warning:", e);
     }
   }
+
+  await notifyPaymentReceivedSafely(order.id);
 
   return NextResponse.json(
     {

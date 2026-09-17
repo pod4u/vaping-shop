@@ -2,7 +2,6 @@ import "server-only";
 
 import { getServerSupabase } from "@/lib/supabase";
 import type { DraftOrderInput } from "@/lib/order-validation";
-import { notifyOrderCreatedSafely } from "@/lib/telegram-notifications";
 
 const ORDER_FIELDS = [
   "id",
@@ -58,7 +57,6 @@ export async function createDraftOrder(
     orderNumber: String(data.order_number),
     idempotentReplay: data.idempotent_replay === true,
   };
-  await notifyOrderCreatedSafely(result.orderId);
   return result;
 }
 

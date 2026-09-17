@@ -102,8 +102,8 @@ export async function sendTelegramTestMessage(): Promise<void> {
   if (!settings?.enabled) throw new Error("ยังไม่ได้เลือกห้อง Telegram สำหรับรับแจ้งเตือน");
   await sendTelegramMessage({
     chatId: settings.chat_id,
-    text: "✅ <b>เชื่อมต่อ Pod4U สำเร็จ</b>\n\nห้องนี้พร้อมรับการแจ้งเตือนออเดอร์ใหม่แล้วค่ะ",
-    button: { label: "เปิดระบบแอดมิน", url: `${APP_URL}/admin/orders` },
+    text: "✅ <b>เชื่อมต่อ Pod4U สำเร็จ</b>\n\nห้องนี้พร้อมรับแจ้งเตือนทันทีเมื่อลูกค้าชำระเงินและออเดอร์พร้อมแพ็กค่ะ",
+    button: { label: "เปิดระบบคลัง", url: `${APP_URL}/warehouse` },
   });
 }
 
@@ -131,11 +131,13 @@ export async function deleteTestOrderTelegramMessage(orderId: string): Promise<b
   return true;
 }
 
-async function claimOrderCreatedEvent(orderId: string) {
+type TelegramOrderEvent = "order_created" | "payment_received" | "warehouse_problem";
+
+async function claimTelegramEvent(orderId: string, eventType: TelegramOrderEvent) {
   const client = getUncachedServerSupabase();
   const { error: insertError } = await client
     .from("telegram_notification_events")
-    .upsert({ order_id: orderId, event_type: "order_created", status: "pending" }, {
+    .upsert({ order_id: orderId, event_type: eventType, status: "pending" }, {
       onConflict: "order_id,event_type",
       ignoreDuplicates: true,
     });
@@ -145,7 +147,7 @@ async function claimOrderCreatedEvent(orderId: string) {
     .from("telegram_notification_events")
     .select("id,status,attempt_count,next_attempt_at")
     .eq("order_id", orderId)
-    .eq("event_type", "order_created")
+    .eq("event_type", eventType)
     .single();
   if (readError) throw readError;
   if (existing.status === "sent" || existing.status === "sending") return null;
@@ -162,12 +164,12 @@ async function claimOrderCreatedEvent(orderId: string) {
   return claimed?.id ? String(claimed.id) : null;
 }
 
-async function buildOrderMessage(orderId: string) {
+async function buildPaymentReceivedMessage(orderId: string) {
   const client = getUncachedServerSupabase();
-  const [orderResult, itemsResult] = await Promise.all([
+  const [orderResult, itemsResult, paymentResult] = await Promise.all([
     client
       .from("orders")
-      .select("id,order_number,order_source,status,subtotal,shipping_fee,discount_amount,total,shipping_name,shipping_phone,admin_note,created_at")
+      .select("id,order_number,order_source,status,subtotal,shipping_fee,discount_amount,total,shipping_name,shipping_phone")
       .eq("id", orderId)
       .single(),
     client
@@ -175,25 +177,34 @@ async function buildOrderMessage(orderId: string) {
       .select("brand_name,product_name,flavor_name,quantity")
       .eq("order_id", orderId)
       .order("created_at", { ascending: true }),
+    client
+      .from("order_payment_requests")
+      .select("verified_at")
+      .eq("order_id", orderId)
+      .eq("status", "verified")
+      .maybeSingle(),
   ]);
   if (orderResult.error) throw orderResult.error;
   if (itemsResult.error) throw itemsResult.error;
+  if (paymentResult.error) throw paymentResult.error;
   const order = orderResult.data;
+  if (!["confirmed", "shipped", "delivered"].includes(order.status)) {
+    throw new Error("Telegram payment alert requires a confirmed order");
+  }
   const items = itemsResult.data ?? [];
   const quantity = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-  const adminNote = String(order.admin_note ?? "");
-  const isTestOrder = adminNote.includes("ทดสอบ") || /(?:^|\s)\[?test\]?(?:\s|$)/i.test(adminNote);
   const itemLines = items.slice(0, 8).map((item, index) =>
     `${index + 1}. ${escapeHtml(item.brand_name)} · ${escapeHtml(item.product_name)} · ${escapeHtml(item.flavor_name)} × ${Number(item.quantity)}`,
   );
   if (items.length > 8) itemLines.push(`…และอีก ${items.length - 8} รายการ`);
-  const createdAt = new Date(order.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium", timeStyle: "short" });
+  const paidAt = new Date(paymentResult.data?.verified_at ?? Date.now()).toLocaleString("th-TH", {
+    timeZone: "Asia/Bangkok",
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
   return {
     text: [
-      isTestOrder
-        ? "🧪 <b>ออเดอร์ทดสอบ — ห้ามแพ็กหรือจัดส่ง</b>"
-        : "🛒 <b>ออเดอร์ใหม่</b>",
-      isTestOrder ? "⚠️ รายการนี้สร้างเพื่อตรวจระบบเท่านั้น ไม่ใช่คำสั่งซื้อของลูกค้า" : null,
+      "✅ <b>ชำระเงินแล้ว · พร้อมแพ็ก</b>",
       "",
       `<b>เลขที่:</b> ${escapeHtml(order.order_number)}`,
       `<b>ลูกค้า:</b> ${escapeHtml(order.shipping_name)} (${escapeHtml(maskPhone(order.shipping_phone))})`,
@@ -206,25 +217,25 @@ async function buildOrderMessage(orderId: string) {
       `<b>ค่าส่ง:</b> ฿${currency(order.shipping_fee)}`,
       Number(order.discount_amount || 0) > 0 ? `<b>ส่วนลด:</b> ฿${currency(order.discount_amount)}` : null,
       `<b>ยอดชำระ:</b> ฿${currency(order.total)}`,
-      `<b>สถานะ:</b> รอตรวจสอบออเดอร์`,
-      `<b>เวลา:</b> ${escapeHtml(createdAt)}`,
+      `<b>สถานะ:</b> รอคลังรับงาน`,
+      `<b>ชำระเมื่อ:</b> ${escapeHtml(paidAt)}`,
     ].filter(Boolean).join("\n"),
-    url: `${APP_URL}/admin/orders/${encodeURIComponent(order.id)}`,
+    url: `${APP_URL}/warehouse/orders/${encodeURIComponent(order.id)}`,
   };
 }
 
-export async function notifyOrderCreated(orderId: string): Promise<"sent" | "skipped" | "not_configured"> {
+export async function notifyPaymentReceived(orderId: string): Promise<"sent" | "skipped" | "not_configured"> {
   const settings = await getTelegramSettings();
   if (!isTelegramTokenConfigured() || !settings?.enabled) return "not_configured";
-  const eventId = await claimOrderCreatedEvent(orderId);
+  const eventId = await claimTelegramEvent(orderId, "payment_received");
   if (!eventId) return "skipped";
   const client = getUncachedServerSupabase();
   try {
-    const message = await buildOrderMessage(orderId);
+    const message = await buildPaymentReceivedMessage(orderId);
     const result = await sendTelegramMessage({
       chatId: settings.chat_id,
       text: message.text,
-      button: { label: "เปิดออเดอร์ในแอดมิน", url: message.url },
+      button: { label: "เปิดงานในระบบคลัง", url: message.url },
     });
     await client.from("telegram_notification_events").update({
       status: "sent",
@@ -243,10 +254,10 @@ export async function notifyOrderCreated(orderId: string): Promise<"sent" | "ski
   }
 }
 
-export async function notifyOrderCreatedSafely(orderId: string): Promise<void> {
+export async function notifyPaymentReceivedSafely(orderId: string): Promise<void> {
   try {
-    await notifyOrderCreated(orderId);
+    await notifyPaymentReceived(orderId);
   } catch (error) {
-    console.error("Telegram order alert failed", { message: safeDeliveryError(error) });
+    console.error("Telegram payment alert failed", { message: safeDeliveryError(error) });
   }
 }

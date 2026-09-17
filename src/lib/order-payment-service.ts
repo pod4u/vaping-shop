@@ -2,6 +2,7 @@ import "server-only";
 
 import { getServerSupabase } from "@/lib/supabase";
 import { getLineMessageContent, pushMessage } from "@/lib/line-client";
+import { notifyPaymentReceivedSafely } from "@/lib/telegram-notifications";
 
 const THUNDER_VERIFY_URL = "https://api.thunder.in.th/v2/verify/bank";
 
@@ -253,6 +254,7 @@ export async function processLinePaymentSlip(input: {
   const identityId = await resolveLineIdentityId(input.providerAccountId, input.providerUserId);
   const replay = await findVerifiedReplay(identityId, input.messageId);
   if (replay) {
+    await notifyPaymentReceivedSafely(replay.order_id);
     const { data: order, error } = await getServerSupabase()
       .from("orders")
       .select("order_number")
@@ -307,6 +309,7 @@ export async function processLinePaymentSlip(input: {
     throw error;
   }
   const result = data && typeof data === "object" ? data as Record<string, unknown> : {};
+  await notifyPaymentReceivedSafely(payment.order_id);
   const { data: order, error: orderError } = await getServerSupabase()
     .from("orders")
     .select("order_number")

@@ -212,7 +212,7 @@ export default function AdminSettingsPage() {
           <BellRing className="mt-0.5 h-5 w-5 text-sky-300" />
           <div>
             <CardTitle className="text-white">แจ้งเตือนออเดอร์ทาง Telegram</CardTitle>
-            <CardDescription className="mt-1 text-white/50">รับออเดอร์ใหม่ทันที พร้อมปุ่มเปิดออเดอร์ในแอดมิน</CardDescription>
+            <CardDescription className="mt-1 text-white/50">แจ้งทันทีเมื่อตรวจสลิปผ่านและออเดอร์พร้อมแพ็ก พร้อมปุ่มเปิดงานในระบบคลัง</CardDescription>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
