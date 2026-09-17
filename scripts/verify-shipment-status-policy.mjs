@@ -14,6 +14,7 @@ const payment = read("src/lib/order-payment-service.ts");
 const lineRegistration = read("src/lib/line-registration-service.ts");
 const migration = read("supabase/migrations/20260916103747_remove_tracking_requirement.sql");
 const cleanupMigration = read("supabase/migrations/20260916104509_drop_legacy_tracking_shipment_functions.sql");
+const orderService = read("src/lib/order-service.ts");
 
 for (const [name, source] of [
   ["member UI", member],
@@ -44,5 +45,7 @@ assert.match(migration, /create function public\.mark_order_shipped\([\s\S]*p_sh
 assert.match(migration, /create function public\.mark_warehouse_order_shipped\([\s\S]*p_actor text/, "migration must add a status-only warehouse transition");
 assert.match(cleanupMigration, /drop function if exists public\.mark_order_shipped\(uuid, text, text, text\)/, "legacy order shipment transition must be removed");
 assert.match(cleanupMigration, /drop function if exists public\.mark_warehouse_order_shipped\(uuid, text, text, text\)/, "legacy warehouse shipment transition must be removed");
+assert.match(orderService, /export async function getOrderDetail[\s\S]*getUncachedServerSupabase\(\)/, "admin order detail must always read the latest order status");
+assert.match(orderService, /export async function listOrders[\s\S]*getUncachedServerSupabase\(\)/, "admin order list must always read the latest order status");
 
-console.log("Shipment status policy verification passed (25 checks)");
+console.log("Shipment status policy verification passed (27 checks)");

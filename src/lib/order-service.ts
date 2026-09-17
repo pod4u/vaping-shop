@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getServerSupabase } from "@/lib/supabase";
+import { getServerSupabase, getUncachedServerSupabase } from "@/lib/supabase";
 import type { DraftOrderInput } from "@/lib/order-validation";
 
 const ORDER_FIELDS = [
@@ -149,7 +149,7 @@ export async function listOrders(options: {
 }) {
   const from = (options.page - 1) * options.pageSize;
   const to = from + options.pageSize - 1;
-  let request = getServerSupabase()
+  let request = getUncachedServerSupabase()
     .from("orders")
     .select(`${ORDER_FIELDS},customer:customers(id,full_name,phone)`, { count: "exact" });
 
@@ -163,7 +163,7 @@ export async function listOrders(options: {
   const orderIds = orders.map((order) => order.id);
   if (orderIds.length === 0) return { orders, total: count ?? 0 };
 
-  const { data: payments, error: paymentError } = await getServerSupabase()
+  const { data: payments, error: paymentError } = await getUncachedServerSupabase()
     .from("order_payment_requests")
     .select("order_id,status,expires_at")
     .in("order_id", orderIds);
@@ -183,7 +183,7 @@ export async function listOrders(options: {
 }
 
 export async function getOrderDetail(orderId: string) {
-  const client = getServerSupabase();
+  const client = getUncachedServerSupabase();
   const [orderResult, itemsResult, reservationsResult, paymentResult] = await Promise.all([
     client
       .from("orders")
