@@ -19,6 +19,7 @@ assert.doesNotMatch(client, /NEXT_PUBLIC_TELEGRAM/, "bot token must not be publi
 assert.match(client, /AbortSignal\.timeout/, "Telegram requests must have a timeout");
 assert.match(route, /requireAdminApiPermission\(request, "settings\.manage"\)/, "connect and test require settings permission");
 assert.match(route, /requireSameOrigin/, "Telegram mutations must reject cross-origin requests");
+assert.match(route, /body\.action === "notify-payment"/, "admins need a protected paid-alert recovery action");
 assert.match(notifications, /maskPhone/, "alerts must mask customer phone numbers");
 assert.match(notifications, /claimTelegramEvent\(orderId, "payment_received"\)/, "paid alerts must use the payment_received idempotency key");
 assert.match(notifications, /ชำระเงินแล้ว · พร้อมแพ็ก/, "paid alerts need an actionable Thai heading");
@@ -29,4 +30,4 @@ assert.doesNotMatch(orders, /notifyOrderCreatedSafely/, "draft order creation mu
 assert.match(linePayment, /notifyPaymentReceivedSafely\(payment\.order_id\)/, "LINE slip verification must alert Telegram after confirmation");
 assert.match(memberSlip, /notifyPaymentReceivedSafely\(order\.id\)/, "member slip verification must alert Telegram after confirmation");
 
-console.log("Telegram paid-order notification verification passed (19 checks)");
+console.log("Telegram paid-order notification verification passed (20 checks)");
