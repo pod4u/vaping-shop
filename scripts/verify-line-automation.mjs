@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   buildAutomationMenuMessage,
   buildGreetingMessage,
+  extractOrderConfirmationNumber,
   isCashOnDeliveryQuestion,
   isCancellationQuestion,
   isDispatchScheduleQuestion,
@@ -83,5 +84,8 @@ assert.equal(shouldHandOffImageWithoutReply('LINE_IDENTITY_NOT_FOUND'), true);
 assert.equal(shouldHandOffImageWithoutReply('NO_ACTIVE_PAYMENT'), true);
 assert.equal(shouldHandOffImageWithoutReply('AMOUNT_MISMATCH'), false);
 assert.equal(shouldHandOffImageWithoutReply('SLIP_NOT_FOUND'), false);
+assert.equal(extractOrderConfirmationNumber('ยืนยันออเดอร์ P4U-20260917-F5803E5050A3'), 'P4U-20260917-F5803E5050A3');
+assert.equal(extractOrderConfirmationNumber('ยืนยันข้อมูลออเดอร์ p4u-20260917-f5803e5050a3'), 'P4U-20260917-F5803E5050A3');
+assert.equal(extractOrderConfirmationNumber('ยืนยันออเดอร์'), null);
 
 console.log(`✓ LINE automation intent checks passed (${cases.length} cases).`);

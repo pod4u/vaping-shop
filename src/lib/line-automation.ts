@@ -10,6 +10,11 @@ export function includesAny(value: string, keywords: readonly string[]) {
 
 export { MEMBER_LIFF_URL };
 
+export function extractOrderConfirmationNumber(value: string): string | null {
+  const match = value.trim().match(/^ยืนยัน(?:ข้อมูล|รายการ)?(?:ออเดอร์|ออร์เดอร์)\s+(P4U-[0-9]{8}-[A-F0-9]{12})$/i);
+  return match ? match[1].toUpperCase() : null;
+}
+
 export function isShippingQuestion(value: string) {
   return includesAny(value, ['ค่าส่ง', 'ค่าจัดส่ง', 'ส่งฟรี', 'ส่งกี่บาท']);
 }

@@ -14,10 +14,11 @@ import { OrderPaymentError, processLinePaymentSlip } from '@/lib/order-payment-s
 import { verifyLineIdentityLinkCode } from '@/lib/customer-identity-service';
 import { extractLineLinkCode, parseLineProviderUserId } from '@/lib/customer-validation';
 import { LineOrderParseError, parseLineOrderSummary } from '@/lib/line-order-parser';
-import { confirmLineDraftOrder, createLineDraftOrder, LineOrderIntakeError } from '@/lib/line-order-intake';
+import { confirmLineDraftOrder, confirmLineDraftOrderByNumber, createLineDraftOrder, LineOrderIntakeError } from '@/lib/line-order-intake';
 import {
   buildAutomationMenuMessage,
   buildGreetingMessage,
+  extractOrderConfirmationNumber,
   includesAny,
   isCashOnDeliveryQuestion,
   isCancellationQuestion,
@@ -178,6 +179,12 @@ async function handleMessage(
 
   if (normalizedMessage === 'เช็กสถานะออเดอร์' || normalizedMessage === 'สถานะออเดอร์') {
     await replyWithOrderStatus(event, destination);
+    return;
+  }
+
+  const confirmationOrderNumber = extractOrderConfirmationNumber(message);
+  if (confirmationOrderNumber) {
+    await confirmLineOrderAndReply(event, destination, { orderNumber: confirmationOrderNumber });
     return;
   }
 
@@ -388,6 +395,48 @@ async function handleMessage(
 }
 
 // Handle postback (เมื่อกดปุ่ม)
+async function confirmLineOrderAndReply(
+  event: any,
+  destination: string,
+  lookup: { orderId?: string; orderNumber?: string },
+) {
+  const replyToken = event.replyToken;
+  if (event.source?.type !== 'user') {
+    await replyMessage(replyToken, 'กรุณายืนยันออเดอร์ในแชทส่วนตัวกับ LINE OA เท่านั้นนะคะ');
+    return;
+  }
+
+  try {
+    const account = {
+      providerAccountId: parseLineProviderUserId(destination),
+      providerUserId: parseLineProviderUserId(event.source?.userId),
+    };
+    const result = lookup.orderId
+      ? await confirmLineDraftOrder({ ...account, orderId: lookup.orderId })
+      : await confirmLineDraftOrderByNumber({ ...account, orderNumber: lookup.orderNumber ?? '' });
+    await replyMessage(
+      replyToken,
+      result.payment.notificationSent
+        ? `✅ เช็กและจองสต๊อกออเดอร์ ${result.orderNumber} เรียบร้อยแล้ว\nระบบส่งยอดและข้อมูลชำระเงินให้ในแชทนี้แล้ว กรุณาโอนและส่งรูปสลิปนะคะ`
+        : `เช็กและจองสต๊อกออเดอร์ ${result.orderNumber} แล้ว แต่ส่งข้อมูลชำระเงินไม่สำเร็จ กรุณาติดต่อเจ้าหน้าที่นะคะ`,
+    );
+  } catch (error) {
+    const value = error && typeof error === 'object' ? error as { code?: unknown; message?: unknown } : {};
+    const code = typeof value.code === 'string' ? value.code : '';
+    const message = typeof value.message === 'string' ? value.message : '';
+    if (error instanceof LineOrderIntakeError) {
+      await replyMessage(replyToken, lineOrderIntakeErrorMessage(error.reason));
+    } else if (code === 'P0001' || message.includes('insufficient stock')) {
+      await replyMessage(replyToken, 'ขออภัย มีสินค้าบางรายการไม่เพียงพอ กรุณากลับไปแก้ไขหรือยกเลิกออเดอร์ในระบบสมาชิกนะคะ');
+    } else if (code === '55000') {
+      await replyMessage(replyToken, 'ออเดอร์นี้ถูกยืนยันแล้ว หมดเวลาจอง หรือไม่พร้อมรับชำระเงิน กรุณาเช็กสถานะในระบบสมาชิกนะคะ');
+    } else {
+      console.error('Customer stock confirmation failed', { code });
+      await replyMessage(replyToken, 'ระบบเช็กสต๊อกขัดข้องชั่วคราว กรุณาลองกดอีกครั้งหรือติดต่อเจ้าหน้าที่นะคะ');
+    }
+  }
+}
+
 async function handlePostback(
   event: any,
   destination: string,
@@ -428,39 +477,8 @@ async function handlePostback(
   }
 
   if (data.startsWith('action=confirm_stock&')) {
-    if (event.source?.type !== 'user') {
-      await replyMessage(replyToken, 'กรุณายืนยันออเดอร์ในแชทส่วนตัวกับ LINE OA เท่านั้นนะคะ');
-      return;
-    }
-
     const orderId = new URLSearchParams(data).get('orderId') ?? '';
-    try {
-      const result = await confirmLineDraftOrder({
-        providerAccountId: parseLineProviderUserId(destination),
-        providerUserId: parseLineProviderUserId(userId),
-        orderId,
-      });
-      await replyMessage(
-        replyToken,
-        result.payment.notificationSent
-          ? `✅ เช็กและจองสต๊อกออเดอร์ ${result.orderNumber} เรียบร้อยแล้ว\nระบบส่งยอดและข้อมูลชำระเงินให้ในแชทนี้แล้ว กรุณาโอนและส่งรูปสลิปนะคะ`
-          : `เช็กและจองสต๊อกออเดอร์ ${result.orderNumber} แล้ว แต่ส่งข้อมูลชำระเงินไม่สำเร็จ กรุณาติดต่อเจ้าหน้าที่นะคะ`,
-      );
-    } catch (error) {
-      const value = error && typeof error === 'object' ? error as { code?: unknown; message?: unknown } : {};
-      const code = typeof value.code === 'string' ? value.code : '';
-      const message = typeof value.message === 'string' ? value.message : '';
-      if (error instanceof LineOrderIntakeError) {
-        await replyMessage(replyToken, lineOrderIntakeErrorMessage(error.reason));
-      } else if (code === 'P0001' || message.includes('insufficient stock')) {
-        await replyMessage(replyToken, 'ขออภัย มีสินค้าบางรายการไม่เพียงพอ กรุณากลับไปแก้ไขหรือยกเลิกออเดอร์ในระบบสมาชิกนะคะ');
-      } else if (code === '55000') {
-        await replyMessage(replyToken, 'ออเดอร์นี้ถูกยืนยันแล้ว หมดเวลาจอง หรือไม่พร้อมรับชำระเงิน กรุณาเช็กสถานะในระบบสมาชิกนะคะ');
-      } else {
-        console.error('Customer stock confirmation failed', { code });
-        await replyMessage(replyToken, 'ระบบเช็กสต๊อกขัดข้องชั่วคราว กรุณาลองกดอีกครั้งหรือติดต่อเจ้าหน้าที่นะคะ');
-      }
-    }
+    await confirmLineOrderAndReply(event, destination, { orderId });
     return;
   }
 
@@ -518,10 +536,9 @@ async function replyWithDraftOrder(
         {
           type: 'action',
           action: {
-            type: 'postback',
+            type: 'message',
             label: 'ข้อมูลถูกต้อง ยืนยัน',
-            data: `action=confirm_stock&orderId=${orderId}`,
-            displayText: `ยืนยันข้อมูลออเดอร์ ${orderNumber}`,
+            text: `ยืนยันออเดอร์ ${orderNumber}`,
           },
         },
         {

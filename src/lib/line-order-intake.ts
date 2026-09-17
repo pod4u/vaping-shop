@@ -210,3 +210,44 @@ export async function confirmLineDraftOrder(input: {
   const payment = await requestLineOrderPayment(input.orderId, actor);
   return { orderNumber: order.order_number, reservation, payment };
 }
+
+export async function confirmLineDraftOrderByNumber(input: {
+  providerAccountId: string;
+  providerUserId: string;
+  orderNumber: string;
+}) {
+  if (!/^P4U-[0-9]{8}-[A-F0-9]{12}$/i.test(input.orderNumber)) {
+    throw new LineOrderIntakeError("event", "เลขที่ออเดอร์ไม่ถูกต้อง");
+  }
+
+  const client = getServerSupabase();
+  const { data: identity, error: identityError } = await client
+    .from("customer_identities")
+    .select("id")
+    .eq("provider", "line")
+    .eq("provider_account_id", input.providerAccountId)
+    .eq("provider_user_id", input.providerUserId)
+    .eq("status", "verified")
+    .maybeSingle();
+  if (identityError) throw identityError;
+  if (!identity) {
+    throw new LineOrderIntakeError("identity", "ยังไม่ได้เชื่อมบัญชีสมาชิก");
+  }
+
+  const { data: order, error: orderError } = await client
+    .from("orders")
+    .select("id,order_number,status")
+    .eq("order_number", input.orderNumber.toUpperCase())
+    .eq("source_customer_identity_id", identity.id)
+    .eq("order_source", "line")
+    .maybeSingle();
+  if (orderError) throw orderError;
+  if (!order) {
+    throw new LineOrderIntakeError("event", "ไม่พบออเดอร์ของสมาชิกนี้");
+  }
+
+  const actor = `line-customer:${identity.id}`;
+  const reservation = await reserveDraftOrder(String(order.id), actor);
+  const payment = await requestLineOrderPayment(String(order.id), actor);
+  return { orderNumber: String(order.order_number), reservation, payment };
+}
