@@ -21,8 +21,11 @@ assert.match(route, /requireAdminApiPermission\(request, "settings\.manage"\)/, 
 assert.match(route, /requireSameOrigin/, "Telegram mutations must reject cross-origin requests");
 assert.match(route, /body\.action === "notify-payment"/, "admins need a protected paid-alert recovery action");
 assert.match(notifications, /claimTelegramEvent\(orderId, "payment_received"\)/, "paid alerts must use the payment_received idempotency key");
-assert.match(notifications, /✅ <b>รับออเดอร์แล้ว<\/b>/, "paid alerts need the approved Thai heading");
+assert.match(notifications, /✅ <b>ชำระเงินแล้ว · พร้อมแพ็กและจัดส่ง<\/b>/, "paid alerts need an unambiguous ready-to-pack heading");
 assert.match(notifications, /ตรวจสอบสลิปผ่าน Thunder แล้ว · ยอดชำระถูกต้อง/, "paid alerts must state that Thunder verified the payment");
+assert.match(notifications, /คลังสามารถเริ่มแพ็กสินค้าและจัดส่งได้ทันที/, "paid alerts must tell the warehouse to start immediately");
+assert.match(notifications, /ทดสอบระบบ — ไม่ใช่ออเดอร์ลูกค้า/, "test alerts must be unmistakably marked as test data");
+assert.match(notifications, /โทร: 000-000-0000/, "test alerts must use fake contact data");
 assert.match(notifications, /รายการสินค้า/, "paid alerts must list ordered products");
 assert.match(notifications, /ชิ้น × ฿/, "paid alerts must show quantity and unit price");
 assert.match(notifications, /ยอดรวม ฿/, "paid alerts must show the order total");
@@ -30,9 +33,9 @@ assert.match(notifications, /ข้อมูลจัดส่ง/, "paid alerts
 assert.match(notifications, /โทร: \$\{escapeHtml\(order\.shipping_phone\)\}/, "paid alerts must provide the warehouse phone number");
 assert.match(notifications, /ที่อยู่: \$\{address\}/, "paid alerts must provide the complete warehouse address");
 assert.match(notifications, /เปิดงานในระบบคลัง/, "paid alerts must link to the warehouse job");
-assert.match(notifications, /พร้อมรับแจ้งเตือนทันทีเมื่อลูกค้าชำระเงิน/, "test message must explain the paid-order trigger");
+assert.match(notifications, /เลขที่ TEST-P4U-0001/, "test alert must use an unmistakable fake order number");
 assert.doesNotMatch(orders, /notifyOrderCreatedSafely/, "draft order creation must not alert Telegram");
 assert.match(linePayment, /notifyPaymentReceivedSafely\(payment\.order_id\)/, "LINE slip verification must alert Telegram after confirmation");
 assert.match(memberSlip, /notifyPaymentReceivedSafely\(order\.id\)/, "member slip verification must alert Telegram after confirmation");
 
-console.log("Telegram paid-order notification verification passed (24 checks)");
+console.log("Telegram paid-order notification verification passed (27 checks)");
