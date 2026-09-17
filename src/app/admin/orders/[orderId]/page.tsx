@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, CheckCircle, Loader2, PackageCheck, Truck, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2, Truck, XCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AdminPermission } from "@/lib/admin-permissions";
 
@@ -56,7 +56,7 @@ interface PaymentRequest {
 const STATUS_LABELS: Record<string, string> = {
   draft: "รอยืนยันสต๊อก",
   pending: "จองแล้ว / รอตรวจการชำระเงิน",
-  confirmed: "ยืนยันแล้ว",
+  confirmed: "ชำระแล้ว · ส่งเข้าคลังแล้ว",
   shipped: "จัดส่งแล้ว",
   delivered: "สำเร็จ",
   cancelled: "ยกเลิก",
@@ -159,9 +159,8 @@ export default function AdminOrderDetailPage() {
     }
   }
 
-  async function updateStatus(action: "cancel" | "ship" | "deliver") {
-    if (action === "cancel" && !window.confirm("ยืนยันยกเลิกออเดอร์นี้? หากตัดสต็อกแล้วระบบจะคืนให้อัตโนมัติ")) return;
-    if (action === "ship" && !window.confirm("ยืนยันว่ามอบสินค้าให้ผู้จัดส่งแล้วใช่ไหมคะ\n\nหน้าสมาชิกของลูกค้าจะเปลี่ยนเป็นสถานะ “จัดส่งแล้ว” โดยระบบจะไม่ส่งข้อความ LINE เพิ่ม")) return;
+  async function cancelCurrentOrder() {
+    if (!window.confirm("ยืนยันยกเลิกออเดอร์นี้? หากตัดสต็อกแล้วระบบจะคืนให้อัตโนมัติ")) return;
     setIsUpdatingStatus(true);
     setError("");
     setSuccess("");
@@ -169,7 +168,7 @@ export default function AdminOrderDetailPage() {
       const response = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify({ action: "cancel" }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "เปลี่ยนสถานะไม่สำเร็จ");
@@ -266,7 +265,7 @@ export default function AdminOrderDetailPage() {
             {(["draft", "pending", "confirmed"].includes(order.status)) && can("orders.cancel") && (
               <button
                 type="button"
-                onClick={() => updateStatus("cancel")}
+                onClick={cancelCurrentOrder}
                 disabled={isUpdatingStatus}
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-red-400/40 px-5 py-3 font-bold text-red-300 hover:bg-red-400/10 disabled:opacity-50"
               >
@@ -277,19 +276,18 @@ export default function AdminOrderDetailPage() {
             </div>
           </div>
 
-          {order.status === "confirmed" && can("orders.ship") && (
+          {order.status === "confirmed" && (
             <Card className="overflow-hidden border-acid-lime/25 bg-gradient-to-br from-acid-lime/10 to-sky-300/[0.06]">
               <CardContent className="py-5 sm:py-6">
                 <div className="flex items-start gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-acid-lime text-navy-deep"><Truck className="h-6 w-6" /></span>
-                  <div><p className="text-xs font-black text-acid-lime">ขั้นตอนถัดไป</p><h2 className="mt-1 text-xl font-black text-white">ยืนยันการจัดส่ง</h2><p className="mt-1 text-sm text-white/55">ใช้เมื่อมอบสินค้าให้ผู้จัดส่งแล้ว หน้า Member จะเปลี่ยนเป็น “จัดส่งแล้ว” โดยระบบจะไม่ส่งข้อความ LINE เพิ่ม</p></div>
+                  <div><p className="text-xs font-black text-acid-lime">ดำเนินการอัตโนมัติแล้ว</p><h2 className="mt-1 text-xl font-black text-white">ส่งงานเข้าคลังแล้ว</h2><p className="mt-1 text-sm text-white/55">ชำระเงินเรียบร้อยและระบบส่งออเดอร์เข้าคิวคลังสินค้าอัตโนมัติ แอดมินไม่ต้องกดยืนยันซ้ำค่ะ</p></div>
                 </div>
                 <div className="mt-5 flex flex-col gap-3 rounded-xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-sm text-white/65">หลังยืนยัน ลูกค้าจะตรวจสอบสถานะ “จัดส่งแล้ว” ได้จากระบบสมาชิกค่ะ</div>
-                  <button type="button" onClick={() => updateStatus("ship")} disabled={isUpdatingStatus} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-acid-lime px-5 font-black text-navy-deep disabled:cursor-not-allowed disabled:opacity-40">
-                    {isUpdatingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : <Truck className="h-4 w-4" />}
-                    {isUpdatingStatus ? "กำลังยืนยัน..." : "ยืนยันว่าจัดส่งแล้ว"}
-                  </button>
+                  <div className="text-sm text-white/65"><span className="font-black text-white">รอคลังรับงาน แพ็ก และมอบให้ผู้จัดส่ง</span><br />เมื่อคลังยืนยันการจัดส่ง หน้า Member จะเปลี่ยนเป็น “จัดส่งแล้ว” อัตโนมัติค่ะ</div>
+                  <Link href={`/warehouse/orders/${orderId}`} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-acid-lime/45 px-5 font-black text-acid-lime hover:bg-acid-lime/10">
+                    <Truck className="h-4 w-4" />ดูงานในระบบคลัง
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -303,17 +301,7 @@ export default function AdminOrderDetailPage() {
                   <p className="mt-1 text-white/70">ลูกค้าจะได้รับสินค้าภายในไม่เกิน 2 วันหลังจัดส่งค่ะ</p>
                   {order.shipped_at && <p className="mt-1 text-white/50">ส่งเมื่อ {new Date(order.shipped_at).toLocaleString("th-TH")}</p>}
                 </div>
-                {can("orders.ship") && (
-                  <button
-                    type="button"
-                    onClick={() => updateStatus("deliver")}
-                    disabled={isUpdatingStatus}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-400 px-5 py-2.5 font-bold text-navy-deep disabled:opacity-50"
-                  >
-                    {isUpdatingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : <PackageCheck className="h-4 w-4" />}
-                    ยืนยันส่งถึงลูกค้า
-                  </button>
-                )}
+                <span className="rounded-full border border-emerald-300/25 bg-emerald-300/10 px-3 py-1.5 text-xs font-black text-emerald-100">อัปเดตโดยระบบคลัง</span>
               </CardContent>
             </Card>
           )}
@@ -333,7 +321,7 @@ export default function AdminOrderDetailPage() {
           ) : order.status === "confirmed" ? (
             <Card className="border-emerald-300/20 bg-emerald-300/10">
               <CardContent className="py-4 text-sm text-emerald-100">
-                ยืนยันออเดอร์แล้ว สต็อกจริงถูกตัดและมีรายการใน stock ledger เรียบร้อย
+                ชำระเงินเรียบร้อย สต็อกถูกตัด และส่งงานเข้าคลังอัตโนมัติแล้ว แอดมินไม่ต้องดำเนินการเพิ่มเติมค่ะ
               </CardContent>
             </Card>
           ) : null}

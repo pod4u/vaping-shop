@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE_NAME, getAdminSession } from "@/lib/admin-auth";
 import { requireAdminApiPermission } from "@/lib/admin-api";
-import { cancelOrder, markOrderDelivered, markOrderShipped } from "@/lib/order-service";
+import { cancelOrder } from "@/lib/order-service";
 import { OrderInputError, parseOrderId } from "@/lib/order-validation";
 
 export const dynamic = "force-dynamic";
-
-type OrderAction = "cancel" | "ship" | "deliver";
 
 export async function PATCH(
   request: NextRequest,
@@ -14,13 +12,11 @@ export async function PATCH(
 ) {
   try {
     const body = await request.json() as Record<string, unknown>;
-    const action = body.action as OrderAction;
-    if (!(["cancel", "ship", "deliver"] as string[]).includes(action)) {
-      throw new OrderInputError("คำสั่งเปลี่ยนสถานะไม่ถูกต้อง");
+    if (body.action !== "cancel") {
+      throw new OrderInputError("การจัดส่งต้องดำเนินการจากระบบคลังเท่านั้น");
     }
 
-    const permission = action === "cancel" ? "orders.cancel" : "orders.ship";
-    const unauthorized = await requireAdminApiPermission(request, permission);
+    const unauthorized = await requireAdminApiPermission(request, "orders.cancel");
     if (unauthorized) return unauthorized;
 
     const session = await getAdminSession(request.cookies.get(ADMIN_COOKIE_NAME)?.value);
@@ -30,24 +26,12 @@ export async function PATCH(
 
     const orderId = parseOrderId(params.orderId);
     const actor = `${session.accountId}:${session.role}`;
-    const result = action === "cancel"
-      ? await cancelOrder(orderId, actor)
-      : action === "ship"
-        ? await markOrderShipped(orderId, actor)
-        : await markOrderDelivered(orderId, actor);
-
-    const messages: Record<OrderAction, string> = {
-      cancel: result.stockRestored ? "ยกเลิกออเดอร์และคืนสต็อกสำเร็จ" : "ยกเลิกออเดอร์สำเร็จ",
-      ship: result.idempotentReplay
-        ? "ออเดอร์นี้บันทึกการจัดส่งไว้แล้ว"
-        : "บันทึกการจัดส่งสำเร็จ ลูกค้าตรวจสอบสถานะได้ในระบบสมาชิก",
-      deliver: "บันทึกว่าส่งถึงลูกค้าสำเร็จ",
-    };
+    const result = await cancelOrder(orderId, actor);
     return NextResponse.json(
       {
         success: true,
         ...result,
-        message: messages[action],
+        message: result.stockRestored ? "ยกเลิกออเดอร์และคืนสต็อกสำเร็จ" : "ยกเลิกออเดอร์สำเร็จ",
       },
       { headers: { "Cache-Control": "no-store" } },
     );
