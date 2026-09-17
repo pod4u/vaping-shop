@@ -29,6 +29,11 @@ export function isPaymentQuestion(value: string) {
 export function isCashOnDeliveryQuestion(value: string) {
   return includesAny(value, [
     'เก็บปลายทาง',
+    'มีปลายทาง',
+    'ปลายทางไหม',
+    'ปลายทางมั้ย',
+    'ปลายทางได้ไหม',
+    'ปลายทางได้มั้ย',
     'ชำระปลายทาง',
     'จ่ายปลายทาง',
     'รับของค่อยจ่าย',
