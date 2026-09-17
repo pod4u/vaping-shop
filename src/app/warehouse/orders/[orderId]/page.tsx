@@ -54,13 +54,13 @@ export default function WarehouseOrderPage() {
   }
 
   async function ship() {
-    if (!window.confirm("ยืนยันว่ามอบสินค้าให้ผู้จัดส่งแล้วใช่ไหมคะ\n\nลูกค้าจะเห็นสถานะ “จัดส่งแล้ว” และได้รับแจ้งให้รอรับสินค้าภายในไม่เกิน 2 วัน")) return;
+    if (!window.confirm("ยืนยันว่ามอบสินค้าให้ผู้จัดส่งแล้วใช่ไหมคะ\n\nหน้าสมาชิกของลูกค้าจะเปลี่ยนเป็นสถานะ “จัดส่งแล้ว” โดยระบบจะไม่ส่งข้อความ LINE เพิ่ม")) return;
     setSaving(true); setError(""); setSuccess("");
     try {
       const response = await fetch(`/api/warehouse/orders/${orderId}/shipment`, { method: "PATCH" });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "ยืนยันการจัดส่งไม่สำเร็จ");
-      setSuccess(result.lineNotificationSent === false ? "ยืนยันการจัดส่งแล้ว แต่แจ้ง LINE ไม่สำเร็จ กรุณาแจ้งร้าน" : "ยืนยันจัดส่งและแจ้งลูกค้าแล้ว");
+      setSuccess(result.message || "ยืนยันการจัดส่งสำเร็จ ลูกค้าตรวจสอบสถานะได้ในระบบสมาชิกค่ะ");
       await load();
     } catch (reason) { setError(reason instanceof Error ? reason.message : "ยืนยันการจัดส่งไม่สำเร็จ"); }
     finally { setSaving(false); }
@@ -81,7 +81,7 @@ export default function WarehouseOrderPage() {
         <section className="rounded-3xl border border-[#d4ff14]/25 bg-[#d4ff14]/[0.06] p-5 sm:p-6">
           {job.status === "ready_to_pack" && <><h2 className="text-xl font-black">พร้อมเริ่มแพ็ก</h2><p className="mt-2 text-sm text-white/60">ตรวจรายการและที่อยู่ก่อนรับงานค่ะ</p><button disabled={saving} onClick={() => void action("start")} className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#d4ff14] px-5 py-4 font-black text-[#071126]"><Play className="h-5 w-5" />รับงานและเริ่มแพ็ก</button></>}
           {job.status === "packing" && <><h2 className="text-xl font-black">กำลังแพ็กสินค้า</h2><p className="mt-2 text-sm text-white/60">เช็กสินค้าและจำนวนให้ครบก่อนกดแพ็กเสร็จค่ะ</p><button disabled={saving} onClick={() => void action("pack")} className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#d4ff14] px-5 py-4 font-black text-[#071126]"><PackageCheck className="h-5 w-5" />แพ็กสินค้าเสร็จแล้ว</button></>}
-          {job.status === "packed" && <><h2 className="text-xl font-black">แพ็กเสร็จแล้ว</h2><p className="mt-2 text-sm text-white/60">กดปุ่มเมื่อมอบสินค้าให้ผู้จัดส่งแล้ว ระบบจะแจ้งลูกค้าเพียงครั้งเดียวค่ะ</p><button disabled={saving} onClick={() => void ship()} className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#d4ff14] px-5 py-4 font-black text-[#071126] disabled:opacity-40"><Truck className="h-5 w-5" />ยืนยันว่าจัดส่งแล้ว</button></>}
+          {job.status === "packed" && <><h2 className="text-xl font-black">แพ็กเสร็จแล้ว</h2><p className="mt-2 text-sm text-white/60">กดปุ่มเมื่อมอบสินค้าให้ผู้จัดส่งแล้ว ระบบจะอัปเดตสถานะในหน้าสมาชิกโดยไม่ส่งข้อความ LINE เพิ่มค่ะ</p><button disabled={saving} onClick={() => void ship()} className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#d4ff14] px-5 py-4 font-black text-[#071126] disabled:opacity-40"><Truck className="h-5 w-5" />ยืนยันว่าจัดส่งแล้ว</button></>}
           {job.status === "problem" && <><div className="flex gap-3"><AlertTriangle className="h-6 w-6 text-red-300" /><div><h2 className="text-xl font-black">งานนี้มีปัญหา</h2><p className="mt-2 text-sm text-red-100">{job.problem_note}</p></div></div><button disabled={saving} onClick={() => void action("resume")} className="mt-5 w-full rounded-2xl border border-[#d4ff14]/50 px-5 py-3.5 font-black text-[#d4ff14]">แก้ไขแล้ว · นำกลับเข้าคิว</button></>}
           {job.status === "shipped" && <div className="flex gap-3"><CheckCircle2 className="h-7 w-7 text-[#d4ff14]" /><div><h2 className="text-xl font-black">จัดส่งแล้ว</h2><p className="mt-2 text-white/65">ลูกค้าจะได้รับสินค้าภายในไม่เกิน 2 วันหลังจัดส่งค่ะ</p>{order.shipped_at && <p className="mt-1 text-xs text-white/45">ยืนยันเมื่อ {new Date(order.shipped_at).toLocaleString("th-TH")}</p>}</div></div>}
         </section>

@@ -103,7 +103,7 @@ async function handlePaymentSlip(event: any, destination: string) {
     });
     await replyMessage(
       replyToken,
-      `✅ ตรวจสอบการชำระเงินเรียบร้อย\n\nเลขที่ ${result.orderNumber}\nยอด ฿${result.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}\nระบบยืนยันออเดอร์ให้เรียบร้อยแล้วค่ะ\n\nเมื่อตะกร้าถูกจัดส่ง สถานะจะอัปเดตในระบบสมาชิก และกรุณารอรับสินค้าภายในไม่เกิน 2 วันหลังจัดส่งค่ะ\n${getActiveMemberLiffUrl()}`,
+      `✅ ตรวจสอบการชำระเงินเรียบร้อย\n\nเลขที่ ${result.orderNumber}\nยอด ฿${result.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}\nสถานะ: ชำระแล้ว · กำลังเตรียมจัดส่งค่ะ\n\nหลังจากนี้ระบบจะไม่ส่งข้อความสถานะซ้ำ ลูกค้าสามารถตรวจสอบความคืบหน้าได้ในระบบสมาชิกค่ะ\n${getActiveMemberLiffUrl()}`,
     );
   } catch (error) {
     if (error instanceof OrderPaymentError) {

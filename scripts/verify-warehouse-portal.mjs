@@ -28,9 +28,9 @@ assert.match(middleware, /\/warehouse\/:path\*/, "warehouse pages must be protec
 assert.match(middleware, /\/api\/warehouse\/:path\*/, "warehouse APIs must be protected by middleware");
 assert.match(auth, /WAREHOUSE_SESSION_SECRET/, "warehouse session must use a separate secret");
 assert.match(auth, /warehouse_session/, "warehouse must use a separate cookie");
-assert.match(shipment, /!result\.idempotent_replay/, "LINE must not be pushed again for an idempotent shipment");
+assert.doesNotMatch(shipment, /pushMessage|getOrderLineRecipient|lineNotificationSent/, "warehouse shipment must not push LINE messages");
 assert.doesNotMatch(shipment, /trackingNumber|carrier/, "shipment API must not accept tracking or carrier data");
-assert.match(shipment, /ไม่เกิน 2 วัน/, "shipment notification must explain the delivery window");
+assert.match(shipment, /ตรวจสอบสถานะได้ในระบบสมาชิก/, "shipment result must direct status checks to the member page");
 assert.match(detail, /window\.confirm/, "shipment must require a confirmation step");
 assert.doesNotMatch(detail, /trackingNumber|carrier|เลขพัสดุ/, "warehouse UI must not request tracking data");
 assert.doesNotMatch(detail, /payment|slip|discount|review/i, "warehouse UI must not expose payment or customer-history fields");

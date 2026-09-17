@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderLineRecipient } from "@/lib/order-payment-service";
-import { pushMessage } from "@/lib/line-client";
-import { getMemberLiffUrlForBotUserId } from "@/lib/line-account";
 import { requireSameOrigin, requireWarehouseSession } from "@/lib/warehouse-api";
 import { parseWarehouseOrderId, shipWarehouseOrder, WarehouseInputError } from "@/lib/warehouse-service";
 
@@ -17,26 +14,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { orderI
       actor: `warehouse:${auth.session.accountId}`,
     });
 
-    let lineNotificationSent: boolean | null = null;
-    if (!result.idempotent_replay) {
-      try {
-        const recipient = await getOrderLineRecipient(orderId);
-        lineNotificationSent = recipient ? await pushMessage(recipient.providerUserId, {
-          type: "text",
-          text: `📦 จัดส่งสินค้าแล้วค่ะ\n\nกรุณารอรับสินค้าภายในไม่เกิน 2 วัน\nสามารถตรวจสอบสถานะล่าสุดได้ในระบบสมาชิกค่ะ\n${getMemberLiffUrlForBotUserId(recipient.providerAccountId, "orders")}`,
-        }, recipient.providerAccountId) : null;
-      } catch {
-        console.error("Warehouse LINE shipment notification failed");
-        lineNotificationSent = false;
-      }
-    }
     return NextResponse.json({
       success: true,
       ...result,
-      lineNotificationSent,
-      message: lineNotificationSent === false
-        ? "ยืนยันการจัดส่งแล้ว แต่ส่ง LINE ไม่สำเร็จ ลูกค้ายังเห็นสถานะในระบบสมาชิกค่ะ"
-        : "ยืนยันการจัดส่งสำเร็จค่ะ",
+      message: result.idempotent_replay
+        ? "ออเดอร์นี้บันทึกการจัดส่งไว้แล้วค่ะ"
+        : "ยืนยันการจัดส่งสำเร็จ ลูกค้าตรวจสอบสถานะได้ในระบบสมาชิกค่ะ",
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof WarehouseInputError || error instanceof SyntaxError) {

@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "ระบบสมาชิก VIP �
 const statusLabels: Record<string, string> = {
   draft: "รอยืนยันรายการ",
   pending: "จองสินค้า / รอชำระเงิน",
-  confirmed: "ชำระแล้ว / กำลังเตรียมสินค้า",
+  confirmed: "ชำระแล้ว / กำลังเตรียมจัดส่ง",
   shipped: "จัดส่งแล้ว",
   delivered: "ส่งถึงแล้ว",
   cancelled: "ยกเลิกแล้ว",
@@ -446,7 +446,7 @@ export default async function MemberPage() {
                       </span>
                     ) : isConfirmed ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/20 px-3.5 py-1.5 text-xs font-black text-emerald-300 shadow-md">
-                        <span>✓ ชำระแล้ว · กำลังเตรียมสินค้า</span>
+                        <span>✓ ชำระแล้ว · กำลังเตรียมจัดส่ง</span>
                       </span>
                     ) : (
                       <span className={`rounded-full border px-3 py-1 text-xs font-bold ${statusStyles[order.status] ?? "border-white/10 bg-white/10 text-white"}`}>

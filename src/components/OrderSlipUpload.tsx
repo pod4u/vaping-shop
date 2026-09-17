@@ -180,7 +180,7 @@ export default function OrderSlipUpload({
           </span>
           <h4 className="text-lg font-black text-white mt-1">ชำระเงินเรียบร้อยแล้ว!</h4>
           <p className="text-xs text-white/70 max-w-xs mx-auto mt-1 leading-relaxed">
-            ระบบตรวจสอบสลิปอัตโนมัติสำเร็จ ออเดอร์ของคุณได้รับการยืนยันและตัดสต็อกเข้าคิวจัดส่งทันที
+            ระบบตรวจสอบสลิปอัตโนมัติสำเร็จ สถานะออเดอร์เป็น “ชำระแล้ว · กำลังเตรียมจัดส่ง” ค่ะ
           </p>
           {verifiedData?.transRef && (
             <div className="mt-3 inline-block px-3 py-1.5 rounded-xl bg-black/40 border border-white/10 text-[11px] font-mono text-emerald-400">

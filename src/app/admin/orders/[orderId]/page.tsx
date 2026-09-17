@@ -161,7 +161,7 @@ export default function AdminOrderDetailPage() {
 
   async function updateStatus(action: "cancel" | "ship" | "deliver") {
     if (action === "cancel" && !window.confirm("ยืนยันยกเลิกออเดอร์นี้? หากตัดสต็อกแล้วระบบจะคืนให้อัตโนมัติ")) return;
-    if (action === "ship" && !window.confirm("ยืนยันว่ามอบสินค้าให้ผู้จัดส่งแล้วใช่ไหมคะ\n\nลูกค้าจะเห็นสถานะ “จัดส่งแล้ว” และได้รับแจ้งให้รอรับสินค้าภายในไม่เกิน 2 วัน")) return;
+    if (action === "ship" && !window.confirm("ยืนยันว่ามอบสินค้าให้ผู้จัดส่งแล้วใช่ไหมคะ\n\nหน้าสมาชิกของลูกค้าจะเปลี่ยนเป็นสถานะ “จัดส่งแล้ว” โดยระบบจะไม่ส่งข้อความ LINE เพิ่ม")) return;
     setIsUpdatingStatus(true);
     setError("");
     setSuccess("");
@@ -282,10 +282,10 @@ export default function AdminOrderDetailPage() {
               <CardContent className="py-5 sm:py-6">
                 <div className="flex items-start gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-acid-lime text-navy-deep"><Truck className="h-6 w-6" /></span>
-                  <div><p className="text-xs font-black text-acid-lime">ขั้นตอนถัดไป</p><h2 className="mt-1 text-xl font-black text-white">ยืนยันการจัดส่ง</h2><p className="mt-1 text-sm text-white/55">ใช้เมื่อมอบสินค้าให้ผู้จัดส่งแล้ว หน้า Member จะเปลี่ยนเป็น “จัดส่งแล้ว” และระบบจะแจ้งลูกค้าทาง LINE หนึ่งครั้ง</p></div>
+                  <div><p className="text-xs font-black text-acid-lime">ขั้นตอนถัดไป</p><h2 className="mt-1 text-xl font-black text-white">ยืนยันการจัดส่ง</h2><p className="mt-1 text-sm text-white/55">ใช้เมื่อมอบสินค้าให้ผู้จัดส่งแล้ว หน้า Member จะเปลี่ยนเป็น “จัดส่งแล้ว” โดยระบบจะไม่ส่งข้อความ LINE เพิ่ม</p></div>
                 </div>
                 <div className="mt-5 flex flex-col gap-3 rounded-xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-sm text-white/65">หลังยืนยัน ลูกค้าจะได้รับข้อความให้รอรับสินค้าภายในไม่เกิน 2 วันค่ะ</div>
+                  <div className="text-sm text-white/65">หลังยืนยัน ลูกค้าจะตรวจสอบสถานะ “จัดส่งแล้ว” ได้จากระบบสมาชิกค่ะ</div>
                   <button type="button" onClick={() => updateStatus("ship")} disabled={isUpdatingStatus} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-acid-lime px-5 font-black text-navy-deep disabled:cursor-not-allowed disabled:opacity-40">
                     {isUpdatingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : <Truck className="h-4 w-4" />}
                     {isUpdatingStatus ? "กำลังยืนยัน..." : "ยืนยันว่าจัดส่งแล้ว"}

@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE_NAME, getAdminSession } from "@/lib/admin-auth";
 import { requireAdminApiPermission } from "@/lib/admin-api";
 import { cancelOrder, markOrderDelivered, markOrderShipped } from "@/lib/order-service";
-import { getOrderLineRecipient } from "@/lib/order-payment-service";
-import { pushMessage } from "@/lib/line-client";
-import { getMemberLiffUrlForBotUserId } from "@/lib/line-account";
 import { OrderInputError, parseOrderId } from "@/lib/order-validation";
 
 export const dynamic = "force-dynamic";
@@ -39,37 +36,18 @@ export async function PATCH(
         ? await markOrderShipped(orderId, actor)
         : await markOrderDelivered(orderId, actor);
 
-    let lineNotificationSent: boolean | null = null;
-    if (action === "ship" && !result.idempotentReplay) {
-      try {
-        const recipient = await getOrderLineRecipient(orderId);
-        lineNotificationSent = recipient
-          ? await pushMessage(recipient.providerUserId, {
-            type: "text",
-            text: `📦 จัดส่งสินค้าแล้วค่ะ\n\nกรุณารอรับสินค้าภายในไม่เกิน 2 วัน\nสามารถตรวจสอบสถานะล่าสุดได้ในระบบสมาชิกค่ะ\n${getMemberLiffUrlForBotUserId(recipient.providerAccountId, "orders")}`,
-          }, recipient.providerAccountId)
-          : null;
-      } catch {
-        console.error("LINE shipment notification failed");
-        lineNotificationSent = false;
-      }
-    }
-
     const messages: Record<OrderAction, string> = {
       cancel: result.stockRestored ? "ยกเลิกออเดอร์และคืนสต็อกสำเร็จ" : "ยกเลิกออเดอร์สำเร็จ",
       ship: result.idempotentReplay
-        ? "ออเดอร์นี้บันทึกการจัดส่งไว้แล้ว จึงไม่ส่ง LINE ซ้ำ"
-        : "บันทึกการจัดส่งสำเร็จ",
+        ? "ออเดอร์นี้บันทึกการจัดส่งไว้แล้ว"
+        : "บันทึกการจัดส่งสำเร็จ ลูกค้าตรวจสอบสถานะได้ในระบบสมาชิก",
       deliver: "บันทึกว่าส่งถึงลูกค้าสำเร็จ",
     };
     return NextResponse.json(
       {
         success: true,
         ...result,
-        lineNotificationSent,
-        message: action === "ship" && lineNotificationSent === false
-          ? "บันทึกการจัดส่งแล้ว แต่ส่งแจ้งเตือน LINE ไม่สำเร็จ"
-          : messages[action],
+        message: messages[action],
       },
       { headers: { "Cache-Control": "no-store" } },
     );
