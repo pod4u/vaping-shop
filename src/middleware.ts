@@ -5,6 +5,7 @@ import { getWarehouseSession, WAREHOUSE_COOKIE_NAME } from '@/lib/warehouse-auth
 
 const PAGE_PERMISSIONS: Array<[string, AdminPermission]> = [
   ['/admin/settings', 'settings.view'],
+  ['/admin/facebook', 'customers.view'],
   ['/admin/customers', 'customers.view'],
   ['/admin/orders', 'orders.view'],
   ['/admin/stock/imports', 'stock.manage'],

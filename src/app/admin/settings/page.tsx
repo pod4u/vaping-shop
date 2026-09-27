@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BellRing, Bot, CheckCircle2, Database, FileSpreadsheet, KeyRound, Loader2, RefreshCw, Save, Send, ShoppingCart, Warehouse, XCircle } from "lucide-react";
+import { BellRing, Bot, CheckCircle2, Database, FileSpreadsheet, KeyRound, Loader2, MessageCircle, RefreshCw, Save, Send, ShoppingCart, Warehouse, XCircle } from "lucide-react";
 
 interface SystemStatus {
   services: {
     admin: { configured: boolean };
     database: { configured: boolean; connected: boolean };
     line: { configured: boolean };
+    facebook: { appConfigured: boolean; webhookConfigured: boolean; pageConnected: boolean };
     telegram: { tokenConfigured: boolean };
     orders: { connected: boolean; channel: string };
     stockImport: { configured: boolean; source: string; schedule: string; autoApply: boolean };
@@ -188,6 +189,14 @@ export default function AdminSettingsPage() {
           <Card className="border-white/10 bg-white/5">
             <CardHeader className="flex flex-row items-center gap-3"><Bot className="h-5 w-5 text-green-400" /><div><CardTitle className="text-white">LINE Messaging API</CardTitle><CardDescription className="text-white/50">Webhook และการตอบข้อความ</CardDescription></div></CardHeader>
             <CardContent><StatusLabel ready={status.services.line.configured} readyText="ตั้งค่า Token แล้ว" pendingText="ยังไม่ได้ตั้งค่า Token" /></CardContent>
+          </Card>
+
+          <Card className="border-white/10 bg-white/5">
+            <CardHeader className="flex flex-row items-center gap-3"><MessageCircle className="h-5 w-5 text-blue-400" /><div><CardTitle className="text-white">Facebook Messenger</CardTitle><CardDescription className="text-white/50">Webhook, เพจ และกล่องข้อความแอดมิน</CardDescription></div></CardHeader>
+            <CardContent className="space-y-1.5">
+              <StatusLabel ready={status.services.facebook.appConfigured && status.services.facebook.webhookConfigured && status.services.facebook.pageConnected} readyText="เชื่อมต่อครบแล้ว" pendingText="กำลังตั้งค่า" />
+              <p className="text-xs text-white/40">App {status.services.facebook.appConfigured ? "✓" : "–"} · Webhook {status.services.facebook.webhookConfigured ? "✓" : "–"} · Page {status.services.facebook.pageConnected ? "✓" : "–"}</p>
+            </CardContent>
           </Card>
 
           <Card className="border-white/10 bg-white/5">

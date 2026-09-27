@@ -19,7 +19,8 @@
     "test:warehouse": "node scripts/verify-warehouse-portal.mjs",
     "test:shipment-status": "node scripts/verify-shipment-status-policy.mjs",
     "test:telegram": "node scripts/verify-telegram-notifications.mjs",
-    "test:revenue-report": "node scripts/verify-revenue-report.mjs"
+    "test:revenue-report": "node scripts/verify-revenue-report.mjs",
+    "test:facebook-messenger": "node scripts/verify-facebook-messenger.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

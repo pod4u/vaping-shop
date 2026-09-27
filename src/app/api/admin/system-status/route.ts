@@ -41,6 +41,11 @@ export async function GET(request: NextRequest) {
           && process.env.CUSTOMER_LINK_TOKEN_SECRET.length >= 32,
         ),
       },
+      facebook: {
+        appConfigured: Boolean(process.env.FACEBOOK_APP_ID?.trim() && process.env.FACEBOOK_APP_SECRET?.trim()),
+        webhookConfigured: Boolean(process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN?.trim()),
+        pageConnected: Boolean(process.env.FACEBOOK_PAGE_ID?.trim() && process.env.FACEBOOK_PAGE_ACCESS_TOKEN?.trim()),
+      },
       telegram: {
         tokenConfigured: Boolean(process.env.TELEGRAM_BOT_TOKEN?.trim()),
       },

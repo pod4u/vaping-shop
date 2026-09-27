@@ -12,6 +12,7 @@ import {
   FileSpreadsheet,
   Star,
   Activity,
+  MessageCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -52,6 +53,12 @@ const menuItems = [
     title: "ลูกค้า",
     url: "/admin/customers",
     icon: Users,
+    permission: "customers.view" as AdminPermission,
+  },
+  {
+    title: "Facebook Inbox",
+    url: "/admin/facebook",
+    icon: MessageCircle,
     permission: "customers.view" as AdminPermission,
   },
   {
