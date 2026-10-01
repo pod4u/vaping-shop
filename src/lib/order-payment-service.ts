@@ -2,9 +2,24 @@ import "server-only";
 
 import { getServerSupabase } from "@/lib/supabase";
 import { getLineMessageContent, pushMessage } from "@/lib/line-client";
-import { notifyPaymentReceivedSafely } from "@/lib/telegram-notifications";
+import {
+  notifyPaymentReceivedSafely,
+  notifyPaymentVerificationProblemSafely,
+} from "@/lib/telegram-notifications";
 
 const THUNDER_VERIFY_URL = "https://api.thunder.in.th/v2/verify/bank";
+
+const PAYMENT_PROVIDER_FAILURE_CODES = new Set([
+  "API_SERVER_ERROR",
+  "BRANCH_INACTIVE",
+  "INTERNAL_SERVER_ERROR",
+  "INVALID_API_KEY",
+  "IP_NOT_ALLOWED",
+  "MISSING_API_KEY",
+  "QUOTA_EXCEEDED",
+  "RENEWAL_TEMPORARILY_UNAVAILABLE",
+  "SERVICE_EXPIRED",
+]);
 
 type PaymentRequest = {
   id: string;
@@ -277,6 +292,9 @@ export async function processLinePaymentSlip(input: {
   } catch (error) {
     const code = error instanceof OrderPaymentError ? error.code : "SLIP_PROCESSING_FAILED";
     await recordFailure(payment.id, input.messageId, code).catch(() => undefined);
+    if (PAYMENT_PROVIDER_FAILURE_CODES.has(code)) {
+      await notifyPaymentVerificationProblemSafely(payment.order_id, code);
+    }
     throw error;
   }
 

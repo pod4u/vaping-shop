@@ -316,3 +316,66 @@ export async function notifyPaymentReceivedSafely(orderId: string): Promise<void
     console.error("Telegram payment alert failed", { message: safeDeliveryError(error) });
   }
 }
+
+export async function notifyPaymentVerificationProblem(
+  orderId: string,
+  failureCode: string,
+): Promise<"sent" | "skipped" | "not_configured"> {
+  const settings = await getTelegramSettings();
+  if (!isTelegramTokenConfigured() || !settings?.enabled) return "not_configured";
+
+  const eventId = await claimTelegramEvent(orderId, "warehouse_problem");
+  if (!eventId) return "skipped";
+
+  const client = getUncachedServerSupabase();
+  try {
+    const { data: order, error: orderError } = await client
+      .from("orders")
+      .select("id,order_number,total,status")
+      .eq("id", orderId)
+      .single();
+    if (orderError) throw orderError;
+
+    const result = await sendTelegramMessage({
+      chatId: settings.chat_id,
+      text: [
+        "⚠️ <b>ต้องตรวจสอบการชำระเงินด้วยเจ้าหน้าที่</b>",
+        "ระบบ Thunder ไม่พร้อมใช้งาน จึงยังไม่ยืนยันออเดอร์และยังไม่ให้คลังแพ็กสินค้า",
+        "ลูกค้าได้รับแจ้งแล้วว่าไม่ต้องส่งสลิปซ้ำค่ะ",
+        "",
+        `เลขที่ ${escapeHtml(order.order_number)}`,
+        `ยอดที่รอตรวจ ฿${currency(order.total)}`,
+        `รหัสระบบ: ${escapeHtml(failureCode)}`,
+      ].join("\n"),
+      button: { label: "เปิดออเดอร์ในแอดมิน", url: `${APP_URL}/admin/orders/${encodeURIComponent(order.id)}` },
+    });
+
+    await client.from("telegram_notification_events").update({
+      status: "sent",
+      telegram_message_id: result.messageId,
+      sent_at: new Date().toISOString(),
+      last_error: null,
+    }).eq("id", eventId);
+    return "sent";
+  } catch (error) {
+    await client.from("telegram_notification_events").update({
+      status: "failed",
+      last_error: safeDeliveryError(error),
+      next_attempt_at: new Date(Date.now() + 5 * 60_000).toISOString(),
+    }).eq("id", eventId);
+    throw error;
+  }
+}
+
+export async function notifyPaymentVerificationProblemSafely(
+  orderId: string,
+  failureCode: string,
+): Promise<void> {
+  try {
+    await notifyPaymentVerificationProblem(orderId, failureCode);
+  } catch (error) {
+    console.error("Telegram payment verification problem alert failed", {
+      message: safeDeliveryError(error),
+    });
+  }
+}
