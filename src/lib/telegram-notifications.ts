@@ -196,7 +196,7 @@ async function claimTelegramEvent(orderId: string, eventType: TelegramOrderEvent
 
 async function buildPaymentReceivedMessage(orderId: string) {
   const client = getUncachedServerSupabase();
-  const [orderResult, itemsResult] = await Promise.all([
+  const [orderResult, itemsResult, paymentResult] = await Promise.all([
     client
       .from("orders")
       .select("id,order_number,status,total,shipping_name,shipping_phone,shipping_address,shipping_province,shipping_postal_code")
@@ -207,13 +207,19 @@ async function buildPaymentReceivedMessage(orderId: string) {
       .select("brand_name,product_name,flavor_name,unit_price,quantity")
       .eq("order_id", orderId)
       .order("created_at", { ascending: true }),
+    client.from("order_payment_requests")
+      .select("status,verification_method")
+      .eq("order_id", orderId).maybeSingle(),
   ]);
   if (orderResult.error) throw orderResult.error;
   if (itemsResult.error) throw itemsResult.error;
+  if (paymentResult.error) throw paymentResult.error;
   const order = orderResult.data;
-  if (!["confirmed", "shipped", "delivered"].includes(order.status)) {
+  if (!["confirmed", "shipped", "delivered"].includes(order.status)
+    || paymentResult.data?.status !== "verified") {
     throw new Error("Telegram payment alert requires a confirmed order");
   }
+  const manualBank = paymentResult.data.verification_method === "manual_bank";
   const items = itemsResult.data ?? [];
   const itemLines = items.slice(0, 20).map((item, index) =>
     `${index + 1}. ${escapeHtml(item.brand_name)} · ${escapeHtml(item.product_name)} · ${escapeHtml(item.flavor_name)}\n   ${Number(item.quantity)} ชิ้น × ฿${itemPrice(item.unit_price)}`,
@@ -226,7 +232,9 @@ async function buildPaymentReceivedMessage(orderId: string) {
   return {
     text: [
       "✅ <b>ชำระเงินแล้ว · พร้อมแพ็กและจัดส่ง</b>",
-      "💳 ตรวจสอบสลิปผ่าน Thunder แล้ว · ยอดชำระถูกต้อง",
+      manualBank
+        ? "💳 แอดมินตรวจยอดเข้าบัญชีร้านและยืนยันด้วยมือ · ไม่ใช่ผลตรวจจาก Thunder"
+        : "💳 ตรวจสอบสลิปผ่าน Thunder แล้ว · ยอดชำระถูกต้อง",
       "📦 คลังสามารถเริ่มแพ็กสินค้าและจัดส่งได้ทันที",
       "",
       `เลขที่ ${escapeHtml(order.order_number)}`,

@@ -15,6 +15,7 @@ export const ADMIN_PERMISSIONS = [
   "orders.create",
   "orders.reserve",
   "orders.confirm",
+  "payments.manual_verify",
   "orders.cancel",
   "orders.ship",
   "customers.view",

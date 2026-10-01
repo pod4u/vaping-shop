@@ -2,6 +2,7 @@ import "server-only";
 
 import { getServerSupabase } from "@/lib/supabase";
 import { getLineMessageContent, pushMessage } from "@/lib/line-client";
+import { getActiveMemberLiffUrl } from "@/lib/line-account";
 import {
   notifyPaymentReceivedSafely,
   notifyPaymentVerificationProblemSafely,
@@ -328,6 +329,43 @@ export async function processLinePaymentSlip(input: {
     amount: expectedAmount,
     result,
   };
+}
+
+export async function manuallyVerifyLineOrderPayment(input: {
+  orderId: string;
+  amount: number;
+  bankReference: string;
+  note: string;
+  verifiedBy: string;
+}) {
+  const { data, error } = await getServerSupabase().rpc("manually_verify_line_order_payment", {
+    p_order_id: input.orderId,
+    p_amount: input.amount,
+    p_bank_reference: input.bankReference,
+    p_note: input.note,
+    p_verified_by: input.verifiedBy,
+    p_bank_deposit_confirmed: true,
+  });
+  if (error) throw error;
+  if (!data || typeof data !== "object" || !('order_id' in data)) {
+    throw new Error("Manual payment confirmation returned an invalid result");
+  }
+  return { idempotentReplay: data.idempotent_replay === true };
+}
+
+export async function notifyLineManualPaymentConfirmed(orderId: string): Promise<boolean> {
+  const { data: order, error } = await getServerSupabase()
+    .from("orders")
+    .select("order_number,total,source_customer_identity_id")
+    .eq("id", orderId)
+    .single();
+  if (error) throw error;
+  if (!order.source_customer_identity_id) return false;
+  const recipient = await getLineRecipient(String(order.source_customer_identity_id));
+  return pushMessage(recipient.providerUserId, {
+    type: "text",
+    text: `✅ ร้านตรวจสอบยอดเงินเข้าบัญชีและยืนยันการชำระเงินแล้ว\n\nเลขที่ ${order.order_number}\nยอด ฿${Number(order.total).toLocaleString("th-TH", { minimumFractionDigits: 2 })}\nสถานะ: ชำระแล้ว · กำลังเตรียมจัดส่งค่ะ\n\nตรวจสอบความคืบหน้าได้ในระบบสมาชิกค่ะ\n${getActiveMemberLiffUrl("orders")}`,
+  }, recipient.providerAccountId);
 }
 
 export async function getOrderLineRecipient(orderId: string): Promise<{

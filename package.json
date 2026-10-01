@@ -14,6 +14,7 @@
     "test:line-automation": "node --experimental-strip-types scripts/verify-line-automation.mjs",
     "test:member-liff": "node --experimental-strip-types scripts/verify-member-liff-destination.mjs",
     "test:payment-guards": "node scripts/verify-payment-guards.mjs",
+    "test:manual-payment": "node scripts/verify-manual-payment-approval.mjs",
     "test:review-system": "node scripts/verify-review-system.mjs",
     "test:review-credit": "node scripts/verify-review-credit.mjs",
     "test:warehouse": "node scripts/verify-warehouse-portal.mjs",

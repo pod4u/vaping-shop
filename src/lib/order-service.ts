@@ -202,7 +202,7 @@ export async function getOrderDetail(orderId: string) {
       .order("created_at", { ascending: true }),
     client
       .from("order_payment_requests")
-      .select("id,status,expected_amount,requested_at,expires_at,actual_amount,account_matched,amount_matched,is_duplicate,failure_code,verified_at")
+      .select("id,status,expected_amount,requested_at,expires_at,actual_amount,account_matched,amount_matched,is_duplicate,failure_code,verified_at,verification_method,provider_transaction_ref,manual_verified_by,manual_verification_note")
       .eq("order_id", orderId)
       .maybeSingle(),
     client.from("telegram_notification_events")
