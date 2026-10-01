@@ -18,13 +18,13 @@ if (!migration.includes("create unique index order_payment_requests_verified_tra
 if (!service.includes('error.code === "23505"')) {
   failures.push("duplicate transaction conflict handling is missing");
 }
-if (!service.includes('"SERVICE_EXPIRED"') || !service.includes("notifyPaymentVerificationProblemSafely")) {
+if (!telegram.includes('"SERVICE_EXPIRED"') || !service.includes("notifyPaymentVerificationProblemSafely")) {
   failures.push("Thunder provider outages must notify admins");
 }
 if (!webhook.includes("กรุณาไม่ต้องส่งสลิปซ้ำ")) {
   failures.push("customers must not be told to resend slips during provider outages");
 }
-if (!telegram.includes("ต้องตรวจสอบการชำระเงินด้วยเจ้าหน้าที่")) {
+if (!telegram.includes("ด่วน: ลูกค้าส่งสลิปแล้ว ระบบตรวจเงินขัดข้อง")) {
   failures.push("Telegram must clearly label manual payment-review alerts");
 }
 

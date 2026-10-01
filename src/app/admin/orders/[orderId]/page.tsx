@@ -53,6 +53,19 @@ interface PaymentRequest {
   verified_at: string | null;
 }
 
+interface PaymentAlert {
+  status: "pending" | "sending" | "sent" | "failed";
+  attempt_count: number;
+  last_error: string | null;
+  sent_at: string | null;
+}
+
+const PROVIDER_FAILURE_CODES = new Set([
+  "API_SERVER_ERROR", "BRANCH_INACTIVE", "INTERNAL_SERVER_ERROR", "INVALID_API_KEY",
+  "IP_NOT_ALLOWED", "MISSING_API_KEY", "QUOTA_EXCEEDED",
+  "RENEWAL_TEMPORARILY_UNAVAILABLE", "SERVICE_EXPIRED",
+]);
+
 const STATUS_LABELS: Record<string, string> = {
   draft: "รอยืนยันสต๊อก",
   pending: "จองแล้ว / รอตรวจการชำระเงิน",
@@ -68,6 +81,8 @@ export default function AdminOrderDetailPage() {
   const [items, setItems] = useState<OrderItem[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [payment, setPayment] = useState<PaymentRequest | null>(null);
+  const [paymentAlert, setPaymentAlert] = useState<PaymentAlert | null>(null);
+  const [sendingPaymentAlert, setSendingPaymentAlert] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isReserving, setIsReserving] = useState(false);
@@ -85,6 +100,7 @@ export default function AdminOrderDetailPage() {
     setItems(result.items ?? []);
     setReservations(result.reservations ?? []);
     setPayment(result.payment ?? null);
+    setPaymentAlert(result.paymentAlert ?? null);
   }, [orderId]);
 
   useEffect(() => {
@@ -178,6 +194,24 @@ export default function AdminOrderDetailPage() {
       setError(reason instanceof Error ? reason.message : "เปลี่ยนสถานะไม่สำเร็จ");
     } finally {
       setIsUpdatingStatus(false);
+    }
+  }
+
+  async function sendPaymentAlert() {
+    setSendingPaymentAlert(true);
+    setError("");
+    setSuccess("");
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}/payment-alert`, { method: "POST" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "ส่งแจ้งเตือน Telegram ไม่สำเร็จ");
+      setSuccess(result.message);
+      await loadOrder();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "ส่งแจ้งเตือน Telegram ไม่สำเร็จ");
+      await loadOrder().catch(() => undefined);
+    } finally {
+      setSendingPaymentAlert(false);
     }
   }
 
@@ -333,6 +367,27 @@ export default function AdminOrderDetailPage() {
                 <p className="mt-1">ยอด ฿{Number(payment.expected_amount).toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
                 {payment.status === "awaiting_slip" && <p className="mt-1 text-white/60">รับสลิปถึง {new Date(payment.expires_at).toLocaleString("th-TH")}</p>}
                 {payment.failure_code && payment.status === "awaiting_slip" && <p className="mt-1 text-amber-200">ครั้งล่าสุดยังไม่ผ่าน: {payment.failure_code}</p>}
+                {payment.status === "awaiting_slip" && payment.failure_code && PROVIDER_FAILURE_CODES.has(payment.failure_code) && (
+                  <div className="mt-4 rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-amber-100">
+                    <p className="font-bold">ระบบตรวจสลิปขัดข้อง · ต้องตรวจยอดจากบัญชีธนาคาร</p>
+                    <p className="mt-1 text-xs">ยังไม่ยืนยันการชำระเงินและยังไม่ส่งงานให้คลังแพ็ก</p>
+                    <p className="mt-2 text-xs">
+                      แจ้ง Telegram: {paymentAlert?.status === "sent"
+                        ? `ส่งแล้ว ${new Date(paymentAlert.sent_at || "").toLocaleString("th-TH")}`
+                        : paymentAlert?.status === "failed"
+                          ? `ส่งไม่สำเร็จ (${paymentAlert.last_error || "ไม่ทราบสาเหตุ"})`
+                          : paymentAlert?.status === "sending"
+                            ? "กำลังส่ง"
+                            : "ยังไม่ได้ส่ง"}
+                    </p>
+                    {can("orders.confirm") && (
+                      <button type="button" onClick={sendPaymentAlert} disabled={sendingPaymentAlert}
+                        className="mt-3 rounded-lg border border-amber-200/40 px-4 py-2 text-sm font-bold text-amber-100 disabled:opacity-50">
+                        {sendingPaymentAlert ? "กำลังส่ง..." : paymentAlert?.status === "sent" ? "ส่งแจ้งเตือน Telegram ซ้ำ" : "แจ้ง Telegram ให้ตรวจยอดทันที"}
+                      </button>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
