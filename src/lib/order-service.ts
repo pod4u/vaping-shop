@@ -165,7 +165,7 @@ export async function listOrders(options: {
 
   const { data: payments, error: paymentError } = await getUncachedServerSupabase()
     .from("order_payment_requests")
-    .select("order_id,status,expires_at")
+    .select("order_id,status,expires_at,failure_code")
     .in("order_id", orderIds);
   if (paymentError && paymentError.code !== "42P01") throw paymentError;
 

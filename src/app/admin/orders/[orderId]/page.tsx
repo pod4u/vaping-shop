@@ -387,7 +387,7 @@ export default function AdminOrderDetailPage() {
           ) : order.status === "pending" && activeReservation ? (
             <Card className="border-sky-300/20 bg-sky-300/10">
               <CardContent className="py-4 text-sm text-sky-100">
-                จองสินค้าไว้ถึง {new Date(activeReservation.expires_at).toLocaleString("th-TH")} และกำลังรอลูกค้าส่งหลักฐานการชำระเงิน ระบบจะยกเลิกอัตโนมัติเมื่อหมดเวลา ไม่ต้องส่งข้อความเตือนซ้ำ
+                จองสินค้าไว้ถึง {new Date(activeReservation.expires_at).toLocaleString("th-TH")} {payment?.failure_code && PROVIDER_FAILURE_CODES.has(payment.failure_code) ? "· ได้รับสลิปแล้ว แต่ระบบตรวจอัตโนมัติขัดข้อง กรุณาตรวจยอดในบัญชีธนาคารของร้าน" : "และกำลังรอลูกค้าส่งหลักฐานการชำระเงิน"} ระบบจะยกเลิกอัตโนมัติเมื่อหมดเวลา
               </CardContent>
             </Card>
           ) : order.status === "confirmed" ? (
