@@ -115,8 +115,8 @@ export default function AdminOrderDetailPage() {
 
   function chooseManualSlip(file: File | null) {
     if (!file) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024 || file.size === 0) {
-      setError("สลิปต้องเป็น JPG, PNG หรือ WebP และมีขนาดไม่เกิน 5 MB");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 4 * 1024 * 1024 || file.size === 0) {
+      setError("สลิปต้องเป็น JPG, PNG หรือ WebP และมีขนาดไม่เกิน 4 MB");
       return;
     }
     setError("");
@@ -476,7 +476,7 @@ export default function AdminOrderDetailPage() {
                             className={`flex min-h-28 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed p-4 text-center text-xs transition-colors ${isDraggingSlip ? "border-acid-lime bg-acid-lime/15" : "border-amber-200/30 bg-navy-deep/50 hover:border-acid-lime/60"}`}>
                             <Upload className="h-6 w-6" aria-hidden="true" />
                             <span className="font-bold">ลากสลิปมาวาง หรือกดเลือกไฟล์</span>
-                            <span className="text-amber-100/70">JPG, PNG, WebP ไม่เกิน 5 MB · หลักฐานประกอบเท่านั้น</span>
+                            <span className="text-amber-100/70">JPG, PNG, WebP ไม่เกิน 4 MB · หลักฐานประกอบเท่านั้น</span>
                             <input id="manual-payment-slip" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => chooseManualSlip(event.target.files?.[0] ?? null)} />
                           </label>
                           {manualSlip && <div className="flex items-center gap-3 rounded-lg border border-white/15 p-2 text-xs">

@@ -9,7 +9,7 @@ import { requireSameOrigin } from "@/lib/warehouse-api";
 
 export const dynamic = "force-dynamic";
 const SLIP_BUCKET = "manual-payment-slips";
-const MAX_SLIP_BYTES = 5 * 1024 * 1024;
+const MAX_SLIP_BYTES = 4 * 1024 * 1024;
 
 function inspectSlip(bytes: Uint8Array): { mime: string; extension: string } | null {
   if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: { orderId
     const storage = getServerSupabase().storage.from(SLIP_BUCKET);
     if (slip) {
       if (!slip.size || slip.size > MAX_SLIP_BYTES) {
-        return NextResponse.json({ success: false, error: "สลิปต้องมีขนาดไม่เกิน 5 MB" }, { status: 400 });
+        return NextResponse.json({ success: false, error: "สลิปต้องมีขนาดไม่เกิน 4 MB" }, { status: 400 });
       }
       const bytes = new Uint8Array(await slip.arrayBuffer());
       const inspected = inspectSlip(bytes);
