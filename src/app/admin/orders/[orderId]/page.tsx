@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, CheckCircle, Loader2, Truck, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2, Truck, Upload, XCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AdminPermission } from "@/lib/admin-permissions";
 
@@ -55,6 +55,7 @@ interface PaymentRequest {
   provider_transaction_ref: string | null;
   manual_verified_by: string | null;
   manual_verification_note: string | null;
+  manual_slip_path: string | null;
 }
 
 interface PaymentAlert {
@@ -91,6 +92,9 @@ export default function AdminOrderDetailPage() {
   const [manualBankReference, setManualBankReference] = useState("");
   const [manualNote, setManualNote] = useState("");
   const [manualBankConfirmed, setManualBankConfirmed] = useState(false);
+  const [manualSlip, setManualSlip] = useState<File | null>(null);
+  const [manualSlipPreview, setManualSlipPreview] = useState<string | null>(null);
+  const [isDraggingSlip, setIsDraggingSlip] = useState(false);
   const [isManuallyVerifying, setIsManuallyVerifying] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -98,6 +102,26 @@ export default function AdminOrderDetailPage() {
   const [isConfirming, setIsConfirming] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [permissions, setPermissions] = useState<AdminPermission[]>([]);
+
+  useEffect(() => {
+    if (!manualSlip) {
+      setManualSlipPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(manualSlip);
+    setManualSlipPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [manualSlip]);
+
+  function chooseManualSlip(file: File | null) {
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024 || file.size === 0) {
+      setError("สลิปต้องเป็น JPG, PNG หรือ WebP และมีขนาดไม่เกิน 5 MB");
+      return;
+    }
+    setError("");
+    setManualSlip(file);
+  }
 
   const loadOrder = useCallback(async () => {
     const response = await fetch(`/api/admin/orders/${orderId}`, {
@@ -231,19 +255,20 @@ export default function AdminOrderDetailPage() {
     setError("");
     setSuccess("");
     try {
+      const form = new FormData();
+      form.set("amount", manualAmount);
+      form.set("bankReference", manualBankReference);
+      form.set("note", manualNote);
+      form.set("bankDepositConfirmed", String(manualBankConfirmed));
+      if (manualSlip) form.set("slip", manualSlip);
       const response = await fetch(`/api/admin/orders/${orderId}/manual-payment`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: manualAmount,
-          bankReference: manualBankReference,
-          note: manualNote,
-          bankDepositConfirmed: manualBankConfirmed,
-        }),
+        body: form,
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "ยืนยันการชำระเงินไม่สำเร็จ");
       setSuccess(result.message);
+      setManualSlip(null);
       await loadOrder();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "ยืนยันการชำระเงินไม่สำเร็จ");
@@ -406,6 +431,7 @@ export default function AdminOrderDetailPage() {
                 {payment.status === "verified" && payment.verification_method === "manual_bank" && (
                   <p className="mt-1 text-xs text-white/60">ผู้ยืนยัน: {payment.manual_verified_by} · อ้างอิงธนาคาร: {payment.provider_transaction_ref}<br />บันทึก: {payment.manual_verification_note}</p>
                 )}
+                {payment.manual_slip_path && <a href={`/api/admin/orders/${orderId}/manual-payment/slip`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-xs font-bold text-acid-lime underline">เปิดสลิปที่แอดมินแนบไว้</a>}
                 <p className="mt-1">ยอด ฿{Number(payment.expected_amount).toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
                 {payment.status === "awaiting_slip" && <p className="mt-1 text-white/60">รับสลิปถึง {new Date(payment.expires_at).toLocaleString("th-TH")}</p>}
                 {payment.failure_code && payment.status === "awaiting_slip" && <p className="mt-1 text-amber-200">ครั้งล่าสุดยังไม่ผ่าน: {payment.failure_code}</p>}
@@ -445,6 +471,20 @@ export default function AdminOrderDetailPage() {
                         <label className="block text-xs">บันทึกเหตุผลและหลักฐานที่ตรวจ (อย่างน้อย 10 ตัวอักษร)
                           <textarea maxLength={500} value={manualNote} onChange={(event) => setManualNote(event.target.value)} placeholder="เช่น ตรวจรายการเงินเข้าบัญชีร้านในแอปธนาคาร เวลา... ตรงกับออเดอร์นี้" className="mt-1 w-full rounded-lg border border-white/20 bg-navy-deep p-3 text-sm text-white" rows={2} />
                         </label>
+                        <div className="space-y-2">
+                          <label htmlFor="manual-payment-slip" onDragOver={(event) => { event.preventDefault(); setIsDraggingSlip(true); }} onDragLeave={() => setIsDraggingSlip(false)} onDrop={(event) => { event.preventDefault(); setIsDraggingSlip(false); chooseManualSlip(event.dataTransfer.files[0] ?? null); }}
+                            className={`flex min-h-28 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed p-4 text-center text-xs transition-colors ${isDraggingSlip ? "border-acid-lime bg-acid-lime/15" : "border-amber-200/30 bg-navy-deep/50 hover:border-acid-lime/60"}`}>
+                            <Upload className="h-6 w-6" aria-hidden="true" />
+                            <span className="font-bold">ลากสลิปมาวาง หรือกดเลือกไฟล์</span>
+                            <span className="text-amber-100/70">JPG, PNG, WebP ไม่เกิน 5 MB · หลักฐานประกอบเท่านั้น</span>
+                            <input id="manual-payment-slip" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => chooseManualSlip(event.target.files?.[0] ?? null)} />
+                          </label>
+                          {manualSlip && <div className="flex items-center gap-3 rounded-lg border border-white/15 p-2 text-xs">
+                            {manualSlipPreview && <img src={manualSlipPreview} alt="ตัวอย่างสลิปที่จะแนบ" className="h-16 w-16 rounded object-cover" />}
+                            <span className="min-w-0 flex-1 truncate">{manualSlip.name}</span>
+                            <button type="button" onClick={() => setManualSlip(null)} className="rounded border border-white/20 px-2 py-1">นำออก</button>
+                          </div>}
+                        </div>
                         <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={manualBankConfirmed} onChange={(event) => setManualBankConfirmed(event.target.checked)} className="mt-0.5" />ฉันตรวจยอดเงินเข้าบัญชีร้านจริงแล้ว และเลขอ้างอิงนี้ไม่เคยใช้ยืนยันออเดอร์อื่น</label>
                         <button type="button" onClick={verifyManualBankPayment} disabled={isManuallyVerifying || !manualBankConfirmed || !manualAmount || manualBankReference.trim().length < 6 || manualNote.trim().length < 10} className="rounded-lg bg-acid-lime px-4 py-3 font-black text-navy-deep disabled:cursor-not-allowed disabled:opacity-40">
                           {isManuallyVerifying ? "กำลังยืนยัน..." : "ยืนยันเงินเข้าและส่งงานเข้าคลัง"}

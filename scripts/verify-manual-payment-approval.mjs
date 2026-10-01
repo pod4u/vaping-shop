@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const sql = read("supabase/migrations/20261001142945_manual_bank_payment_verification.sql");
+const slipSql = read("supabase/migrations/20261001160000_manual_payment_slip_evidence.sql");
 const route = read("src/app/api/admin/orders/[orderId]/manual-payment/route.ts");
+const slipRoute = read("src/app/api/admin/orders/[orderId]/manual-payment/slip/route.ts");
 const page = read("src/app/admin/orders/[orderId]/page.tsx");
 const notifications = read("src/lib/telegram-notifications.ts");
 const permissions = read("src/lib/admin-permissions.ts");
@@ -20,7 +22,17 @@ assert.match(sql, /revoke all on function public\.manually_verify_line_order_pay
 assert.match(sql, /grant execute on function public\.manually_verify_line_order_payment[\s\S]*to service_role/i);
 assert.match(route, /requireSameOrigin/);
 assert.match(route, /payments\.manual_verify/);
-assert.match(route, /bankDepositConfirmed !== true/);
+assert.match(route, /body\.get\("bankDepositConfirmed"\) !== "true"/);
+assert.match(route, /inspectSlip\(bytes\)/);
+assert.match(route, /MAX_SLIP_BYTES/);
+assert.match(route, /upsert: false/);
+assert.match(route, /storage\.remove\(\[slipPath\]\)/);
+assert.match(slipSql, /manual_slip_path/);
+assert.match(slipSql, /public, file_size_limit, allowed_mime_types/);
+assert.match(slipSql, /revoke all on function public\.manually_verify_line_order_payment_with_slip/);
+assert.match(slipRoute, /requireAdminApiPermission\(request, "orders\.view"\)/);
+assert.match(slipRoute, /Cache-Control": "private, no-store"/);
+assert.match(page, /ลากสลิปมาวาง/);
 assert.match(page, /ฉันตรวจยอดเงินเข้าบัญชีร้านจริงแล้ว/);
 assert.match(page, /window\.confirm/);
 assert.match(notifications, /ไม่ใช่ผลตรวจจาก Thunder/);

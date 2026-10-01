@@ -4,9 +4,26 @@ import { requireAdminApiPermission } from "@/lib/admin-api";
 import { manuallyVerifyLineOrderPayment, notifyLineManualPaymentConfirmed } from "@/lib/order-payment-service";
 import { OrderInputError, parseOrderId } from "@/lib/order-validation";
 import { notifyPaymentReceived } from "@/lib/telegram-notifications";
+import { getServerSupabase } from "@/lib/supabase";
 import { requireSameOrigin } from "@/lib/warehouse-api";
 
 export const dynamic = "force-dynamic";
+const SLIP_BUCKET = "manual-payment-slips";
+const MAX_SLIP_BYTES = 5 * 1024 * 1024;
+
+function inspectSlip(bytes: Uint8Array): { mime: string; extension: string } | null {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return { mime: "image/jpeg", extension: "jpg" };
+  }
+  if (bytes.length >= 8 && [137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => bytes[index] === value)) {
+    return { mime: "image/png", extension: "png" };
+  }
+  if (bytes.length >= 12 && String.fromCharCode(...bytes.slice(0, 4)) === "RIFF"
+    && String.fromCharCode(...bytes.slice(8, 12)) === "WEBP") {
+    return { mime: "image/webp", extension: "webp" };
+  }
+  return null;
+}
 
 export async function POST(request: NextRequest, { params }: { params: { orderId: string } }) {
   const sameOrigin = requireSameOrigin(request);
@@ -18,25 +35,61 @@ export async function POST(request: NextRequest, { params }: { params: { orderId
 
   try {
     const orderId = parseOrderId(params.orderId);
-    const body = await request.json() as Record<string, unknown>;
-    const amountText = typeof body.amount === "string" ? body.amount.trim() : "";
-    const bankReference = typeof body.bankReference === "string" ? body.bankReference.trim() : "";
-    const note = typeof body.note === "string" ? body.note.trim() : "";
+    const body = await request.formData();
+    const amountText = String(body.get("amount") ?? "").trim();
+    const bankReference = String(body.get("bankReference") ?? "").trim();
+    const note = String(body.get("note") ?? "").trim();
     if (!/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/.test(amountText)
       || Number(amountText) <= 0
       || bankReference.length < 6 || bankReference.length > 100
       || note.length < 10 || note.length > 500
-      || body.bankDepositConfirmed !== true) {
+      || body.get("bankDepositConfirmed") !== "true") {
       return NextResponse.json({ success: false, error: "กรุณากรอกยอด เลขอ้างอิง และเหตุผล พร้อมยืนยันว่าเห็นเงินเข้าบัญชีร้านจริง" }, { status: 400 });
     }
 
-    const result = await manuallyVerifyLineOrderPayment({
-      orderId,
-      amount: Number(amountText),
-      bankReference,
-      note,
-      verifiedBy: `${session.accountId}:${session.role}`,
-    });
+    const suppliedSlip = body.get("slip");
+    const slip = suppliedSlip instanceof File ? suppliedSlip : null;
+    if (suppliedSlip && !slip) {
+      return NextResponse.json({ success: false, error: "ไฟล์สลิปไม่ถูกต้อง" }, { status: 400 });
+    }
+    let slipPath: string | null = null;
+    const storage = getServerSupabase().storage.from(SLIP_BUCKET);
+    if (slip) {
+      if (!slip.size || slip.size > MAX_SLIP_BYTES) {
+        return NextResponse.json({ success: false, error: "สลิปต้องมีขนาดไม่เกิน 5 MB" }, { status: 400 });
+      }
+      const bytes = new Uint8Array(await slip.arrayBuffer());
+      const inspected = inspectSlip(bytes);
+      if (!inspected || slip.type !== inspected.mime) {
+        return NextResponse.json({ success: false, error: "รองรับสลิป JPG, PNG หรือ WebP เท่านั้น" }, { status: 400 });
+      }
+      slipPath = `${orderId}/${crypto.randomUUID()}.${inspected.extension}`;
+      const { error: uploadError } = await storage.upload(slipPath, bytes, {
+        contentType: inspected.mime,
+        cacheControl: "0",
+        upsert: false,
+      });
+      if (uploadError) {
+        console.error("Manual payment slip upload failed", { code: uploadError.name });
+        return NextResponse.json({ success: false, error: "บันทึกสลิปไม่สำเร็จ กรุณาลองใหม่" }, { status: 502 });
+      }
+    }
+
+    let result: Awaited<ReturnType<typeof manuallyVerifyLineOrderPayment>>;
+    try {
+      result = await manuallyVerifyLineOrderPayment({
+        orderId,
+        amount: Number(amountText),
+        bankReference,
+        note,
+        verifiedBy: `${session.accountId}:${session.role}`,
+        slipPath,
+      });
+    } catch (error) {
+      if (slipPath) await storage.remove([slipPath]).catch(() => undefined);
+      throw error;
+    }
+    if (slipPath && result.idempotentReplay) await storage.remove([slipPath]).catch(() => undefined);
 
     let lineSent: boolean | null = null;
     if (!result.idempotentReplay) {

@@ -337,14 +337,16 @@ export async function manuallyVerifyLineOrderPayment(input: {
   bankReference: string;
   note: string;
   verifiedBy: string;
+  slipPath?: string | null;
 }) {
-  const { data, error } = await getServerSupabase().rpc("manually_verify_line_order_payment", {
+  const { data, error } = await getServerSupabase().rpc("manually_verify_line_order_payment_with_slip", {
     p_order_id: input.orderId,
     p_amount: input.amount,
     p_bank_reference: input.bankReference,
     p_note: input.note,
     p_verified_by: input.verifiedBy,
     p_bank_deposit_confirmed: true,
+    p_slip_path: input.slipPath ?? null,
   });
   if (error) throw error;
   if (!data || typeof data !== "object" || !('order_id' in data)) {
