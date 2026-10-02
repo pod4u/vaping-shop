@@ -42,6 +42,7 @@ interface Order {
   shipped_at: string | null;
   delivered_at: string | null;
   cancelled_at: string | null;
+  cancelled_by: string | null;
   created_at: string;
 }
 
@@ -56,6 +57,7 @@ interface PaymentRequest {
   manual_verified_by: string | null;
   manual_verification_note: string | null;
   manual_slip_path: string | null;
+  line_message_id: string | null;
 }
 
 interface PaymentAlert {
@@ -250,7 +252,9 @@ export default function AdminOrderDetailPage() {
 
   async function verifyManualBankPayment() {
     if (!order || !payment || !manualBankConfirmed) return;
-    if (!window.confirm(`ยืนยันว่าเห็นเงินเข้าบัญชีร้านจริง ฿${manualAmount} สำหรับออเดอร์ ${order.order_number}? การกดตกลงจะตัดสต็อกและส่งงานเข้าคลังทันที`)) return;
+    const recoveryMode = (order.status === "cancelled" && payment.status === "expired")
+      || (order.status === "pending" && payment.status === "failed");
+    if (!window.confirm(`ยืนยันว่าเห็นเงินเข้าบัญชีร้านจริง ฿${manualAmount} สำหรับออเดอร์ ${order.order_number}? ${recoveryMode ? "ระบบจะตรวจสต็อกใหม่และกู้ออเดอร์เดิม" : "ระบบจะยืนยันออเดอร์"} แล้วส่งงานเข้าคลังทันที`)) return;
     setIsManuallyVerifying(true);
     setError("");
     setSuccess("");
@@ -260,6 +264,7 @@ export default function AdminOrderDetailPage() {
       form.set("bankReference", manualBankReference);
       form.set("note", manualNote);
       form.set("bankDepositConfirmed", String(manualBankConfirmed));
+      form.set("recoveryMode", String(recoveryMode));
       if (manualSlip) form.set("slip", manualSlip);
       const response = await fetch(`/api/admin/orders/${orderId}/manual-payment`, {
         method: "POST",
@@ -283,6 +288,15 @@ export default function AdminOrderDetailPage() {
   const activeReservation = reservations.find(
     (reservation) => reservation.status === "reserved",
   );
+  const activeProviderFailure = Boolean(payment?.status === "awaiting_slip" && payment.failure_code
+    && PROVIDER_FAILURE_CODES.has(payment.failure_code) && payment.line_message_id);
+  const recoveryMode = Boolean(payment?.line_message_id && order && (
+    (order.status === "pending" && payment.status === "failed"
+      && payment.failure_code && PROVIDER_FAILURE_CODES.has(payment.failure_code))
+    || (order.status === "cancelled" && order.cancelled_by === "system:payment-timeout"
+      && payment.status === "expired" && payment.failure_code === "PAYMENT_WINDOW_EXPIRED")
+  ));
+  const needsBankReview = activeProviderFailure || recoveryMode;
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
@@ -412,7 +426,7 @@ export default function AdminOrderDetailPage() {
           ) : order.status === "pending" && activeReservation ? (
             <Card className="border-sky-300/20 bg-sky-300/10">
               <CardContent className="py-4 text-sm text-sky-100">
-                จองสินค้าไว้ถึง {new Date(activeReservation.expires_at).toLocaleString("th-TH")} {payment?.failure_code && PROVIDER_FAILURE_CODES.has(payment.failure_code) ? "· ได้รับสลิปแล้ว แต่ระบบตรวจอัตโนมัติขัดข้อง กรุณาตรวจยอดในบัญชีธนาคารของร้าน" : "และกำลังรอลูกค้าส่งหลักฐานการชำระเงิน"} ระบบจะยกเลิกอัตโนมัติเมื่อหมดเวลา
+                จองสินค้าไว้ถึง {new Date(activeReservation.expires_at).toLocaleString("th-TH")} {activeProviderFailure ? "· ได้รับสลิปแล้ว แต่ระบบตรวจอัตโนมัติขัดข้อง เมื่อหมดเวลาระบบจะพักไว้ให้แอดมินตรวจยอดและคืนสต็อกชั่วคราว ไม่ยกเลิกว่าไม่จ่าย" : "และกำลังรอลูกค้าส่งหลักฐานการชำระเงิน ระบบจะยกเลิกอัตโนมัติหากไม่มีสลิป"}
               </CardContent>
             </Card>
           ) : order.status === "confirmed" ? (
@@ -426,7 +440,7 @@ export default function AdminOrderDetailPage() {
           {payment && (
             <Card className="border-violet-300/20 bg-violet-300/10">
               <CardContent className="py-4 text-sm text-violet-100">
-                <p className="font-bold">การชำระเงิน: {payment.status === "awaiting_slip" && payment.failure_code && PROVIDER_FAILURE_CODES.has(payment.failure_code) ? "ได้รับสลิปแล้ว · รอตรวจยอดธนาคาร" : payment.status === "awaiting_slip" ? "รอหลักฐานการชำระเงิน" : payment.status === "verified" ? "ตรวจสอบเรียบร้อยแล้ว" : "ไม่อยู่ในช่วงรับหลักฐานการชำระเงิน"}</p>
+                <p className="font-bold">การชำระเงิน: {needsBankReview ? "ได้รับสลิปแล้ว · ต้องตรวจยอดธนาคาร" : payment.status === "awaiting_slip" ? "รอหลักฐานการชำระเงิน" : payment.status === "verified" ? "ตรวจสอบเรียบร้อยแล้ว" : "ไม่อยู่ในช่วงรับหลักฐานการชำระเงิน"}</p>
                 {payment.status === "verified" && <p className="mt-1 text-xs text-white/70">ยืนยันโดย: {payment.verification_method === "manual_bank" ? "แอดมินตรวจยอดธนาคารด้วยตนเอง" : "Thunder ตรวจสลิป"}</p>}
                 {payment.status === "verified" && payment.verification_method === "manual_bank" && (
                   <p className="mt-1 text-xs text-white/60">ผู้ยืนยัน: {payment.manual_verified_by} · อ้างอิงธนาคาร: {payment.provider_transaction_ref}<br />บันทึก: {payment.manual_verification_note}</p>
@@ -435,10 +449,10 @@ export default function AdminOrderDetailPage() {
                 <p className="mt-1">ยอด ฿{Number(payment.expected_amount).toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
                 {payment.status === "awaiting_slip" && <p className="mt-1 text-white/60">รับสลิปถึง {new Date(payment.expires_at).toLocaleString("th-TH")}</p>}
                 {payment.failure_code && payment.status === "awaiting_slip" && <p className="mt-1 text-amber-200">ครั้งล่าสุดยังไม่ผ่าน: {payment.failure_code}</p>}
-                {payment.status === "awaiting_slip" && payment.failure_code && PROVIDER_FAILURE_CODES.has(payment.failure_code) && (
+                {needsBankReview && (
                   <div className="mt-4 rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-amber-100">
-                    <p className="font-bold">ระบบตรวจสลิปขัดข้อง · ต้องตรวจยอดจากบัญชีธนาคาร</p>
-                    <p className="mt-1 text-xs">ยังไม่ยืนยันการชำระเงินและยังไม่ส่งงานให้คลังแพ็ก</p>
+                    <p className="font-bold">{recoveryMode ? "ออเดอร์รอตรวจเงิน · กู้เลขเดิมได้หลังตรวจยอด" : "ระบบตรวจสลิปขัดข้อง · ต้องตรวจยอดจากบัญชีธนาคาร"}</p>
+                    <p className="mt-1 text-xs">ยังไม่ยืนยันการชำระเงินและยังไม่ส่งงานให้คลังแพ็ก {recoveryMode && "ระบบจะตรวจสต็อกอีกครั้งก่อนกู้รายการ"}</p>
                     <p className="mt-2 text-xs">
                       แจ้ง Telegram: {paymentAlert?.status === "sent"
                         ? `ส่งแล้ว ${new Date(paymentAlert.sent_at || "").toLocaleString("th-TH")}`
@@ -454,7 +468,7 @@ export default function AdminOrderDetailPage() {
                         {sendingPaymentAlert ? "กำลังส่ง..." : paymentAlert?.status === "sent" ? "ส่งแจ้งเตือน Telegram ซ้ำ" : "แจ้ง Telegram ให้ตรวจยอดทันที"}
                       </button>
                     )}
-                    {can("payments.manual_verify") && order.status === "pending" && new Date(payment.expires_at).getTime() > Date.now() && (
+                    {can("payments.manual_verify") && (recoveryMode || (order.status === "pending" && new Date(payment.expires_at).getTime() > Date.now())) && (
                       <div className="mt-5 space-y-3 border-t border-amber-200/20 pt-4">
                         <div>
                           <p className="font-bold">ยืนยันเงินเข้าบัญชีด้วยตนเอง</p>
@@ -487,7 +501,7 @@ export default function AdminOrderDetailPage() {
                         </div>
                         <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={manualBankConfirmed} onChange={(event) => setManualBankConfirmed(event.target.checked)} className="mt-0.5" />ฉันตรวจยอดเงินเข้าบัญชีร้านจริงแล้ว และเลขอ้างอิงนี้ไม่เคยใช้ยืนยันออเดอร์อื่น</label>
                         <button type="button" onClick={verifyManualBankPayment} disabled={isManuallyVerifying || !manualBankConfirmed || !manualAmount || manualBankReference.trim().length < 6 || manualNote.trim().length < 10} className="rounded-lg bg-acid-lime px-4 py-3 font-black text-navy-deep disabled:cursor-not-allowed disabled:opacity-40">
-                          {isManuallyVerifying ? "กำลังยืนยัน..." : "ยืนยันเงินเข้าและส่งงานเข้าคลัง"}
+                          {isManuallyVerifying ? "กำลังยืนยัน..." : recoveryMode ? "ตรวจสต็อก กู้ออเดอร์ และส่งงานคลัง" : "ยืนยันเงินเข้าและส่งงานเข้าคลัง"}
                         </button>
                       </div>
                     )}

@@ -338,8 +338,10 @@ export async function manuallyVerifyLineOrderPayment(input: {
   note: string;
   verifiedBy: string;
   slipPath?: string | null;
+  recoveryMode?: boolean;
 }) {
-  const { data, error } = await getServerSupabase().rpc("manually_verify_line_order_payment_with_slip", {
+  const { data, error } = await getServerSupabase().rpc(
+    input.recoveryMode ? "recover_line_order_payment" : "manually_verify_line_order_payment_with_slip", {
     p_order_id: input.orderId,
     p_amount: input.amount,
     p_bank_reference: input.bankReference,

@@ -165,7 +165,7 @@ export async function listOrders(options: {
 
   const { data: payments, error: paymentError } = await getUncachedServerSupabase()
     .from("order_payment_requests")
-    .select("order_id,status,expires_at,failure_code")
+    .select("order_id,status,expires_at,failure_code,line_message_id")
     .in("order_id", orderIds);
   if (paymentError && paymentError.code !== "42P01") throw paymentError;
 
@@ -202,7 +202,7 @@ export async function getOrderDetail(orderId: string) {
       .order("created_at", { ascending: true }),
     client
       .from("order_payment_requests")
-      .select("id,status,expected_amount,requested_at,expires_at,actual_amount,account_matched,amount_matched,is_duplicate,failure_code,verified_at,verification_method,provider_transaction_ref,manual_verified_by,manual_verification_note,manual_slip_path")
+      .select("id,status,expected_amount,requested_at,expires_at,actual_amount,account_matched,amount_matched,is_duplicate,failure_code,verified_at,verification_method,provider_transaction_ref,manual_verified_by,manual_verification_note,manual_slip_path,line_message_id")
       .eq("order_id", orderId)
       .maybeSingle(),
     client.from("telegram_notification_events")

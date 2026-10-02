@@ -30,11 +30,11 @@ const statusStyles: Record<string, string> = {
   shipped: "border-violet-400/30 bg-violet-400/10 text-violet-300",
 };
 
-function OrderProgress({ status }: { status: string }) {
+function OrderProgress({ status, paymentReview = false }: { status: string; paymentReview?: boolean }) {
   const current = status === "draft" ? 0 : status === "pending" ? 1 : status === "confirmed" ? 2 : 3;
   const steps = [
     { label: "รับออเดอร์", icon: "📝" },
-    { label: "รอชำระเงิน", icon: "💳" },
+    { label: paymentReview ? "รอตรวจยอดเงิน" : "รอชำระเงิน", icon: "💳" },
     { label: "เตรียมจัดส่ง", icon: "📦" },
     { label: "จัดส่งแล้ว", icon: "🚚" },
   ];
@@ -113,8 +113,8 @@ export default async function MemberPage() {
   }
 
   const defaultAddress = dashboard.addresses.find((address) => address.is_default) ?? dashboard.addresses[0];
-  const activeOrders = dashboard.orders.filter((order) => order.status !== "cancelled" && order.status !== "delivered");
-  const historyOrders = dashboard.orders.filter((order) => order.status === "cancelled" || order.status === "delivered");
+  const activeOrders = dashboard.orders.filter((order) => order.paymentReview || (order.status !== "cancelled" && order.status !== "delivered"));
+  const historyOrders = dashboard.orders.filter((order) => !order.paymentReview && (order.status === "cancelled" || order.status === "delivered"));
   const reviewOrders = dashboard.orders.filter((order) => order.status !== "cancelled");
   const displayInitial = dashboard.customer.full_name.trim().charAt(0).toUpperCase() || "VIP";
 
@@ -439,7 +439,11 @@ export default async function MemberPage() {
                       </p>
                     </div>
 
-                    {isPending ? (
+                    {order.paymentReview ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/40 bg-amber-300/15 px-3.5 py-1.5 text-xs font-black text-amber-100">
+                        รับสลิปแล้ว · เจ้าหน้าที่กำลังตรวจยอด
+                      </span>
+                    ) : isPending ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/40 bg-sky-500/20 px-3.5 py-1.5 text-xs font-black text-sky-300 shadow-md">
                         <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
                         <span>จองสต็อกแล้ว · รอชำระเงิน</span>
@@ -470,7 +474,7 @@ export default async function MemberPage() {
                       ) : isConfirmed ? (
                         <p className="mt-0.5 text-sm font-black text-sky-200">กำลังเตรียมจัดส่ง</p>
                       ) : (
-                        <p className="mt-0.5 text-sm font-bold text-amber-200">รอโอนเงินเพื่อยืนยัน</p>
+                        <p className="mt-0.5 text-sm font-bold text-amber-200">{order.paymentReview ? "รอเจ้าหน้าที่ตรวจยอดเงิน · ไม่ต้องโอนซ้ำ" : "รอโอนเงินเพื่อยืนยัน"}</p>
                       )}
                     </div>
                   </div>
@@ -485,7 +489,7 @@ export default async function MemberPage() {
                   )}
 
                   {/* Items snapshot & Delivery Address */}
-                  {(order.status === "draft" || order.status === "pending") && (
+                  {(order.status === "draft" || order.status === "pending" || order.paymentReview) && (
                     <div className="mt-4 rounded-2xl border border-white/10 bg-black/30 p-4 backdrop-blur-md">
                       <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-white/10">
                         <p className="text-xs font-black text-white flex items-center gap-1.5">
@@ -531,7 +535,7 @@ export default async function MemberPage() {
                   )}
 
                   {/* PENDING: LUXURY BANK CARD & THUNDER SLIP UPLOAD */}
-                  {order.status === "pending" && (
+                  {order.status === "pending" && !order.paymentReview && (
                     <div className="mt-5">
                       <OrderSlipUpload
                         orderId={String(order.id)}
@@ -576,10 +580,10 @@ export default async function MemberPage() {
                   )}
 
                   {/* STEP PROGRESS TIMELINE */}
-                  {!["cancelled", "delivered"].includes(order.status) && <OrderProgress status={order.status} />}
+                  {(order.paymentReview || !["cancelled", "delivered"].includes(order.status)) && <OrderProgress status={order.paymentReview ? "pending" : order.status} paymentReview={order.paymentReview} />}
 
                   {/* CANCEL OR EDIT ACTIONS */}
-                  {(order.status === "draft" || order.status === "pending") && (
+                  {(order.status === "draft" || order.status === "pending") && !order.paymentReview && (
                     <MemberOrderActions
                       orderId={String(order.id)}
                       orderNumber={order.order_number}

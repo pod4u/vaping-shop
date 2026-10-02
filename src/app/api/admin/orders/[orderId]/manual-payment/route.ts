@@ -39,6 +39,7 @@ export async function POST(request: NextRequest, { params }: { params: { orderId
     const amountText = String(body.get("amount") ?? "").trim();
     const bankReference = String(body.get("bankReference") ?? "").trim();
     const note = String(body.get("note") ?? "").trim();
+    const recoveryMode = body.get("recoveryMode") === "true";
     if (!/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/.test(amountText)
       || Number(amountText) <= 0
       || bankReference.length < 6 || bankReference.length > 100
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest, { params }: { params: { orderId
         note,
         verifiedBy: `${session.accountId}:${session.role}`,
         slipPath,
+        recoveryMode,
       });
     } catch (error) {
       if (slipPath) await storage.remove([slipPath]).catch(() => undefined);
@@ -104,8 +106,8 @@ export async function POST(request: NextRequest, { params }: { params: { orderId
       message: result.idempotentReplay
         ? "ออเดอร์นี้ได้รับการยืนยันด้วยการตรวจยอดธนาคารไปแล้ว"
         : lineSent === false || telegram === "failed" || telegram === "not_configured"
-          ? "ยืนยันยอดและส่งงานเข้าคลังแล้ว แต่มีข้อความแจ้งเตือนส่งไม่สำเร็จ กรุณาตรวจ LINE และ Telegram"
-          : "ยืนยันเงินเข้าบัญชี ส่งงานเข้าคลัง และแจ้งลูกค้าเรียบร้อยแล้ว",
+          ? `${recoveryMode ? "กู้ออเดอร์เดิมและ" : ""}ยืนยันยอด ส่งงานเข้าคลังแล้ว แต่มีข้อความแจ้งเตือนส่งไม่สำเร็จ กรุณาตรวจ LINE และ Telegram`
+          : `${recoveryMode ? "กู้ออเดอร์เดิม " : ""}ยืนยันเงินเข้าบัญชี ส่งงานเข้าคลัง และแจ้งลูกค้าเรียบร้อยแล้ว`,
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof OrderInputError || error instanceof SyntaxError) {
@@ -116,8 +118,11 @@ export async function POST(request: NextRequest, { params }: { params: { orderId
     if (code === "23505") {
       return NextResponse.json({ success: false, error: "เลขอ้างอิงธนาคารนี้ถูกใช้กับออเดอร์อื่นแล้ว" }, { status: 409 });
     }
+    if (code === "P0001") {
+      return NextResponse.json({ success: false, error: "สินค้าคงเหลือไม่เพียงพอ ยังไม่กู้ออเดอร์หรือส่งงานคลัง กรุณาติดต่อลูกค้าเพื่อเปลี่ยนสินค้าหรือคืนเงิน" }, { status: 409 });
+    }
     if (code === "55000" || code === "P0002") {
-      return NextResponse.json({ success: false, error: "ออเดอร์นี้ไม่อยู่ในเงื่อนไขยืนยันด้วยมือ หรือเวลาจองสินค้าหมดแล้ว กรุณารีเฟรชหน้า" }, { status: 409 });
+      return NextResponse.json({ success: false, error: "ออเดอร์หรือหลักฐานไม่อยู่ในเงื่อนไขยืนยัน กรุณารีเฟรชและตรวจสถานะก่อนลองใหม่" }, { status: 409 });
     }
     console.error("Manual bank payment confirmation failed", { code });
     return NextResponse.json({ success: false, error: "ยืนยันการชำระเงินไม่สำเร็จ กรุณาตรวจสอบสถานะก่อนลองใหม่" }, { status: 500 });

@@ -10,12 +10,13 @@ interface OrderRow {
   order_number: string;
   order_source: "admin_manual" | "line";
   status: string;
+  cancelled_by: string | null;
   shipping_name: string;
   discount_amount: number | string;
   total: number | string;
   created_at: string;
   customer: { id: number; full_name: string; phone: string } | null;
-  payment: { status: string; expires_at: string; failure_code: string | null } | null;
+  payment: { status: string; expires_at: string; failure_code: string | null; line_message_id: string | null } | null;
 }
 
 const PROVIDER_FAILURE_CODES = new Set([
@@ -24,7 +25,7 @@ const PROVIDER_FAILURE_CODES = new Set([
   "RENEWAL_TEMPORARILY_UNAVAILABLE", "SERVICE_EXPIRED",
 ]);
 
-type QueueFilter = "active" | "draft" | "pending" | "confirmed" | "shipped" | "history" | "all";
+type QueueFilter = "active" | "review" | "draft" | "pending" | "confirmed" | "shipped" | "history" | "all";
 
 const STATUS_META: Record<string, { label: string; next: string; className: string }> = {
   draft: { label: "รอตรวจออเดอร์", next: "ตรวจสินค้า ราคา และที่อยู่ แล้วส่งยอดชำระ", className: "border-amber-300/30 bg-amber-300/10 text-amber-100" },
@@ -37,6 +38,7 @@ const STATUS_META: Record<string, { label: string; next: string; className: stri
 
 const FILTERS: { value: QueueFilter; label: string }[] = [
   { value: "active", label: "งานที่กำลังดำเนินการ" },
+  { value: "review", label: "ต้องตรวจยอดธนาคาร" },
   { value: "draft", label: "รอตรวจ" },
   { value: "pending", label: "รอลูกค้าชำระ" },
   { value: "confirmed", label: "เตรียมจัดส่ง" },
@@ -53,6 +55,17 @@ function maskPhone(phone: string | undefined) {
   if (!phone) return "ไม่ระบุเบอร์";
   const digits = phone.replace(/\D/g, "");
   return digits.length >= 4 ? `เบอร์ลงท้าย ${digits.slice(-4)}` : phone;
+}
+
+function needsBankReview(order: OrderRow) {
+  const payment = order.payment;
+  if (!payment?.line_message_id) return false;
+  if (order.status === "pending" && payment.status === "failed"
+    && PROVIDER_FAILURE_CODES.has(payment.failure_code ?? "")) return true;
+  if (order.status === "pending" && payment.status === "awaiting_slip"
+    && PROVIDER_FAILURE_CODES.has(payment.failure_code ?? "")) return true;
+  return order.status === "cancelled" && order.cancelled_by === "system:payment-timeout"
+    && payment.status === "expired" && payment.failure_code === "PAYMENT_WINDOW_EXPIRED";
 }
 
 function QueueCard({ icon: Icon, label, count, active, onClick }: { icon: typeof ClipboardList; label: string; count: number; active: boolean; onClick: () => void }) {
@@ -97,18 +110,20 @@ export default function AdminOrdersPage() {
   }, []);
 
   const counts = useMemo(() => ({
-    active: orders.filter((order) => ["draft", "pending", "confirmed", "shipped"].includes(order.status)).length,
+    active: orders.filter((order) => ["draft", "pending", "confirmed", "shipped"].includes(order.status) || needsBankReview(order)).length,
+    review: orders.filter(needsBankReview).length,
     draft: orders.filter((order) => order.status === "draft").length,
     pending: orders.filter((order) => order.status === "pending").length,
     confirmed: orders.filter((order) => order.status === "confirmed").length,
     shipped: orders.filter((order) => order.status === "shipped").length,
-    history: orders.filter((order) => ["delivered", "cancelled"].includes(order.status)).length,
+    history: orders.filter((order) => ["delivered", "cancelled"].includes(order.status) && !needsBankReview(order)).length,
     all: orders.length,
   }), [orders]);
 
   const visibleOrders = useMemo(() => orders.filter((order) => {
-    if (filter === "active") return ["draft", "pending", "confirmed", "shipped"].includes(order.status);
-    if (filter === "history") return ["delivered", "cancelled"].includes(order.status);
+    if (filter === "active") return ["draft", "pending", "confirmed", "shipped"].includes(order.status) || needsBankReview(order);
+    if (filter === "review") return needsBankReview(order);
+    if (filter === "history") return ["delivered", "cancelled"].includes(order.status) && !needsBankReview(order);
     if (filter === "all") return true;
     return order.status === filter;
   }), [filter, orders]);
@@ -126,8 +141,9 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <QueueCard icon={ClipboardCheck} label="รอตรวจออเดอร์" count={counts.draft} active={filter === "draft"} onClick={() => setFilter("draft")} />
+        <QueueCard icon={CircleDollarSign} label="ต้องตรวจยอดธนาคาร" count={counts.review} active={filter === "review"} onClick={() => setFilter("review")} />
         <QueueCard icon={CircleDollarSign} label="รอลูกค้าชำระ" count={counts.pending} active={filter === "pending"} onClick={() => setFilter("pending")} />
         <QueueCard icon={PackageCheck} label="เตรียมจัดส่ง" count={counts.confirmed} active={filter === "confirmed"} onClick={() => setFilter("confirmed")} />
         <QueueCard icon={Truck} label="จัดส่งแล้ว" count={counts.shipped} active={filter === "shipped"} onClick={() => setFilter("shipped")} />
@@ -136,7 +152,7 @@ export default function AdminOrdersPage() {
       <Card className="border-sky-300/20 bg-sky-300/10">
         <CardContent className="py-4 text-sm text-sky-100">
           <strong>ขั้นตอนทำงาน:</strong> ตรวจออเดอร์และส่งยอดครั้งเดียว → รอลูกค้าส่งสลิป → ระบบยืนยันการชำระ → แพ็กและยืนยันการจัดส่ง<br />
-          <span className="text-white/60">ถ้าลูกค้าไม่ส่งสลิปภายในเวลาที่แจ้ง ระบบจะยกเลิกออเดอร์อัตโนมัติ โดยไม่ส่งข้อความเตือนซ้ำ</span>
+          <span className="text-white/60">ถ้าไม่มีสลิปตามเวลา ระบบจะยกเลิกอัตโนมัติ แต่ถ้ารับสลิปแล้วและตัวตรวจขัดข้อง จะพักไว้ให้ตรวจยอดธนาคาร ไม่ถือว่าไม่จ่าย</span>
         </CardContent>
       </Card>
 
@@ -159,14 +175,13 @@ export default function AdminOrdersPage() {
           {visibleOrders.map((order) => {
             const meta = STATUS_META[order.status] ?? { label: order.status, next: "เปิดดูรายละเอียด", className: "border-white/10 bg-white/5 text-white/70" };
             const paymentExpired = now > 0 && order.payment?.status === "awaiting_slip" && new Date(order.payment.expires_at).getTime() <= now;
-            const needsBankReview = order.status === "pending" && order.payment?.status === "awaiting_slip"
-              && !paymentExpired && PROVIDER_FAILURE_CODES.has(order.payment.failure_code ?? "");
+            const reviewNeeded = needsBankReview(order);
             return (
               <article key={order.id} className="bds-glass-card rounded-2xl p-4 hover:border-white/20">
                 <div className="grid gap-4 lg:grid-cols-[1fr_1fr_180px_auto] lg:items-center">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`rounded-full border px-2.5 py-1 text-xs font-bold ${needsBankReview ? "border-amber-300/40 bg-amber-300/15 text-amber-100" : meta.className}`}>{needsBankReview ? "ต้องตรวจยอดธนาคาร" : meta.label}</span>
+                      <span className={`rounded-full border px-2.5 py-1 text-xs font-bold ${reviewNeeded ? "border-amber-300/40 bg-amber-300/15 text-amber-100" : meta.className}`}>{reviewNeeded ? "ต้องตรวจยอดธนาคาร" : meta.label}</span>
                       <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-xs text-white/60">{order.order_source === "line" ? "LINE OA Pod4U · สมาชิกเชื่อมแล้ว" : "แอดมินบันทึก"}</span>
                     </div>
                     <Link href={`/admin/orders/${order.id}`} className="mt-3 block break-all font-mono text-sm font-black text-acid-lime hover:underline sm:text-base">{order.order_number}</Link>
@@ -175,11 +190,11 @@ export default function AdminOrdersPage() {
                   <div>
                     <p className="font-bold text-white">{order.customer?.full_name || order.shipping_name}</p>
                     <p className="mt-1 text-sm text-white/45">{maskPhone(order.customer?.phone)}</p>
-                    <p className="mt-2 text-sm text-white/70">{paymentExpired ? "หมดเวลาชำระแล้ว · ระบบกำลังยกเลิก" : needsBankReview ? "ได้รับสลิปแล้ว แต่ Thunder ขัดข้อง · เปิดดูและตรวจเงินเข้าบัญชีร้าน" : meta.next}</p>
+                    <p className="mt-2 text-sm text-white/70">{reviewNeeded ? "ได้รับสลิปแล้ว · ตรวจเงินเข้าบัญชีร้านก่อนกู้หรือยืนยัน" : paymentExpired ? "หมดเวลาชำระแล้ว · ระบบกำลังยกเลิก" : meta.next}</p>
                     {order.status === "pending" && order.payment?.status === "awaiting_slip" && !paymentExpired && <p className="mt-1 text-xs text-sky-200">รอถึง {formatDate(order.payment.expires_at)}</p>}
                   </div>
                   <div className="lg:text-right"><p className="text-xs text-white/40">ยอดออเดอร์</p><p className="mt-1 text-xl font-black text-white">฿{Number(order.total).toLocaleString("th-TH")}</p>{Number(order.discount_amount) > 0 && <p className="mt-1 text-xs font-bold text-acid-lime">ใช้เครดิตรีวิว −฿{Number(order.discount_amount).toLocaleString("th-TH")}</p>}</div>
-                  <Link href={`/admin/orders/${order.id}`} className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold ${order.status === "draft" ? "btn-liquid-acid text-navy-deep" : "btn-liquid-glass text-white/80"}`}>{order.status === "draft" ? "ตรวจออเดอร์" : needsBankReview ? "ตรวจยอดธนาคาร" : "เปิดรายละเอียด"}<ChevronRight className="h-4 w-4" /></Link>
+                  <Link href={`/admin/orders/${order.id}`} className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold ${order.status === "draft" ? "btn-liquid-acid text-navy-deep" : "btn-liquid-glass text-white/80"}`}>{order.status === "draft" ? "ตรวจออเดอร์" : reviewNeeded ? "ตรวจยอดธนาคาร" : "เปิดรายละเอียด"}<ChevronRight className="h-4 w-4" /></Link>
                 </div>
               </article>
             );
