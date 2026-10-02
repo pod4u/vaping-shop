@@ -382,28 +382,37 @@ export async function notifyPaymentVerificationProblem(
 async function buildPaymentVerificationProblemMessage(orderId: string) {
   const client = getUncachedServerSupabase();
   const [{ data: order, error: orderError }, { data: payment, error: paymentError }] = await Promise.all([
-    client.from("orders").select("id,order_number,total,status").eq("id", orderId).single(),
+    client.from("orders").select("id,order_number,total,status,cancelled_by").eq("id", orderId).single(),
     client.from("order_payment_requests")
       .select("status,failure_code,line_message_id,expires_at")
       .eq("order_id", orderId).single(),
   ]);
   if (orderError) throw orderError;
   if (paymentError) throw paymentError;
-  if (order.status !== "pending" || payment.status !== "awaiting_slip"
-    || !PAYMENT_PROVIDER_FAILURE_CODES.has(String(payment.failure_code))) {
+  const activeFailure = order.status === "pending" && payment.status === "awaiting_slip"
+    && PAYMENT_PROVIDER_FAILURE_CODES.has(String(payment.failure_code));
+  const parkedFailure = order.status === "pending" && payment.status === "failed"
+    && PAYMENT_PROVIDER_FAILURE_CODES.has(String(payment.failure_code));
+  const legacyTimeout = order.status === "cancelled" && order.cancelled_by === "system:payment-timeout"
+    && payment.status === "expired" && payment.failure_code === "PAYMENT_WINDOW_EXPIRED";
+  if (!payment.line_message_id || !(activeFailure || parkedFailure || legacyTimeout)) {
     throw new Error("Order is not awaiting manual review for a payment provider failure");
   }
+  const reservationLine = activeFailure
+    ? `จองสินค้าไว้ถึง: ${new Date(payment.expires_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}`
+    : "หมดเวลาจองสินค้าแล้ว · ระบบจะเช็กสต็อกใหม่หลังแอดมินตรวจยอดธนาคาร";
   return {
     text: [
       "⚠️ <b>ด่วน: ลูกค้าส่งสลิปแล้ว ระบบตรวจเงินขัดข้อง</b>",
-      "Thunder ตรวจสลิปไม่ได้ กรุณาเช็กยอดเงินเข้าในแอปธนาคารของร้าน",
+      "กรุณาเช็กยอดเงินเข้าในแอปธนาคารของร้าน ก่อนยืนยันออเดอร์",
       "⛔ ยังไม่ได้ยืนยันว่าชำระเงินจริง อย่าเพิ่งให้คลังแพ็กสินค้า",
       "",
       `เลขที่ ${escapeHtml(order.order_number)}`,
       `ยอดที่ต้องตรวจ ฿${currency(order.total)}`,
+      `สถานะ: ${legacyTimeout ? "ออเดอร์เดิมถูกยกเลิกเพราะหมดเวลา · กู้ได้หลังตรวจยอด" : parkedFailure ? "พักออเดอร์ไว้รอตรวจยอด" : "รอเจ้าหน้าที่ตรวจยอด"}`,
       `สาเหตุ: ${escapeHtml(payment.failure_code)}`,
       `รับสลิปใน LINE: ${payment.line_message_id ? "แล้ว" : "ยังไม่มีข้อมูล"}`,
-      `จองสินค้าไว้ถึง: ${new Date(payment.expires_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}`,
+      reservationLine,
     ].join("\n"),
     url: `${APP_URL}/admin/orders/${encodeURIComponent(order.id)}`,
   };

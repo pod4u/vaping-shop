@@ -251,7 +251,23 @@ export default function AdminOrderDetailPage() {
   }
 
   async function verifyManualBankPayment() {
-    if (!order || !payment || !manualBankConfirmed) return;
+    if (!order || !payment) return;
+    if (!manualAmount || Number(manualAmount) !== Number(payment.expected_amount)) {
+      setError(`กรุณากรอกยอดเงินที่เห็นเข้าบัญชีจริงให้ตรงกับออเดอร์ ฿${Number(payment.expected_amount).toFixed(2)}`);
+      return;
+    }
+    if (manualBankReference.trim().length < 6) {
+      setError("กรุณากรอกเลขอ้างอิงจริงจากรายการเงินเข้าธนาคารอย่างน้อย 6 ตัวอักษร (0000 ยังไม่เพียงพอ)");
+      return;
+    }
+    if (manualNote.trim().length < 10) {
+      setError("กรุณาบันทึกวิธีตรวจยอดและหลักฐานอย่างน้อย 10 ตัวอักษร");
+      return;
+    }
+    if (!manualBankConfirmed) {
+      setError("กรุณาตรวจรายการเงินเข้าในบัญชีธนาคารจริง แล้วติ๊กช่องยืนยันก่อนดำเนินการ");
+      return;
+    }
     const recoveryMode = (order.status === "cancelled" && payment.status === "expired")
       || (order.status === "pending" && payment.status === "failed");
     if (!window.confirm(`ยืนยันว่าเห็นเงินเข้าบัญชีร้านจริง ฿${manualAmount} สำหรับออเดอร์ ${order.order_number}? ${recoveryMode ? "ระบบจะตรวจสต็อกใหม่และกู้ออเดอร์เดิม" : "ระบบจะยืนยันออเดอร์"} แล้วส่งงานเข้าคลังทันที`)) return;
@@ -472,7 +488,7 @@ export default function AdminOrderDetailPage() {
                       <div className="mt-5 space-y-3 border-t border-amber-200/20 pt-4">
                         <div>
                           <p className="font-bold">ยืนยันเงินเข้าบัญชีด้วยตนเอง</p>
-                          <p className="mt-1 text-xs text-amber-100/75">ใช้เฉพาะเมื่อเปิดดูรายการเงินเข้าจริงในแอปธนาคารของร้านแล้ว สลิปอย่างเดียวไม่เพียงพอ</p>
+                          <p className="mt-1 text-xs text-amber-100/75">กรอกยอดและเลขอ้างอิงจากรายการเงินเข้าในแอปธนาคารจริง ติ๊กยืนยัน แล้วกดปุ่มด้านล่าง สลิปอย่างเดียวไม่เพียงพอ</p>
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                           <label className="block text-xs">ยอดเงินที่เห็นเข้าบัญชีจริง
@@ -487,11 +503,11 @@ export default function AdminOrderDetailPage() {
                         </label>
                         <div className="space-y-2">
                           <label htmlFor="manual-payment-slip" onDragOver={(event) => { event.preventDefault(); setIsDraggingSlip(true); }} onDragLeave={() => setIsDraggingSlip(false)} onDrop={(event) => { event.preventDefault(); setIsDraggingSlip(false); chooseManualSlip(event.dataTransfer.files[0] ?? null); }}
-                            className={`flex min-h-28 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed p-4 text-center text-xs transition-colors ${isDraggingSlip ? "border-acid-lime bg-acid-lime/15" : "border-amber-200/30 bg-navy-deep/50 hover:border-acid-lime/60"}`}>
+                            className={`relative flex min-h-28 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed p-4 text-center text-xs transition-colors ${isDraggingSlip ? "border-acid-lime bg-acid-lime/15" : "border-amber-200/30 bg-navy-deep/50 hover:border-acid-lime/60"}`}>
                             <Upload className="h-6 w-6" aria-hidden="true" />
-                            <span className="font-bold">ลากสลิปมาวาง หรือกดเลือกไฟล์</span>
-                            <span className="text-amber-100/70">JPG, PNG, WebP ไม่เกิน 4 MB · หลักฐานประกอบเท่านั้น</span>
-                            <input id="manual-payment-slip" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => chooseManualSlip(event.target.files?.[0] ?? null)} />
+                            <span className="font-bold">แนบสลิปเพิ่ม (ไม่บังคับ) · คลิกเพื่อเลือกไฟล์หรือลากมาวาง</span>
+                            <span className="text-amber-100/70">หากลูกค้าส่งสลิปใน LINE แล้ว ไม่ต้องแนบซ้ำ · JPG, PNG, WebP ไม่เกิน 4 MB</span>
+                            <input id="manual-payment-slip" type="file" accept="image/jpeg,image/png,image/webp" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" onChange={(event) => chooseManualSlip(event.target.files?.[0] ?? null)} />
                           </label>
                           {manualSlip && <div className="flex items-center gap-3 rounded-lg border border-white/15 p-2 text-xs">
                             {manualSlipPreview && <img src={manualSlipPreview} alt="ตัวอย่างสลิปที่จะแนบ" className="h-16 w-16 rounded object-cover" />}
@@ -500,7 +516,7 @@ export default function AdminOrderDetailPage() {
                           </div>}
                         </div>
                         <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={manualBankConfirmed} onChange={(event) => setManualBankConfirmed(event.target.checked)} className="mt-0.5" />ฉันตรวจยอดเงินเข้าบัญชีร้านจริงแล้ว และเลขอ้างอิงนี้ไม่เคยใช้ยืนยันออเดอร์อื่น</label>
-                        <button type="button" onClick={verifyManualBankPayment} disabled={isManuallyVerifying || !manualBankConfirmed || !manualAmount || manualBankReference.trim().length < 6 || manualNote.trim().length < 10} className="rounded-lg bg-acid-lime px-4 py-3 font-black text-navy-deep disabled:cursor-not-allowed disabled:opacity-40">
+                        <button type="button" onClick={verifyManualBankPayment} disabled={isManuallyVerifying} className="rounded-lg bg-acid-lime px-4 py-3 font-black text-navy-deep disabled:cursor-not-allowed disabled:opacity-40">
                           {isManuallyVerifying ? "กำลังยืนยัน..." : recoveryMode ? "ตรวจสต็อก กู้ออเดอร์ และส่งงานคลัง" : "ยืนยันเงินเข้าและส่งงานเข้าคลัง"}
                         </button>
                       </div>

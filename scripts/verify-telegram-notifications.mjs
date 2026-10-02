@@ -36,8 +36,11 @@ assert.match(notifications, /โทร: \$\{escapeHtml\(order\.shipping_phone\)\
 assert.match(notifications, /ที่อยู่: \$\{address\}/, "paid alerts must provide the complete warehouse address");
 assert.match(notifications, /เปิดงานในระบบคลัง/, "paid alerts must link to the warehouse job");
 assert.match(notifications, /เลขที่ TEST-P4U-0001/, "test alert must use an unmistakable fake order number");
+assert.match(notifications, /const parkedFailure = order\.status === "pending" && payment\.status === "failed"/, "parked provider failures must allow manual review alerts");
+assert.match(notifications, /const legacyTimeout = order\.status === "cancelled" && order\.cancelled_by === "system:payment-timeout"/, "legacy auto-cancelled slip orders must allow manual review alerts");
+assert.match(notifications, /!payment\.line_message_id \|\| !\(activeFailure \|\| parkedFailure \|\| legacyTimeout\)/, "manual review alerts must require a received LINE slip");
 assert.doesNotMatch(orders, /notifyOrderCreatedSafely/, "draft order creation must not alert Telegram");
 assert.match(linePayment, /notifyPaymentReceivedSafely\(payment\.order_id\)/, "LINE slip verification must alert Telegram after confirmation");
 assert.match(memberSlip, /notifyPaymentReceivedSafely\(order\.id\)/, "member slip verification must alert Telegram after confirmation");
 
-console.log("Telegram paid-order notification verification passed (29 checks)");
+console.log("Telegram paid-order notification verification passed");

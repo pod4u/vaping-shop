@@ -26,9 +26,14 @@ export async function POST(
       headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
+    console.error("Telegram payment review alert failed", {
+      message: error instanceof Error ? error.message : "unknown",
+    });
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : "ส่งแจ้งเตือน Telegram ไม่สำเร็จ",
+      error: error instanceof Error && error.message === "Order is not awaiting manual review for a payment provider failure"
+        ? "ออเดอร์นี้ไม่อยู่ในสถานะรอตรวจยอด กรุณารีเฟรชหน้าตรวจสถานะล่าสุด"
+        : "ส่งแจ้งเตือน Telegram ไม่สำเร็จ กรุณาลองใหม่หรือตรวจการเชื่อมต่อบอต",
     }, { status: 502, headers: { "Cache-Control": "no-store" } });
   }
 }
