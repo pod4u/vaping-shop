@@ -9,6 +9,7 @@ import MemberOrderActions from "./MemberOrderActions";
 import MemberPasswordSettings from "./MemberPasswordSettings";
 import MemberProfileEditor from "./MemberProfileEditor";
 import MemberReviewForm from "./MemberReviewForm";
+import MemberStatusRefresh from "./MemberStatusRefresh";
 import OrderSlipUpload from "@/components/OrderSlipUpload";
 
 export const dynamic = "force-dynamic";
@@ -392,6 +393,8 @@ export default async function MemberPage() {
             <span>+ สั่งซื้อเพิ่ม</span>
           </Link>
         </div>
+
+        <div className="mb-4 flex justify-end"><MemberStatusRefresh /></div>
 
         {dashboard.orders.length === 0 ? (
           <div className="bds-glass-card rounded-3xl p-10 text-center">

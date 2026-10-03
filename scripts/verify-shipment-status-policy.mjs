@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 const member = read("src/app/(public)/member/page.tsx");
+const memberRefresh = read("src/app/(public)/member/MemberStatusRefresh.tsx");
 const memberService = read("src/lib/member-service.ts");
 const adminDetail = read("src/app/admin/orders/[orderId]/page.tsx");
 const adminStatusApi = read("src/app/api/admin/orders/[orderId]/status/route.ts");
@@ -37,6 +38,10 @@ assert.match(adminDetail, /ส่งงานเข้าคลังแล้�
 assert.match(adminDetail, /แอดมินไม่ต้องกดยืนยันซ้ำ/, "admin UI must state that no duplicate admin action is required");
 assert.match(warehouseDetail, /ยืนยันว่าจัดส่งแล้ว/, "warehouse UI must provide a shipment confirmation action");
 assert.match(member, /ชำระแล้ว \/ กำลังเตรียมจัดส่ง/, "member UI must clearly show paid orders are being prepared for shipment");
+assert.match(member, /<MemberStatusRefresh \/>/, "member must offer a visible status refresh control");
+assert.match(memberRefresh, /visibilitychange/, "member must refresh when returning to LINE after backgrounding");
+assert.match(memberRefresh, /router\.refresh\(\)/, "member refresh must refetch the server-rendered order state");
+assert.match(memberService, /getUncachedServerSupabase\(\)/, "member status must bypass stale cached database reads");
 assert.doesNotMatch(adminStatusApi, /pushMessage|getOrderLineRecipient|lineNotificationSent/, "admin shipment must not push LINE messages");
 assert.doesNotMatch(warehouseShipmentApi, /pushMessage|getOrderLineRecipient|lineNotificationSent/, "warehouse shipment must not push LINE messages");
 assert.doesNotMatch(adminStatusApi, /markOrderShipped|markOrderDelivered|"ship"|"deliver"/, "admin API must not bypass the warehouse workflow");

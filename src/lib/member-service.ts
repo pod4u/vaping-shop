@@ -1,9 +1,9 @@
 import "server-only";
 
-import { getServerSupabase } from "@/lib/supabase";
+import { getUncachedServerSupabase } from "@/lib/supabase";
 
 export async function getMemberDashboard(customerId: number) {
-  const client = getServerSupabase();
+  const client = getUncachedServerSupabase();
   const [customerResult, addressResult, orderResult, authAccountResult] = await Promise.all([
     client.from("customers").select("id,full_name,phone,email,total_orders,total_spent,created_at,is_active").eq("id", customerId).maybeSingle(),
     client.from("customer_addresses").select("id,recipient_name,phone,address,province,postal_code,is_default").eq("customer_id", customerId).order("is_default", { ascending: false }).order("created_at", { ascending: false }),
