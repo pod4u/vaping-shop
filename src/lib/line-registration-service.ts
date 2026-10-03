@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createHmac, randomBytes } from "node:crypto";
-import { getServerSupabase } from "@/lib/supabase";
+import { getServerSupabase, getUncachedServerSupabase } from "@/lib/supabase";
 import { createLineMemberAccessToken } from "@/lib/member-auth";
 import type { RegistrationInput } from "@/lib/customer-validation";
 import { getConfiguredLineAccounts } from "@/lib/line-account";
@@ -241,7 +241,7 @@ export async function getLineOrderStatus(input: {
   providerAccountId: string;
   providerUserId: string;
 }) {
-  const client = getServerSupabase();
+  const client = getUncachedServerSupabase();
   const { data: identity, error: identityError } = await client
     .from("customer_identities")
     .select("customer_id")
@@ -256,13 +256,39 @@ export async function getLineOrderStatus(input: {
 
   const { data: orders, error: orderError } = await client
     .from("orders")
-    .select("order_number,status,total,created_at,shipped_at")
+    .select("id,order_number,status,cancelled_by,total,created_at,shipped_at")
     .eq("customer_id", identity.customer_id)
     .order("created_at", { ascending: false })
     .limit(3);
   if (orderError) throw orderError;
 
-  return { linked: true as const, orders: orders ?? [] };
+  if (!orders?.length) return { linked: true as const, orders: [] };
+
+  const { data: payments, error: paymentError } = await client
+    .from("order_payment_requests")
+    .select("order_id,status,failure_code,line_message_id")
+    .in("order_id", orders.map((order) => order.id));
+  if (paymentError) throw paymentError;
+  const paymentByOrderId = new Map((payments ?? []).map((payment) => [payment.order_id, payment]));
+  const providerFailureCodes = new Set([
+    "API_SERVER_ERROR", "BRANCH_INACTIVE", "INTERNAL_SERVER_ERROR", "INVALID_API_KEY",
+    "IP_NOT_ALLOWED", "MISSING_API_KEY", "QUOTA_EXCEEDED",
+    "RENEWAL_TEMPORARILY_UNAVAILABLE", "SERVICE_EXPIRED",
+  ]);
+
+  return {
+    linked: true as const,
+    orders: orders.map((order) => {
+      const payment = paymentByOrderId.get(order.id);
+      const paymentReview = Boolean(payment?.line_message_id && (
+        (order.status === "pending" && (payment.status === "awaiting_slip" || payment.status === "failed")
+          && providerFailureCodes.has(payment.failure_code ?? ""))
+        || (order.status === "cancelled" && order.cancelled_by === "system:payment-timeout"
+          && payment.status === "expired" && payment.failure_code === "PAYMENT_WINDOW_EXPIRED")
+      ));
+      return { ...order, paymentReview };
+    }),
+  };
 }
 
 export async function getLineSalesContext(input: {

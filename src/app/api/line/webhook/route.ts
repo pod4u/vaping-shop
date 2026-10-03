@@ -257,13 +257,7 @@ async function handleMessage(
   }
 
   if (isTrackingQuestion(normalizedMessage)) {
-    await replyWithSalesPrompt(
-      replyToken,
-      '📦 ทางร้านใช้สถานะการจัดส่งในระบบสมาชิกแทนเลขพัสดุค่ะ หากสถานะขึ้นว่า “จัดส่งแล้ว” กรุณารอรับสินค้าภายในไม่เกิน 2 วัน',
-      await resolveSalesContext(event, destination),
-      'ต้องการเปิดหน้าออเดอร์เพื่อตรวจสอบตอนนี้เลยไหมคะ',
-      'orders',
-    );
+    await replyWithOrderStatus(event, destination, true);
     return;
   }
 
@@ -730,7 +724,7 @@ async function replyWithGreeting(event: any, destination: string) {
   await sendReply(replyToken, buildGreetingMessage(context, getActiveLineAccount().alias));
 }
 
-async function replyWithOrderStatus(event: any, destination: string) {
+async function replyWithOrderStatus(event: any, destination: string, trackingQuestion = false) {
   const replyToken = event.replyToken;
   if (event.source?.type !== 'user') {
     await replyMessage(replyToken, 'กรุณาตรวจสอบออเดอร์ในแชทส่วนตัวกับ LINE OA เท่านั้นค่ะ');
@@ -760,11 +754,11 @@ async function replyWithOrderStatus(event: any, destination: string) {
     }
 
     const lines = result.orders.map((order) =>
-      `• ${order.order_number}\n  สถานะ: ${formatOrderStatus(order.status)}`,
+      `• ${order.order_number}\n  สถานะ: ${formatOrderStatus(order.status, order.paymentReview)}`,
     );
     await sendReply(replyToken, {
       type: 'text',
-      text: `📦 ออเดอร์ล่าสุด\n\n${lines.join('\n\n')}\n\nต้องการเปิดดูรายละเอียดออเดอร์ไหนคะ`,
+      text: `${trackingQuestion ? '📦 ร้านใช้สถานะในระบบสมาชิกแทนเลขพัสดุค่ะ ถ้ายังรอตรวจยอดหรือเตรียมจัดส่ง แปลว่ายังไม่ส่งพัสดุ\n\n' : ''}📦 ออเดอร์ล่าสุด\n\n${lines.join('\n\n')}\n\nต้องการเปิดดูรายละเอียดออเดอร์ไหนคะ`,
       quickReply: { items: buildSalesQuickReply({ linked: true, hasDefaultAddress: true }, 'orders') },
     });
   } catch {
@@ -773,7 +767,8 @@ async function replyWithOrderStatus(event: any, destination: string) {
   }
 }
 
-function formatOrderStatus(status: unknown): string {
+function formatOrderStatus(status: unknown, paymentReview = false): string {
+  if (paymentReview) return 'รับสลิปแล้ว · เจ้าหน้าที่กำลังตรวจยอด · ยังไม่จัดส่ง';
   const labels: Record<string, string> = {
     draft: 'รอลูกค้ายืนยันสต๊อก',
     pending: 'จองสินค้า/รอตรวจสลิป',

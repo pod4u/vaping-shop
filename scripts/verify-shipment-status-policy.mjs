@@ -42,6 +42,9 @@ assert.match(member, /<MemberStatusRefresh \/>/, "member must offer a visible st
 assert.match(memberRefresh, /visibilitychange/, "member must refresh when returning to LINE after backgrounding");
 assert.match(memberRefresh, /router\.refresh\(\)/, "member refresh must refetch the server-rendered order state");
 assert.match(memberService, /getUncachedServerSupabase\(\)/, "member status must bypass stale cached database reads");
+assert.match(lineWebhook, /replyWithOrderStatus\(event, destination, true\)/, "tracking questions must read the actual order status");
+assert.match(lineWebhook, /if \(paymentReview\) return 'รับสลิปแล้ว/, "LINE must not describe a slip-under-review order as cancelled");
+assert.match(lineRegistration, /getUncachedServerSupabase\(\)/, "LINE status lookups must bypass cached order reads");
 assert.doesNotMatch(adminStatusApi, /pushMessage|getOrderLineRecipient|lineNotificationSent/, "admin shipment must not push LINE messages");
 assert.doesNotMatch(warehouseShipmentApi, /pushMessage|getOrderLineRecipient|lineNotificationSent/, "warehouse shipment must not push LINE messages");
 assert.doesNotMatch(adminStatusApi, /markOrderShipped|markOrderDelivered|"ship"|"deliver"/, "admin API must not bypass the warehouse workflow");
@@ -53,4 +56,4 @@ assert.match(cleanupMigration, /drop function if exists public\.mark_warehouse_o
 assert.match(orderService, /export async function getOrderDetail[\s\S]*getUncachedServerSupabase\(\)/, "admin order detail must always read the latest order status");
 assert.match(orderService, /export async function listOrders[\s\S]*getUncachedServerSupabase\(\)/, "admin order list must always read the latest order status");
 
-console.log("Shipment status policy verification passed (27 checks)");
+console.log("Shipment status policy verification passed");
