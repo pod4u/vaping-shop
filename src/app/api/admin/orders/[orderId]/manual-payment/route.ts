@@ -37,15 +37,16 @@ export async function POST(request: NextRequest, { params }: { params: { orderId
     const orderId = parseOrderId(params.orderId);
     const body = await request.formData();
     const amountText = String(body.get("amount") ?? "").trim();
-    const bankReference = String(body.get("bankReference") ?? "").trim();
+    // A stable per-order internal reference provides replay protection without
+    // requiring the admin to copy a bank reference. It is not a bank transaction ID.
+    const bankReference = `MANUAL-ORDER-${orderId}`;
     const note = String(body.get("note") ?? "").trim();
     const recoveryMode = body.get("recoveryMode") === "true";
     if (!/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/.test(amountText)
       || Number(amountText) <= 0
-      || bankReference.length < 6 || bankReference.length > 100
       || note.length < 10 || note.length > 500
       || body.get("bankDepositConfirmed") !== "true") {
-      return NextResponse.json({ success: false, error: "กรุณากรอกยอด เลขอ้างอิง และเหตุผล พร้อมยืนยันว่าเห็นเงินเข้าบัญชีร้านจริง" }, { status: 400 });
+      return NextResponse.json({ success: false, error: "กรุณาตรวจยอดตามออเดอร์ บันทึกเหตุผล และยืนยันว่าเห็นเงินเข้าบัญชีร้านจริง" }, { status: 400 });
     }
 
     const suppliedSlip = body.get("slip");

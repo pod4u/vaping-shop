@@ -37,10 +37,12 @@ assert.match(slipSql, /revoke all on function public\.manually_verify_line_order
 assert.match(slipRoute, /requireAdminApiPermission\(request, "orders\.view"\)/);
 assert.match(slipRoute, /Cache-Control": "private, no-store"/);
 assert.match(page, /คลิกเพื่อเลือกไฟล์หรือลากมาวาง/);
-assert.match(page, /ฉันตรวจยอดเงินเข้าบัญชีร้านจริงแล้ว/);
+assert.match(page, /ฉันตรวจพบยอดนี้เข้าบัญชีร้านจริงแล้ว/);
 assert.match(page, /window\.confirm/);
-assert.match(page, /กรุณากรอกยอดเงินที่เห็นเข้าบัญชีจริง/);
-assert.match(page, /เลขอ้างอิงจริงจากรายการเงินเข้าธนาคารอย่างน้อย 6 ตัวอักษร/);
+assert.match(page, /form\.set\("amount", String\(payment\.expected_amount\)\)/);
+assert.doesNotMatch(page, /manualBankReference|manualAmount/);
+assert.match(route, /const bankReference = `MANUAL-ORDER-\$\{orderId\}`/);
+assert.doesNotMatch(route, /body\.get\("bankReference"\)/);
 assert.match(page, /แนบสลิปเพิ่ม \(ไม่บังคับ\)/);
 assert.match(notifications, /ไม่ใช่ผลตรวจจาก Thunder/);
 assert.match(permissions, /"payments\.manual_verify"/);

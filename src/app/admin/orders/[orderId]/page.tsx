@@ -90,8 +90,6 @@ export default function AdminOrderDetailPage() {
   const [payment, setPayment] = useState<PaymentRequest | null>(null);
   const [paymentAlert, setPaymentAlert] = useState<PaymentAlert | null>(null);
   const [sendingPaymentAlert, setSendingPaymentAlert] = useState(false);
-  const [manualAmount, setManualAmount] = useState("");
-  const [manualBankReference, setManualBankReference] = useState("");
   const [manualNote, setManualNote] = useState("");
   const [manualBankConfirmed, setManualBankConfirmed] = useState(false);
   const [manualSlip, setManualSlip] = useState<File | null>(null);
@@ -252,14 +250,6 @@ export default function AdminOrderDetailPage() {
 
   async function verifyManualBankPayment() {
     if (!order || !payment) return;
-    if (!manualAmount || Number(manualAmount) !== Number(payment.expected_amount)) {
-      setError(`กรุณากรอกยอดเงินที่เห็นเข้าบัญชีจริงให้ตรงกับออเดอร์ ฿${Number(payment.expected_amount).toFixed(2)}`);
-      return;
-    }
-    if (manualBankReference.trim().length < 6) {
-      setError("กรุณากรอกเลขอ้างอิงจริงจากรายการเงินเข้าธนาคารอย่างน้อย 6 ตัวอักษร (0000 ยังไม่เพียงพอ)");
-      return;
-    }
     if (manualNote.trim().length < 10) {
       setError("กรุณาบันทึกวิธีตรวจยอดและหลักฐานอย่างน้อย 10 ตัวอักษร");
       return;
@@ -270,14 +260,13 @@ export default function AdminOrderDetailPage() {
     }
     const recoveryMode = (order.status === "cancelled" && payment.status === "expired")
       || (order.status === "pending" && payment.status === "failed");
-    if (!window.confirm(`ยืนยันว่าเห็นเงินเข้าบัญชีร้านจริง ฿${manualAmount} สำหรับออเดอร์ ${order.order_number}? ${recoveryMode ? "ระบบจะตรวจสต็อกใหม่และกู้ออเดอร์เดิม" : "ระบบจะยืนยันออเดอร์"} แล้วส่งงานเข้าคลังทันที`)) return;
+    if (!window.confirm(`ยืนยันว่าเห็นเงินเข้าบัญชีร้านจริง ฿${Number(payment.expected_amount).toFixed(2)} สำหรับออเดอร์ ${order.order_number}? ${recoveryMode ? "ระบบจะตรวจสต็อกใหม่และกู้ออเดอร์เดิม" : "ระบบจะยืนยันออเดอร์"} แล้วส่งงานเข้าคลังทันที`)) return;
     setIsManuallyVerifying(true);
     setError("");
     setSuccess("");
     try {
       const form = new FormData();
-      form.set("amount", manualAmount);
-      form.set("bankReference", manualBankReference);
+      form.set("amount", String(payment.expected_amount));
       form.set("note", manualNote);
       form.set("bankDepositConfirmed", String(manualBankConfirmed));
       form.set("recoveryMode", String(recoveryMode));
@@ -459,7 +448,7 @@ export default function AdminOrderDetailPage() {
                 <p className="font-bold">การชำระเงิน: {needsBankReview ? "ได้รับสลิปแล้ว · ต้องตรวจยอดธนาคาร" : payment.status === "awaiting_slip" ? "รอหลักฐานการชำระเงิน" : payment.status === "verified" ? "ตรวจสอบเรียบร้อยแล้ว" : "ไม่อยู่ในช่วงรับหลักฐานการชำระเงิน"}</p>
                 {payment.status === "verified" && <p className="mt-1 text-xs text-white/70">ยืนยันโดย: {payment.verification_method === "manual_bank" ? "แอดมินตรวจยอดธนาคารด้วยตนเอง" : "Thunder ตรวจสลิป"}</p>}
                 {payment.status === "verified" && payment.verification_method === "manual_bank" && (
-                  <p className="mt-1 text-xs text-white/60">ผู้ยืนยัน: {payment.manual_verified_by} · อ้างอิงธนาคาร: {payment.provider_transaction_ref}<br />บันทึก: {payment.manual_verification_note}</p>
+                  <p className="mt-1 text-xs text-white/60">ผู้ยืนยัน: {payment.manual_verified_by} · {payment.provider_transaction_ref?.startsWith("MANUAL-ORDER-") ? "เลขติดตามภายใน" : "อ้างอิงธนาคาร"}: {payment.provider_transaction_ref}<br />บันทึก: {payment.manual_verification_note}</p>
                 )}
                 {payment.manual_slip_path && <a href={`/api/admin/orders/${orderId}/manual-payment/slip`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-xs font-bold text-acid-lime underline">เปิดสลิปที่แอดมินแนบไว้</a>}
                 <p className="mt-1">ยอด ฿{Number(payment.expected_amount).toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
@@ -488,15 +477,11 @@ export default function AdminOrderDetailPage() {
                       <div className="mt-5 space-y-3 border-t border-amber-200/20 pt-4">
                         <div>
                           <p className="font-bold">ยืนยันเงินเข้าบัญชีด้วยตนเอง</p>
-                          <p className="mt-1 text-xs text-amber-100/75">กรอกยอดและเลขอ้างอิงจากรายการเงินเข้าในแอปธนาคารจริง ติ๊กยืนยัน แล้วกดปุ่มด้านล่าง สลิปอย่างเดียวไม่เพียงพอ</p>
+                          <p className="mt-1 text-xs text-amber-100/75">ไม่ต้องกรอกยอดหรือเลขอ้างอิงซ้ำ ระบบใช้ยอดออเดอร์และสร้างเลขติดตามภายในให้ ตรวจยอดเงินเข้าบัญชีร้านจริงก่อนติ๊กยืนยัน สลิปอย่างเดียวไม่เพียงพอ</p>
                         </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <label className="block text-xs">ยอดเงินที่เห็นเข้าบัญชีจริง
-                            <input type="number" min="0.01" step="0.01" value={manualAmount} onChange={(event) => setManualAmount(event.target.value)} placeholder={`ยอดออเดอร์ ฿${Number(payment.expected_amount).toFixed(2)}`} className="mt-1 w-full rounded-lg border border-white/20 bg-navy-deep p-3 text-sm text-white" />
-                          </label>
-                          <label className="block text-xs">เลขอ้างอิงธุรกรรมจากธนาคาร
-                            <input type="text" maxLength={100} value={manualBankReference} onChange={(event) => setManualBankReference(event.target.value)} placeholder="กรอกเลขจากรายการเงินเข้า" className="mt-1 w-full rounded-lg border border-white/20 bg-navy-deep p-3 text-sm text-white" />
-                          </label>
+                        <div className="rounded-xl border border-white/15 bg-navy-deep/70 p-4">
+                          <p className="text-xs text-white/60">ยอดที่ต้องตรวจในบัญชีร้าน</p>
+                          <p className="mt-1 text-xl font-black text-white">฿{Number(payment.expected_amount).toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
                         </div>
                         <label className="block text-xs">บันทึกเหตุผลและหลักฐานที่ตรวจ (อย่างน้อย 10 ตัวอักษร)
                           <textarea maxLength={500} value={manualNote} onChange={(event) => setManualNote(event.target.value)} placeholder="เช่น ตรวจรายการเงินเข้าบัญชีร้านในแอปธนาคาร เวลา... ตรงกับออเดอร์นี้" className="mt-1 w-full rounded-lg border border-white/20 bg-navy-deep p-3 text-sm text-white" rows={2} />
@@ -515,7 +500,7 @@ export default function AdminOrderDetailPage() {
                             <button type="button" onClick={() => setManualSlip(null)} className="rounded border border-white/20 px-2 py-1">นำออก</button>
                           </div>}
                         </div>
-                        <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={manualBankConfirmed} onChange={(event) => setManualBankConfirmed(event.target.checked)} className="mt-0.5" />ฉันตรวจยอดเงินเข้าบัญชีร้านจริงแล้ว และเลขอ้างอิงนี้ไม่เคยใช้ยืนยันออเดอร์อื่น</label>
+                        <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={manualBankConfirmed} onChange={(event) => setManualBankConfirmed(event.target.checked)} className="mt-0.5" />ฉันตรวจพบยอดนี้เข้าบัญชีร้านจริงแล้ว และไม่ได้ใช้รายการเงินเข้านี้กับออเดอร์อื่น</label>
                         <button type="button" onClick={verifyManualBankPayment} disabled={isManuallyVerifying} className="rounded-lg bg-acid-lime px-4 py-3 font-black text-navy-deep disabled:cursor-not-allowed disabled:opacity-40">
                           {isManuallyVerifying ? "กำลังยืนยัน..." : recoveryMode ? "ตรวจสต็อก กู้ออเดอร์ และส่งงานคลัง" : "ยืนยันเงินเข้าและส่งงานเข้าคลัง"}
                         </button>
