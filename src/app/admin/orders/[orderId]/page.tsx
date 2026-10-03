@@ -67,6 +67,25 @@ interface PaymentAlert {
   sent_at: string | null;
 }
 
+type FulfillmentStatus = "ready_to_pack" | "packing" | "packed" | "problem" | "shipped";
+interface Fulfillment {
+  status: FulfillmentStatus;
+  assigned_to: string | null;
+  problem_note: string | null;
+  started_at: string | null;
+  packed_at: string | null;
+  shipped_at: string | null;
+}
+
+const FULFILLMENT_LABELS: Record<FulfillmentStatus, string> = {
+  ready_to_pack: "รอรับงานแพ็ก", packing: "กำลังแพ็ก", packed: "แพ็กเสร็จ · รอส่งมอบ",
+  problem: "มีปัญหา", shipped: "จัดส่งแล้ว",
+};
+const PROBLEMS = [
+  ["item_missing", "สินค้าไม่พบ"], ["quantity_mismatch", "จำนวนสินค้าไม่ตรง"], ["damaged", "สินค้าชำรุด"],
+  ["address_unclear", "ที่อยู่ไม่ชัดเจน"], ["shipping_unavailable", "ไม่สามารถจัดส่งได้"], ["other", "อื่น ๆ"],
+];
+
 const PROVIDER_FAILURE_CODES = new Set([
   "API_SERVER_ERROR", "BRANCH_INACTIVE", "INTERNAL_SERVER_ERROR", "INVALID_API_KEY",
   "IP_NOT_ALLOWED", "MISSING_API_KEY", "QUOTA_EXCEEDED",
@@ -89,6 +108,10 @@ export default function AdminOrderDetailPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [payment, setPayment] = useState<PaymentRequest | null>(null);
   const [paymentAlert, setPaymentAlert] = useState<PaymentAlert | null>(null);
+  const [fulfillment, setFulfillment] = useState<Fulfillment | null>(null);
+  const [problemCode, setProblemCode] = useState("item_missing");
+  const [problemNote, setProblemNote] = useState("");
+  const [showProblem, setShowProblem] = useState(false);
   const [sendingPaymentAlert, setSendingPaymentAlert] = useState(false);
   const [manualNote, setManualNote] = useState("");
   const [manualBankConfirmed, setManualBankConfirmed] = useState(false);
@@ -134,6 +157,7 @@ export default function AdminOrderDetailPage() {
     setReservations(result.reservations ?? []);
     setPayment(result.payment ?? null);
     setPaymentAlert(result.paymentAlert ?? null);
+    setFulfillment(result.fulfillment ?? null);
   }, [orderId]);
 
   useEffect(() => {
@@ -225,6 +249,30 @@ export default function AdminOrderDetailPage() {
       await loadOrder();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "เปลี่ยนสถานะไม่สำเร็จ");
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  }
+
+  async function updateFulfillment(action: "start" | "pack" | "problem" | "resume" | "ship") {
+    if (action === "ship" && !window.confirm("ยืนยันว่ามอบสินค้าให้ผู้จัดส่งแล้วใช่ไหมคะ? หน้าสมาชิกจะเปลี่ยนเป็น ‘จัดส่งแล้ว’ และระบบจะไม่ส่งข้อความ LINE เพิ่ม")) return;
+    setIsUpdatingStatus(true);
+    setError("");
+    setSuccess("");
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}/fulfillment`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, problemCode, problemNote }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "อัปเดตสถานะไม่สำเร็จ");
+      setSuccess(result.message || "อัปเดตสถานะสำเร็จ");
+      setShowProblem(false);
+      await loadOrder();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "อัปเดตสถานะไม่สำเร็จ");
+      await loadOrder().catch(() => undefined);
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -397,13 +445,27 @@ export default function AdminOrderDetailPage() {
               <CardContent className="py-5 sm:py-6">
                 <div className="flex items-start gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-acid-lime text-navy-deep"><Truck className="h-6 w-6" /></span>
-                  <div><p className="text-xs font-black text-acid-lime">ดำเนินการอัตโนมัติแล้ว</p><h2 className="mt-1 text-xl font-black text-white">ส่งงานเข้าคลังแล้ว</h2><p className="mt-1 text-sm text-white/55">ชำระเงินเรียบร้อยและระบบส่งออเดอร์เข้าคิวคลังสินค้าอัตโนมัติ แอดมินไม่ต้องกดยืนยันซ้ำค่ะ</p></div>
+                  <div><p className="text-xs font-black text-acid-lime">ส่งงานเข้าคลังอัตโนมัติแล้ว</p><h2 className="mt-1 text-xl font-black text-white">สถานะการแพ็กและจัดส่ง</h2><p className="mt-1 text-sm text-white/55">แอดมินและคลังอัปเดตงานชุดเดียวกันได้ ไม่ต้องยืนยันออเดอร์หรือการชำระเงินซ้ำค่ะ</p></div>
                 </div>
-                <div className="mt-5 flex flex-col gap-3 rounded-xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-sm text-white/65"><span className="font-black text-white">รอคลังรับงาน แพ็ก และมอบให้ผู้จัดส่ง</span><br />เมื่อคลังยืนยันการจัดส่ง หน้า Member จะเปลี่ยนเป็น “จัดส่งแล้ว” อัตโนมัติค่ะ</div>
-                  <Link href={`/warehouse/orders/${orderId}`} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-acid-lime/45 px-5 font-black text-acid-lime hover:bg-acid-lime/10">
-                    <Truck className="h-4 w-4" />ดูงานในระบบคลัง
-                  </Link>
+                <div className="mt-5 rounded-xl border border-white/10 bg-black/20 p-4">
+                  {fulfillment ? <>
+                    <p className="font-black text-white">{FULFILLMENT_LABELS[fulfillment.status]}</p>
+                    {fulfillment.assigned_to && <p className="mt-1 text-xs text-white/50">ผู้รับงาน: {fulfillment.assigned_to}</p>}
+                    {fulfillment.status === "problem" && fulfillment.problem_note && <p className="mt-2 text-sm text-red-200">ปัญหา: {fulfillment.problem_note}</p>}
+                    {can("orders.ship") && <div className="mt-4 flex flex-wrap gap-2">
+                      {fulfillment.status === "ready_to_pack" && <button type="button" disabled={isUpdatingStatus} onClick={() => void updateFulfillment("start")} className="rounded-xl bg-acid-lime px-4 py-3 font-black text-navy-deep disabled:opacity-40">รับงานและเริ่มแพ็ก</button>}
+                      {fulfillment.status === "packing" && <button type="button" disabled={isUpdatingStatus} onClick={() => void updateFulfillment("pack")} className="rounded-xl bg-acid-lime px-4 py-3 font-black text-navy-deep disabled:opacity-40">ยืนยันว่าแพ็กเสร็จแล้ว</button>}
+                      {fulfillment.status === "packed" && <button type="button" disabled={isUpdatingStatus} onClick={() => void updateFulfillment("ship")} className="rounded-xl bg-acid-lime px-4 py-3 font-black text-navy-deep disabled:opacity-40">ยืนยันว่าจัดส่งแล้ว</button>}
+                      {fulfillment.status === "problem" && <button type="button" disabled={isUpdatingStatus} onClick={() => void updateFulfillment("resume")} className="rounded-xl border border-acid-lime/50 px-4 py-3 font-black text-acid-lime disabled:opacity-40">แก้ไขแล้ว · กลับเข้าคิว</button>}
+                      {!["problem", "shipped"].includes(fulfillment.status) && <button type="button" disabled={isUpdatingStatus} onClick={() => setShowProblem((current) => !current)} className="rounded-xl border border-red-300/40 px-4 py-3 font-bold text-red-200 disabled:opacity-40">แจ้งปัญหา</button>}
+                    </div>}
+                    {showProblem && can("orders.ship") && !["problem", "shipped"].includes(fulfillment.status) && <div className="mt-4 space-y-3 border-t border-white/10 pt-4">
+                      <select value={problemCode} onChange={(event) => setProblemCode(event.target.value)} className="w-full rounded-lg border border-white/20 bg-navy-deep p-3 text-white">{PROBLEMS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+                      <textarea value={problemNote} onChange={(event) => setProblemNote(event.target.value)} maxLength={500} rows={2} placeholder="ระบุรายละเอียดปัญหา" className="w-full rounded-lg border border-white/20 bg-navy-deep p-3 text-white" />
+                      <button type="button" disabled={isUpdatingStatus || !problemNote.trim()} onClick={() => void updateFulfillment("problem")} className="rounded-xl bg-red-300 px-4 py-3 font-black text-navy-deep disabled:opacity-40">บันทึกปัญหา</button>
+                    </div>}
+                    {fulfillment.status === "packed" && <p className="mt-3 text-xs text-white/55">กดยืนยันจัดส่งหลังมอบสินค้าให้ผู้จัดส่งจริงเท่านั้น สถานะหน้าสมาชิกจะเปลี่ยนทันทีโดยไม่ส่ง LINE เพิ่ม</p>}
+                  </> : <p className="text-sm text-amber-200">ยังไม่พบงานคลัง กรุณาโหลดหน้าใหม่ก่อนอัปเดตสถานะ</p>}
                 </div>
               </CardContent>
             </Card>
@@ -417,7 +479,7 @@ export default function AdminOrderDetailPage() {
                   <p className="mt-1 text-white/70">ลูกค้าจะได้รับสินค้าภายในไม่เกิน 2 วันหลังจัดส่งค่ะ</p>
                   {order.shipped_at && <p className="mt-1 text-white/50">ส่งเมื่อ {new Date(order.shipped_at).toLocaleString("th-TH")}</p>}
                 </div>
-                <span className="rounded-full border border-emerald-300/25 bg-emerald-300/10 px-3 py-1.5 text-xs font-black text-emerald-100">อัปเดตโดยระบบคลัง</span>
+                <span className="rounded-full border border-emerald-300/25 bg-emerald-300/10 px-3 py-1.5 text-xs font-black text-emerald-100">อัปเดตจากงานจัดส่ง</span>
               </CardContent>
             </Card>
           )}
@@ -437,7 +499,7 @@ export default function AdminOrderDetailPage() {
           ) : order.status === "confirmed" ? (
             <Card className="border-emerald-300/20 bg-emerald-300/10">
               <CardContent className="py-4 text-sm text-emerald-100">
-                ชำระเงินเรียบร้อย สต็อกถูกตัด และส่งงานเข้าคลังอัตโนมัติแล้ว แอดมินไม่ต้องดำเนินการเพิ่มเติมค่ะ
+                ชำระเงินเรียบร้อย สต็อกถูกตัด และส่งงานเข้าคลังอัตโนมัติแล้ว กรุณาอัปเดตงานแพ็กและจัดส่งตามความคืบหน้าจริงค่ะ
               </CardContent>
             </Card>
           ) : null}

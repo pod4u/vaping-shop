@@ -184,7 +184,7 @@ export async function listOrders(options: {
 
 export async function getOrderDetail(orderId: string) {
   const client = getUncachedServerSupabase();
-  const [orderResult, itemsResult, reservationsResult, paymentResult, alertResult] = await Promise.all([
+  const [orderResult, itemsResult, reservationsResult, paymentResult, alertResult, fulfillmentResult] = await Promise.all([
     client
       .from("orders")
       .select(`${ORDER_FIELDS},customer:customers(id,full_name,phone,email)`)
@@ -208,6 +208,9 @@ export async function getOrderDetail(orderId: string) {
     client.from("telegram_notification_events")
       .select("status,attempt_count,last_error,sent_at,updated_at")
       .eq("order_id", orderId).eq("event_type", "warehouse_problem").maybeSingle(),
+    client.from("warehouse_fulfillments")
+      .select("status,assigned_to,problem_code,problem_note,started_at,packed_at,shipped_at,updated_at")
+      .eq("order_id", orderId).maybeSingle(),
   ]);
 
   if (orderResult.error) throw orderResult.error;
@@ -215,6 +218,7 @@ export async function getOrderDetail(orderId: string) {
   if (reservationsResult.error) throw reservationsResult.error;
   if (paymentResult.error && paymentResult.error.code !== "42P01") throw paymentResult.error;
   if (alertResult.error && alertResult.error.code !== "42P01") throw alertResult.error;
+  if (fulfillmentResult.error) throw fulfillmentResult.error;
   if (!orderResult.data) return null;
   return {
     order: orderResult.data,
@@ -222,5 +226,6 @@ export async function getOrderDetail(orderId: string) {
     reservations: reservationsResult.data ?? [],
     payment: paymentResult.data ?? null,
     paymentAlert: alertResult.data ?? null,
+    fulfillment: fulfillmentResult.data ?? null,
   };
 }
