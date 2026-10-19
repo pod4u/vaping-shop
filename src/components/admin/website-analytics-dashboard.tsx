@@ -122,38 +122,58 @@ function QueryPageStatus({ row }: { row: SearchQueryPageRow }) {
   return <span className="text-amber-300">ควรตรวจ · เป้าหมาย {expected}</span>;
 }
 
-function QueryPageBreakdown({ rows }: { rows?: SearchQueryPageRow[] }) {
+function queryPageKey(row: Pick<SearchQueryPageRow, "query" | "page">): string {
+  return `${row.query.trim().toLowerCase()}\n${normalizeSearchLandingPath(row.page)}`;
+}
+
+function QueryPageBreakdown({ rows, previousRows, focused = false }: { rows?: SearchQueryPageRow[]; previousRows?: SearchQueryPageRow[]; focused?: boolean }) {
+  const previousByKey = new Map((previousRows ?? []).map((row) => [queryPageKey(row), row]));
   return <section className={`${panel} min-w-0`}>
-    <h2 className="font-medium text-white">คำค้นเข้าสู่หน้าใด</h2>
-    <p className="mt-2 text-xs leading-6 text-white/45">ใช้ตารางนี้ยืนยัน Query → Landing Page โดยตรง สถานะจะเตือนเมื่อคำค้นในแผน MARBO มีอย่างน้อย 10 impressions แล้วเข้าผิดหน้า</p>
+    <h2 className="font-medium text-white">{focused ? "คำค้น MARBO/M BAR เข้าสู่หน้าใด" : "คำค้นเข้าสู่หน้าใด"}</h2>
+    <p className="mt-2 text-xs leading-6 text-white/45">{focused
+      ? "ดึงคำค้นกลุ่ม MARBO/M BAR แยกจากตารางรวม และเทียบช่วงที่เลือกกับช่วงก่อนหน้าที่มีจำนวนวันเท่ากัน สถานะจะเตือนเมื่อมีอย่างน้อย 10 impressions แล้วเข้าผิดหน้า ทั้งนี้ Google อาจซ่อนคำค้นปริมาณน้อย"
+      : "ข้อมูลจาก snapshot เดิมที่แสดงเฉพาะรายการบนสุด กดซิงก์หลัง deploy เพื่อใช้รายงาน MARBO/M BAR แบบเจาะจงและเปรียบเทียบช่วงก่อนหน้า"}</p>
     <div className="mt-4 space-y-3 lg:hidden">
-      {rows?.map((row, index) => <div key={`${row.query}-${row.page}-${index}`} className="rounded-xl border border-white/7 bg-white/[0.018] p-4">
+      {rows?.map((row, index) => {
+        const previous = previousByKey.get(queryPageKey(row));
+        return <div key={`${row.query}-${row.page}-${index}`} className="rounded-xl border border-white/7 bg-white/[0.018] p-4">
         <p className="text-sm font-medium text-white">{row.query}</p>
         <a href={row.page} target="_blank" rel="noreferrer" className="mt-1 block break-all text-xs text-acid-lime hover:underline">{row.page}</a>
         <p className="mt-2 text-xs"><QueryPageStatus row={row} /></p>
-        <p className="mt-3 text-xs text-white/45">แสดง {format(row.impressions)} ครั้ง · คลิก {format(row.clicks)} · อันดับเฉลี่ยย้อนหลัง {format(row.position)}</p>
-      </div>)}
+        <p className="mt-3 text-xs text-white/45">ช่วงนี้ {format(row.impressions)} ครั้ง{focused ? ` · ช่วงก่อน ${format(previous?.impressions)} ครั้ง` : ""} · คลิก {format(row.clicks)} · อันดับเฉลี่ยย้อนหลัง {format(row.position)}</p>
+      </div>})}
     </div>
     <div className="mt-4 hidden overflow-x-auto lg:block">
       <table className="w-full text-left text-sm">
-        <thead><tr className="border-b border-white/10 text-xs text-white/45"><th className="pb-3 font-normal">คำค้น</th><th className="pb-3 pl-3 font-normal">หน้าปลายทาง</th><th className="pb-3 pl-3 text-right font-normal">ครั้งที่แสดง</th><th className="pb-3 pl-3 text-right font-normal">คลิก</th><th className="pb-3 pl-3 text-right font-normal">อันดับเฉลี่ย</th><th className="pb-3 pl-3 font-normal">ผลตรวจ</th></tr></thead>
-        <tbody>{rows?.map((row, index) => <tr key={`${row.query}-${row.page}-${index}`} className="border-b border-white/5 last:border-0"><td className="max-w-[220px] break-words py-3 pr-3 text-white/85">{row.query}</td><td className="max-w-[260px] break-all py-3 pl-3"><a href={row.page} target="_blank" rel="noreferrer" className="text-acid-lime hover:underline">{row.page}</a></td><td className="py-3 pl-3 text-right tabular-nums text-white/65">{format(row.impressions)}</td><td className="py-3 pl-3 text-right tabular-nums text-white">{format(row.clicks)}</td><td className="py-3 pl-3 text-right tabular-nums text-white/55">{format(row.position)}</td><td className="min-w-[210px] py-3 pl-3 text-xs"><QueryPageStatus row={row} /></td></tr>)}</tbody>
+        <thead><tr className="border-b border-white/10 text-xs text-white/45"><th className="pb-3 font-normal">คำค้น</th><th className="pb-3 pl-3 font-normal">หน้าปลายทาง</th><th className="pb-3 pl-3 text-right font-normal">ช่วงนี้</th>{focused && <th className="pb-3 pl-3 text-right font-normal">ช่วงก่อน</th>}<th className="pb-3 pl-3 text-right font-normal">คลิก</th><th className="pb-3 pl-3 text-right font-normal">อันดับเฉลี่ย</th><th className="pb-3 pl-3 font-normal">ผลตรวจ</th></tr></thead>
+        <tbody>{rows?.map((row, index) => {
+          const previous = previousByKey.get(queryPageKey(row));
+          return <tr key={`${row.query}-${row.page}-${index}`} className="border-b border-white/5 last:border-0"><td className="max-w-[220px] break-words py-3 pr-3 text-white/85">{row.query}</td><td className="max-w-[260px] break-all py-3 pl-3"><a href={row.page} target="_blank" rel="noreferrer" className="text-acid-lime hover:underline">{row.page}</a></td><td className="py-3 pl-3 text-right tabular-nums text-white/65">{format(row.impressions)}</td>{focused && <td className="py-3 pl-3 text-right tabular-nums text-white/45">{format(previous?.impressions)}</td>}<td className="py-3 pl-3 text-right tabular-nums text-white">{format(row.clicks)}</td><td className="py-3 pl-3 text-right tabular-nums text-white/55">{format(row.position)}</td><td className="min-w-[210px] py-3 pl-3 text-xs"><QueryPageStatus row={row} /></td></tr>})}</tbody>
       </table>
     </div>
-    {!rows?.length && <p className="py-8 text-center text-sm leading-6 text-white/40">ยังไม่มีข้อมูล Query → Landing Page ใน snapshot นี้<br />กดซิงก์หลัง deploy หรือรอรอบอัตโนมัติถัดไป</p>}
+    {!rows?.length && <p className="py-8 text-center text-sm leading-6 text-white/40">{focused ? "ยังไม่มีคำค้น MARBO/M BAR ที่ Google เปิดเผยในช่วงนี้" : "ยังไม่มีข้อมูล Query → Landing Page ใน snapshot นี้"}<br />{focused ? "คำค้นปริมาณน้อยอาจถูกซ่อนเพื่อความเป็นส่วนตัว" : "กดซิงก์หลัง deploy หรือรอรอบอัตโนมัติถัดไป"}</p>}
   </section>;
 }
 
 function seoActions(search?: SearchReport | null) {
   if (!search) return [];
   const queries = search.queries ?? [];
-  if (!queries.length) return search.totals.impressions > 0 ? [{ title: "รอให้ข้อมูลคำค้นมากขึ้น", detail: "Google แสดงยอดรวมแล้ว แต่ยังไม่เปิดเผยคำค้นรายคำ อย่าเดาว่าคนค้นคำใดจากยอดรวมนี้" }] : [];
+  const marboQueryPages = search.marboQueryPages ?? [];
+  if (!queries.length && !marboQueryPages.length) return search.totals.impressions > 0 ? [{ title: "รอให้ข้อมูลคำค้นมากขึ้น", detail: "Google แสดงยอดรวมแล้ว แต่ยังไม่เปิดเผยคำค้นรายคำ อย่าเดาว่าคนค้นคำใดจากยอดรวมนี้" }] : [];
   const actions: { title: string; detail: string }[] = [];
+  const misrouted = marboQueryPages.find((row) => {
+    const expected = expectedMarboLandingPage(row.query);
+    return expected && hasEnoughQueryDataForTrend(row.impressions) && normalizeSearchLandingPath(row.page) !== expected;
+  });
+  if (misrouted) {
+    const expected = expectedMarboLandingPage(misrouted.query);
+    actions.push({ title: `ตรวจหน้าปลายทางของ “${misrouted.query}”`, detail: `คำนี้แสดงผล ${format(misrouted.impressions)} ครั้งที่ ${misrouted.page} แต่แผนกำหนดให้ตอบด้วย ${expected} ควรตรวจเนื้อหาและ internal links ของสองหน้านี้ก่อนสร้างหน้าใหม่` });
+  }
   const promisingQuery = [...queries].filter((row) => hasEnoughQueryDataForTrend(row.impressions) && row.position != null && row.position > 3 && row.position <= 20).sort((a, b) => b.impressions - a.impressions)[0];
   if (promisingQuery) actions.push({ title: `พัฒนาคำค้น “${promisingQuery.label}” ต่อ`, detail: `คำนี้แสดงผล ${format(promisingQuery.impressions)} ครั้ง และมีอันดับเฉลี่ยย้อนหลัง ${format(promisingQuery.position)} ลองตรวจชื่อหน้า หัวข้อหลัก และเนื้อหาของหน้าที่ตรงกับคำค้นนี้ก่อนสร้างบทความเพิ่ม` });
   const lowCtr = [...queries].filter((row) => hasEnoughQueryDataForCtr(row.impressions) && row.ctr < 0.03).sort((a, b) => b.impressions - a.impressions)[0];
   if (lowCtr && lowCtr.label !== promisingQuery?.label) actions.push({ title: `ทำให้ผลค้นหาของ “${lowCtr.label}” น่าคลิกขึ้น`, detail: `คำนี้แสดงผล ${format(lowCtr.impressions)} ครั้ง แต่อัตราคลิกอยู่ที่ ${format(lowCtr.ctr * 100)}% ลองตรวจว่าชื่อหน้าและคำอธิบายตอบสิ่งที่คนกำลังค้นหาหรือไม่` });
-  if (!actions.length && queries.every((row) => !hasEnoughQueryDataForTrend(row.impressions))) actions.push({ title: "รอข้อมูลเพิ่มก่อนปรับ SEO", detail: "คำค้นแต่ละคำยังแสดงผลไม่ถึง 10 ครั้ง ตัวเลขอันดับในตอนนี้เป็นเพียงสัญญาณเบื้องต้น ควรรอดูต่อก่อนเปลี่ยนชื่อหน้าหรือเนื้อหา" });
+  if (!actions.length && queries.length > 0 && queries.every((row) => !hasEnoughQueryDataForTrend(row.impressions))) actions.push({ title: "รอข้อมูลเพิ่มก่อนปรับ SEO", detail: "คำค้นแต่ละคำยังแสดงผลไม่ถึง 10 ครั้ง ตัวเลขอันดับในตอนนี้เป็นเพียงสัญญาณเบื้องต้น ควรรอดูต่อก่อนเปลี่ยนชื่อหน้าหรือเนื้อหา" });
   else if (!actions.length) actions.push({ title: "ติดตามต่อก่อนเปลี่ยนเนื้อหา", detail: "ยังไม่มีคำค้นที่ชี้จุดแก้ได้ชัดเจน ควรดูแนวโน้มต่ออีก 2–4 สัปดาห์และอย่าตัดสินจากคลิกเพียงไม่กี่ครั้ง" });
   return actions.slice(0, 3);
 }
@@ -235,7 +255,11 @@ export function WebsiteAnalyticsDashboard() {
 
       <div><h2 className="flex items-center gap-2 text-lg font-medium"><Search size={19} />คนค้นหาอะไรใน Google</h2><RangeLabel range={search?.range} /><p className="mt-2 text-xs leading-6 text-white/45">Google อาจซ่อนคำค้นบางส่วนเพื่อความเป็นส่วนตัว ยอดในตารางจึงไม่จำเป็นต้องรวมเท่ากับยอดด้านบน และอันดับที่เห็นเป็นค่าเฉลี่ยย้อนหลัง ไม่ใช่อันดับปัจจุบันแบบเรียลไทม์</p></div>
       <div className="grid gap-5 xl:grid-cols-2"><SearchBreakdown title="คำค้นที่ทำให้เว็บไซต์ปรากฏ" rows={search?.queries} showQueryStatus /><SearchBreakdown title="หน้าที่ปรากฏใน Google" rows={search?.pages} pageLinks /></div>
-      <QueryPageBreakdown rows={search?.queryPages} />
+      <QueryPageBreakdown
+        rows={search?.marboQueryPages ?? search?.queryPages}
+        previousRows={search?.previousMarboQueryPages}
+        focused={search?.marboQueryPages !== undefined}
+      />
 
       <section className={panel}>
         <h2 className="flex items-center gap-2 text-lg font-medium"><Lightbulb size={19} className="text-acid-lime" />ควรทำอะไรต่อ</h2>

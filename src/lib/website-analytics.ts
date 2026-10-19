@@ -78,6 +78,8 @@ export interface SearchReport {
   queries?: SearchDimensionRow[];
   pages?: SearchDimensionRow[];
   queryPages?: SearchQueryPageRow[];
+  marboQueryPages?: SearchQueryPageRow[];
+  previousMarboQueryPages?: SearchQueryPageRow[];
   detailsError?: string | null;
   dataThrough: string | null;
 }

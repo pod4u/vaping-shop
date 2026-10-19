@@ -174,6 +174,17 @@ try {
         assert.equal(request.startDate, "2026-08-25");
         return reply({ rows: [{ keys: ["2026-09-03"], clicks: 3, impressions: 50, ctr: .06, position: 5 }, { keys: ["2026-08-26"], clicks: 1, impressions: 20, ctr: .05, position: 8 }] });
       }
+      if (request.dimensionFilterGroups) {
+        assert.equal(request.dimensions.join("+"), "query+page");
+        assert.equal(request.aggregationType, "auto");
+        assert.equal(request.rowLimit, 25_000);
+        const filter = request.dimensionFilterGroups[0].filters[0];
+        assert.equal(filter.dimension, "query");
+        assert.equal(filter.operator, "includingRegex");
+        assert.match(filter.expression, /marbo/);
+        const current = request.startDate === "2026-09-01";
+        return reply({ rows: [{ keys: ["marbo", "https://www.pod4u.store/brands/marbo"], clicks: current ? 1 : 0, impressions: current ? 18 : 5, ctr: current ? 1 / 18 : 0, position: current ? 50.1 : 60 }] });
+      }
       assert.equal(request.startDate, "2026-09-01");
       if (request.dimensions.length === 2) return reply({ rows: [{ keys: ["mbar", "https://www.pod4u.store/products/mbar-10k"], clicks: 2, impressions: 25, ctr: .08, position: 6 }] });
       if (request.dimensions[0] === "query") return reply({ rows: [{ keys: ["mbar"], clicks: 2, impressions: 25, ctr: .08, position: 6 }] });
@@ -188,7 +199,11 @@ try {
     assert.equal(search.pages[0].label, "/products/mbar-10k");
     assert.equal(search.queryPages[0].query, "mbar");
     assert.equal(search.queryPages[0].page, "/products/mbar-10k");
-    assert.deepEqual(searchRequests.map((request) => request.dimensions.join("+")).sort(), ["date", "page", "query", "query+page"]);
+    assert.equal(search.marboQueryPages[0].query, "marbo");
+    assert.equal(search.marboQueryPages[0].page, "/brands/marbo");
+    assert.equal(search.marboQueryPages[0].impressions, 18);
+    assert.equal(search.previousMarboQueryPages[0].impressions, 5);
+    assert.deepEqual(searchRequests.map((request) => request.dimensions.join("+")).sort(), ["date", "page", "query", "query+page", "query+page", "query+page"]);
   });
   await test("GSC detail failure keeps trustworthy property totals", async () => {
     globalThis.fetch = async (url, init) => {
@@ -202,6 +217,8 @@ try {
     assert.deepEqual(report.queries, []);
     assert.deepEqual(report.pages, []);
     assert.deepEqual(report.queryPages, []);
+    assert.deepEqual(report.marboQueryPages, []);
+    assert.deepEqual(report.previousMarboQueryPages, []);
     assert(report.detailsError);
     assert(!report.detailsError.includes("DO_NOT_LEAK"));
   });
@@ -266,7 +283,7 @@ try {
     const source = (data) => ({ status: "ready", configured: true, missing: [], lastSuccessAt: new Date().toISOString(), lastAttemptAt: new Date().toISOString(), error: null, stale: false, data });
     const fixture = {
       days: 7, generatedAt: new Date().toISOString(), storageReady: true, storageError: null, scheduleConfigured: true,
-      google: source({ ...search, queries: [{ label: "9k แตงโม", clicks: 1, impressions: 1, ctr: 1, position: 2 }, ...search.queries], queryPages: [{ query: "marbo 9k", page: "/products/marbo-m-bar-9k", clicks: 0, impressions: 12, ctr: 0, position: 8 }] }), vercel: source(traffic), health: source({ checkedAt: new Date().toISOString(), checks: [{ path: "/", ok: true, status: 200, durationMs: 160 }], deployments: [{ id: "test", createdAt: "2026-09-04T12:00:00Z", state: "READY", commit: "TEST123", url: null }], deploymentError: null }), runs: [],
+      google: source({ ...search, queries: [{ label: "9k แตงโม", clicks: 1, impressions: 1, ctr: 1, position: 2 }, ...search.queries], queryPages: [{ query: "marbo 9k", page: "/products/marbo-m-bar-9k", clicks: 0, impressions: 12, ctr: 0, position: 8 }], marboQueryPages: [{ query: "marbo 9k", page: "/products/marbo-m-bar-9k", clicks: 0, impressions: 12, ctr: 0, position: 8 }], previousMarboQueryPages: [{ query: "marbo 9k", page: "/products/marbo-m-bar-9k", clicks: 0, impressions: 4, ctr: 0, position: 12 }] }), vercel: source(traffic), health: source({ checkedAt: new Date().toISOString(), checks: [{ path: "/", ok: true, status: 200, durationMs: 160 }], deployments: [{ id: "test", createdAt: "2026-09-04T12:00:00Z", state: "READY", commit: "TEST123", url: null }], deploymentError: null }), runs: [],
     };
     const directory = resolve(root, "output/playwright");
     mkdirSync(directory, { recursive: true });

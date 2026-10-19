@@ -7,6 +7,7 @@ import {
 } from "@/lib/website-analytics";
 
 const SITE = "https://www.pod4u.store";
+const MARBO_QUERY_REGEX = "(?i).*(marbo|m[[:space:]]*bar|มาโบ|มาร์โบ|เอ็มบาร์).*";
 export class AnalyticsProviderError extends Error {}
 
 export function providerConfig(source: AnalyticsSource) {
@@ -139,11 +140,19 @@ export async function fetchSearchReport(days: PeriodDays, now = new Date()): Pro
     try { return { result: await query(body), error: null }; }
     catch (error) { return { result: {}, error: safeAnalyticsError(error) }; }
   };
-  const [dateResult, queryDetail, pageDetail, queryPageDetail] = await Promise.all([
+  const marboQueryFilter = {
+    dimensionFilterGroups: [{
+      groupType: "and",
+      filters: [{ dimension: "query", operator: "includingRegex", expression: MARBO_QUERY_REGEX }],
+    }],
+  };
+  const [dateResult, queryDetail, pageDetail, queryPageDetail, marboQueryPageDetail, previousMarboQueryPageDetail] = await Promise.all([
     query({ startDate: ranges.previous.start, endDate: ranges.current.end, dimensions: ["date"], aggregationType: "byProperty" }),
     detail({ startDate: ranges.current.start, endDate: ranges.current.end, dimensions: ["query"], aggregationType: "byProperty", rowLimit: 25 }),
     detail({ startDate: ranges.current.start, endDate: ranges.current.end, dimensions: ["page"], aggregationType: "auto", rowLimit: 25 }),
     detail({ startDate: ranges.current.start, endDate: ranges.current.end, dimensions: ["query", "page"], aggregationType: "auto", rowLimit: 50 }),
+    detail({ startDate: ranges.current.start, endDate: ranges.current.end, dimensions: ["query", "page"], aggregationType: "auto", rowLimit: 25_000, ...marboQueryFilter }),
+    detail({ startDate: ranges.previous.start, endDate: ranges.previous.end, dimensions: ["query", "page"], aggregationType: "auto", rowLimit: 25_000, ...marboQueryFilter }),
   ]);
   const rows = parseSearchRows(dateResult);
   const daily = rows.filter((row) => row.date >= ranges.current.start && row.date <= ranges.current.end);
@@ -152,7 +161,9 @@ export async function fetchSearchReport(days: PeriodDays, now = new Date()): Pro
     range: ranges.current, previousRange: ranges.previous, totals: searchTotals(daily), previous: searchTotals(previous), daily,
     queries: parseSearchDimensionRows(queryDetail.result, "query"), pages: parseSearchDimensionRows(pageDetail.result, "page"),
     queryPages: parseSearchQueryPageRows(queryPageDetail.result),
-    detailsError: [queryDetail.error, pageDetail.error, queryPageDetail.error].filter(Boolean).join(" · ") || null,
+    marboQueryPages: parseSearchQueryPageRows(marboQueryPageDetail.result),
+    previousMarboQueryPages: parseSearchQueryPageRows(previousMarboQueryPageDetail.result),
+    detailsError: [...new Set([queryDetail.error, pageDetail.error, queryPageDetail.error, marboQueryPageDetail.error, previousMarboQueryPageDetail.error].filter(Boolean))].join(" · ") || null,
     dataThrough: daily.at(-1)?.date ?? null,
   };
 }
