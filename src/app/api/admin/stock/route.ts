@@ -40,13 +40,13 @@ function normalizeUpdates(brands: unknown): StockUpdate[] {
         throw new Error("ไม่พบรหัสสินค้า");
       }
 
-      const price = normalizeMoney(product.price, "ราคาปกติ");
+      const price = normalizeMoney(product.price, "ราคาหลัก");
       const salePrice = product.salePrice === null || product.salePrice === "" || product.salePrice === undefined
         ? null
-        : normalizeMoney(product.salePrice, "ราคาขาย");
+        : normalizeMoney(product.salePrice, "ราคาโปรโมชั่น");
 
       if (salePrice !== null && salePrice > price) {
-        throw new Error("ราคาขายต้องไม่สูงกว่าราคาปกติ");
+        throw new Error("ราคาโปรโมชั่นต้องไม่สูงกว่าราคาหลัก");
       }
       if (!Array.isArray(product.flavors)) throw new Error("รูปแบบตัวเลือกสินค้าไม่ถูกต้อง");
 

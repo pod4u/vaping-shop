@@ -141,6 +141,32 @@ export default function AdminStockPage() {
     }));
   };
 
+  const getDiscountPercent = (price: number, salePrice: number | null) => {
+    if (salePrice === null || price <= 0) return null;
+    return Math.round((1 - salePrice / price) * 10_000) / 100;
+  };
+
+  const updateProductDiscount = (brandId: string, productId: string, value: number | null) => {
+    setStockData(prev => prev.map(brand => {
+      if (brand.id !== brandId) return brand;
+
+      return {
+        ...brand,
+        products: brand.products.map(product => {
+          if (product.id !== productId) return product;
+
+          if (value === null || value <= 0) {
+            return { ...product, salePrice: null };
+          }
+
+          const discount = Math.min(100, value);
+          const salePrice = Math.round(product.price * (1 - discount / 100) * 100) / 100;
+          return { ...product, salePrice };
+        })
+      };
+    }));
+  };
+
   const incrementStock = (brandId: string, productId: string, flavorId: string, amount: number) => {
     const brand = stockData.find(b => b.id === brandId);
     const product = brand?.products.find(p => p.id === productId);
@@ -435,9 +461,9 @@ export default function AdminStockPage() {
                       <span className="text-white/40 text-xs">{(product.puffCount / 1000)}K Puffs</span>
                     )}
                   </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:w-[360px]">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:w-[560px]">
                     <label className="block">
-                      <span className="mb-1 block text-xs text-white/50">ราคาปกติ (บาท)</span>
+                      <span className="mb-1 block text-xs text-white/50">ราคาหลัก (บาท)</span>
                       <div className="relative">
                         <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/50">฿</span>
                         <Input
@@ -452,13 +478,13 @@ export default function AdminStockPage() {
                             Math.max(0, Number(event.target.value) || 0)
                           )}
                           className="h-10 bg-white/10 pl-8 text-white border-white/20 focus-visible:ring-acid-lime"
-                          aria-label={`ราคาปกติ ${product.nameTh || product.name}`}
+                          aria-label={`ราคาหลัก ${product.nameTh || product.name}`}
                         />
                       </div>
                     </label>
 
                     <label className="block">
-                      <span className="mb-1 block text-xs text-white/50">ราคาขาย (เว้นว่างถ้าไม่ลด)</span>
+                      <span className="mb-1 block text-xs text-white/50">ราคาโปรโมชั่น (ถ้ามี)</span>
                       <div className="relative">
                         <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/50">฿</span>
                         <Input
@@ -467,7 +493,7 @@ export default function AdminStockPage() {
                           max={product.price}
                           step="0.01"
                           value={product.salePrice ?? ''}
-                          placeholder="ไม่ลดราคา"
+                          placeholder="ไม่มีราคาโปรโมชั่น"
                           onChange={(event) => updateProductPrice(
                             brand.id,
                             product.id,
@@ -475,10 +501,37 @@ export default function AdminStockPage() {
                             event.target.value === '' ? null : Math.max(0, Number(event.target.value) || 0)
                           )}
                           className="h-10 bg-white/10 pl-8 text-white placeholder:text-white/25 border-white/20 focus-visible:ring-acid-lime"
-                          aria-label={`ราคาขาย ${product.nameTh || product.name}`}
+                          aria-label={`ราคาโปรโมชั่น ${product.nameTh || product.name}`}
                         />
                       </div>
                     </label>
+
+                    <label className="block">
+                      <span className="mb-1 block text-xs text-white/50">ส่วนลด (%)</span>
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          value={getDiscountPercent(product.price, product.salePrice) ?? ''}
+                          placeholder="กรอกส่วนลด"
+                          onChange={(event) => updateProductDiscount(
+                            brand.id,
+                            product.id,
+                            event.target.value === '' ? null : Math.max(0, Number(event.target.value) || 0)
+                          )}
+                          className="h-10 bg-white/10 pr-8 text-white placeholder:text-white/25 border-white/20 focus-visible:ring-acid-lime"
+                          aria-label={`ส่วนลด ${product.nameTh || product.name}`}
+                        />
+                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-white/50">%</span>
+                      </div>
+                    </label>
+
+                    <p className="text-xs text-white/45 sm:col-span-3">
+                      ราคาที่ใช้ขายจริง: <span className="font-semibold text-acid-lime">฿{(product.salePrice ?? product.price).toLocaleString('th-TH')}</span>
+                      {' '}— กรอกราคาโปรโมชั่นโดยตรง หรือกรอกส่วนลดเพื่อให้ระบบคำนวณให้
+                    </p>
                   </div>
                 </div>
 
