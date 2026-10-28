@@ -70,7 +70,8 @@ export default function AdminStockPage() {
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
+
+  const hasChanges = JSON.stringify(stockData) !== JSON.stringify(originalData);
 
   useEffect(() => {
     loadStock();
@@ -86,7 +87,6 @@ export default function AdminStockPage() {
       if (data.success) {
         setStockData(data.data);
         setOriginalData(JSON.parse(JSON.stringify(data.data))); // Deep copy for comparison
-        setHasChanges(false);
       } else {
         setMessage({ type: 'error', text: data.error || 'โหลดข้อมูลไม่สำเร็จ' });
       }
@@ -119,8 +119,26 @@ export default function AdminStockPage() {
       };
     }));
 
-    // Check for changes
-    setHasChanges(JSON.stringify(stockData) !== JSON.stringify(originalData));
+  };
+
+  const updateProductPrice = (
+    brandId: string,
+    productId: string,
+    field: 'price' | 'salePrice',
+    value: number | null
+  ) => {
+    setStockData(prev => prev.map(brand => {
+      if (brand.id !== brandId) return brand;
+
+      return {
+        ...brand,
+        products: brand.products.map(product =>
+          product.id === productId
+            ? { ...product, [field]: value }
+            : product
+        )
+      };
+    }));
   };
 
   const incrementStock = (brandId: string, productId: string, flavorId: string, amount: number) => {
@@ -150,9 +168,8 @@ export default function AdminStockPage() {
       const data = await res.json();
 
       if (data.success) {
-        setMessage({ type: 'success', text: 'บันทึกข้อมูลสำเร็จ!' });
+        setMessage({ type: 'success', text: 'บันทึกราคาและสต็อกสำเร็จ!' });
         setOriginalData(JSON.parse(JSON.stringify(stockData)));
-        setHasChanges(false);
         setTimeout(() => setMessage(null), 3000);
       } else {
         setMessage({ type: 'error', text: data.error || 'บันทึกไม่สำเร็จ' });
@@ -221,7 +238,7 @@ export default function AdminStockPage() {
           </div>
           <h2 className="text-xl font-bold text-white mb-2">ยืนยันการบันทึก</h2>
           <p className="text-white/60 mb-6">
-            คุณแน่ใจว่าต้องการบันทึกข้อมูลสต็อกทั้งหมด?<br/>
+            คุณแน่ใจว่าต้องการบันทึกราคาและสต็อกทั้งหมด?<br/>
             <span className="text-white/40 text-sm">การเปลี่ยนแปลงจะมีผลทันที</span>
           </p>
           <div className="flex gap-3 justify-center">
@@ -404,7 +421,7 @@ export default function AdminStockPage() {
           <CardContent>
             {brand.products.map(product => (
               <div key={product.id} className="mb-6 last:mb-0">
-                <div className="flex items-center justify-between mb-3 px-2">
+                <div className="flex flex-col gap-3 mb-3 px-2 lg:flex-row lg:items-center lg:justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="text-white font-bold">{product.nameTh || product.name}</h4>
@@ -418,11 +435,50 @@ export default function AdminStockPage() {
                       <span className="text-white/40 text-xs">{(product.puffCount / 1000)}K Puffs</span>
                     )}
                   </div>
-                  <div className="text-right">
-                    <span className="text-acid-lime font-bold">฿{product.salePrice || product.price}</span>
-                    {product.salePrice && (
-                      <span className="text-white/40 text-xs line-through ml-2">฿{product.price}</span>
-                    )}
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:w-[360px]">
+                    <label className="block">
+                      <span className="mb-1 block text-xs text-white/50">ราคาปกติ (บาท)</span>
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/50">฿</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={product.price}
+                          onChange={(event) => updateProductPrice(
+                            brand.id,
+                            product.id,
+                            'price',
+                            Math.max(0, Number(event.target.value) || 0)
+                          )}
+                          className="h-10 bg-white/10 pl-8 text-white border-white/20 focus-visible:ring-acid-lime"
+                          aria-label={`ราคาปกติ ${product.nameTh || product.name}`}
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-1 block text-xs text-white/50">ราคาขาย (เว้นว่างถ้าไม่ลด)</span>
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/50">฿</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          max={product.price}
+                          step="0.01"
+                          value={product.salePrice ?? ''}
+                          placeholder="ไม่ลดราคา"
+                          onChange={(event) => updateProductPrice(
+                            brand.id,
+                            product.id,
+                            'salePrice',
+                            event.target.value === '' ? null : Math.max(0, Number(event.target.value) || 0)
+                          )}
+                          className="h-10 bg-white/10 pl-8 text-white placeholder:text-white/25 border-white/20 focus-visible:ring-acid-lime"
+                          aria-label={`ราคาขาย ${product.nameTh || product.name}`}
+                        />
+                      </div>
+                    </label>
                   </div>
                 </div>
 

@@ -4,6 +4,67 @@ import { requireAdminApiPermission } from "@/lib/admin-api";
 
 export const dynamic = "force-dynamic";
 
+const MAX_PRICE = 99_999_999.99;
+
+type StockUpdate = {
+  productId: string;
+  price: number;
+  salePrice: number | null;
+  flavors: Array<{ variantId: string; stock: number }>;
+};
+
+function normalizeMoney(value: unknown, label: string): number {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount < 0 || amount > MAX_PRICE) {
+    throw new Error(`${label}ไม่ถูกต้อง`);
+  }
+  return Math.round(amount * 100) / 100;
+}
+
+function normalizeStock(value: unknown): number {
+  const stock = Number(value);
+  if (!Number.isInteger(stock) || stock < 0) {
+    throw new Error("จำนวนสต็อกไม่ถูกต้อง");
+  }
+  return stock;
+}
+
+function normalizeUpdates(brands: unknown): StockUpdate[] {
+  if (!Array.isArray(brands)) throw new Error("รูปแบบข้อมูลไม่ถูกต้อง");
+
+  return brands.flatMap((brand: any) => {
+    if (!Array.isArray(brand?.products)) throw new Error("รูปแบบสินค้าไม่ถูกต้อง");
+
+    return brand.products.map((product: any) => {
+      if (typeof product?.id !== "string" || !product.id) {
+        throw new Error("ไม่พบรหัสสินค้า");
+      }
+
+      const price = normalizeMoney(product.price, "ราคาปกติ");
+      const salePrice = product.salePrice === null || product.salePrice === "" || product.salePrice === undefined
+        ? null
+        : normalizeMoney(product.salePrice, "ราคาขาย");
+
+      if (salePrice !== null && salePrice > price) {
+        throw new Error("ราคาขายต้องไม่สูงกว่าราคาปกติ");
+      }
+      if (!Array.isArray(product.flavors)) throw new Error("รูปแบบตัวเลือกสินค้าไม่ถูกต้อง");
+
+      return {
+        productId: product.id,
+        price,
+        salePrice,
+        flavors: product.flavors.map((flavor: any) => {
+          if (typeof flavor?.variantId !== "string" || !flavor.variantId) {
+            throw new Error("ไม่พบรหัสตัวเลือกสินค้า");
+          }
+          return { variantId: flavor.variantId, stock: normalizeStock(flavor.stock) };
+        }),
+      };
+    });
+  });
+}
+
 async function readStock() {
   const { data, error } = await getServerSupabase()
     .from("product_flavors")
@@ -56,20 +117,50 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const unauthorized = await requireAdminApiPermission(request, "stock.manage");
   if (unauthorized) return unauthorized;
+
+  let updates: StockUpdate[];
   try {
     const { brands } = await request.json();
-    const updates = (brands || []).flatMap((brand: any) => (brand.products || []).flatMap((product: any) => (product.flavors || []).map((flavor: any) => ({ id: flavor.variantId, brandId: brand.id, productId: product.id, flavorId: flavor.id, stock: Math.max(0, Number(flavor.stock) || 0) }))));
+    updates = normalizeUpdates(brands);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "รูปแบบข้อมูลไม่ถูกต้อง";
+    return NextResponse.json({ success: false, error: message }, { status: 400 });
+  }
+
+  try {
     const supabase = getServerSupabase();
-    for (const item of updates) {
-      let query = supabase.from("product_flavors").update({ 
-        stock_quantity: item.stock,
-        is_available: item.stock > 0  // Update is_available based on stock
-      });
-      query = item.id ? query.eq("id", item.id) : query.eq("product_id", item.productId).eq("flavor_id", item.flavorId);
-      const { error } = await query;
-      if (error) throw error;
+    for (const product of updates) {
+      const { data: updatedProduct, error: productError } = await supabase
+        .from("products")
+        .update({ price: product.price, sale_price: product.salePrice })
+        .eq("id", product.productId)
+        .select("id")
+        .maybeSingle();
+      if (productError) throw productError;
+      if (!updatedProduct) throw new Error(`Product not found: ${product.productId}`);
+
+      const { error: priceError } = await supabase
+        .from("product_flavors")
+        .update({ price: product.price, sale_price: product.salePrice })
+        .eq("product_id", product.productId);
+      if (priceError) throw priceError;
+
+      for (const flavor of product.flavors) {
+        const { data: updatedFlavor, error: stockError } = await supabase
+          .from("product_flavors")
+          .update({
+            stock_quantity: flavor.stock,
+            is_available: flavor.stock > 0,
+          })
+          .eq("id", flavor.variantId)
+          .eq("product_id", product.productId)
+          .select("id")
+          .maybeSingle();
+        if (stockError) throw stockError;
+        if (!updatedFlavor) throw new Error(`Variant not found: ${flavor.variantId}`);
+      }
     }
-    return NextResponse.json({ success: true, message: "บันทึกข้อมูลสำเร็จ", lastUpdated: new Date().toISOString() });
+    return NextResponse.json({ success: true, message: "บันทึกราคาและสต็อกสำเร็จ", lastUpdated: new Date().toISOString() });
   } catch (error) {
     console.error("Error writing Supabase stock", error);
     return NextResponse.json({ success: false, error: "ไม่สามารถบันทึกข้อมูลได้" }, { status: 500 });
