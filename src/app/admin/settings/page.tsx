@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BellRing, Bot, CheckCircle2, Database, FileSpreadsheet, KeyRound, Loader2, MessageCircle, RefreshCw, Save, Send, ShoppingCart, Warehouse, XCircle } from "lucide-react";
+import { BellRing, Bot, CheckCircle2, Database, FileSpreadsheet, KeyRound, Loader2, MessageCircle, RefreshCw, Save, Send, ShieldCheck, ShoppingCart, UserPlus, UsersRound, Warehouse, XCircle } from "lucide-react";
 
 interface SystemStatus {
   services: {
@@ -37,6 +37,32 @@ interface WarehouseAccountSummary {
   updatedAt: string | null;
 }
 
+type AdminRole = "owner" | "manager" | "order_staff" | "support" | "stock_staff";
+
+interface AdminAccountSummary {
+  id: string;
+  username: string;
+  displayName: string;
+  role: AdminRole;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastLoginAt: string | null;
+}
+
+interface AdminSessionSummary {
+  accountId: string;
+  role: AdminRole;
+}
+
+const ADMIN_ROLE_LABELS: Record<AdminRole, string> = {
+  owner: "Owner — ทุกสิทธิ์",
+  manager: "Manager — จัดการร้าน",
+  order_staff: "พนักงานออเดอร์",
+  support: "ฝ่ายบริการลูกค้า",
+  stock_staff: "พนักงานสต็อก",
+};
+
 function StatusLabel({ ready, readyText = "พร้อมใช้งาน", pendingText = "ยังไม่พร้อม" }: { ready: boolean; readyText?: string; pendingText?: string }) {
   return ready ? (
     <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-400"><CheckCircle2 className="h-4 w-4" />{readyText}</span>
@@ -60,8 +86,40 @@ export default function AdminSettingsPage() {
   const [telegramMessage, setTelegramMessage] = useState("");
   const [telegramError, setTelegramError] = useState("");
   const [telegramBusy, setTelegramBusy] = useState(false);
+  const [adminSession, setAdminSession] = useState<AdminSessionSummary | null>(null);
+  const [adminAccounts, setAdminAccounts] = useState<AdminAccountSummary[] | null>(null);
+  const [adminUsername, setAdminUsername] = useState("");
+  const [adminDisplayName, setAdminDisplayName] = useState("");
+  const [adminRole, setAdminRole] = useState<AdminRole>("owner");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminPasswordConfirm, setAdminPasswordConfirm] = useState("");
+  const [adminAccountMessage, setAdminAccountMessage] = useState("");
+  const [adminAccountError, setAdminAccountError] = useState("");
+  const [adminAccountBusy, setAdminAccountBusy] = useState(false);
+  const [passwordAccountId, setPasswordAccountId] = useState<string | null>(null);
+  const [replacementPassword, setReplacementPassword] = useState("");
+  const [replacementPasswordConfirm, setReplacementPasswordConfirm] = useState("");
+
+  async function loadAdminAccounts() {
+    const response = await fetch("/api/admin/admin-accounts", { cache: "no-store" });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "โหลดบัญชีแอดมินไม่สำเร็จ");
+    setAdminAccounts(result.accounts || []);
+  }
 
   useEffect(() => {
+    fetch("/api/admin/auth", { cache: "no-store" })
+      .then(async (response) => {
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "โหลดสิทธิ์แอดมินไม่สำเร็จ");
+        return result.session as AdminSessionSummary;
+      })
+      .then((session) => {
+        setAdminSession(session);
+        if (session.role === "owner") return loadAdminAccounts();
+      })
+      .catch((loadError) => setAdminAccountError(loadError instanceof Error ? loadError.message : "โหลดบัญชีแอดมินไม่สำเร็จ"));
+
     fetch("/api/admin/system-status", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error("ตรวจสอบสถานะระบบไม่สำเร็จ");
@@ -91,6 +149,75 @@ export default function AdminSettingsPage() {
       .then(setTelegramStatus)
       .catch((loadError) => setTelegramError(loadError instanceof Error ? loadError.message : "ตรวจสอบ Telegram ไม่สำเร็จ"));
   }, []);
+
+  async function saveNewAdminAccount(event: React.FormEvent) {
+    event.preventDefault();
+    setAdminAccountError("");
+    setAdminAccountMessage("");
+    if (adminPassword !== adminPasswordConfirm) {
+      setAdminAccountError("รหัสผ่านทั้งสองช่องไม่ตรงกัน");
+      return;
+    }
+    setAdminAccountBusy(true);
+    try {
+      const response = await fetch("/api/admin/admin-accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: adminUsername, displayName: adminDisplayName, role: adminRole, password: adminPassword }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "เพิ่มบัญชีแอดมินไม่สำเร็จ");
+      setAdminUsername("");
+      setAdminDisplayName("");
+      setAdminPassword("");
+      setAdminPasswordConfirm("");
+      setAdminRole("owner");
+      setAdminAccountMessage(result.message);
+      await loadAdminAccounts();
+    } catch (saveError) {
+      setAdminAccountError(saveError instanceof Error ? saveError.message : "เพิ่มบัญชีแอดมินไม่สำเร็จ");
+    } finally {
+      setAdminAccountBusy(false);
+    }
+  }
+
+  async function patchAdminAccount(id: string, payload: Record<string, unknown>, successMessage: string) {
+    setAdminAccountBusy(true);
+    setAdminAccountError("");
+    setAdminAccountMessage("");
+    try {
+      const response = await fetch("/api/admin/admin-accounts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...payload }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "อัปเดตบัญชีแอดมินไม่สำเร็จ");
+      setAdminAccountMessage(successMessage);
+      await loadAdminAccounts();
+      return true;
+    } catch (saveError) {
+      setAdminAccountError(saveError instanceof Error ? saveError.message : "อัปเดตบัญชีแอดมินไม่สำเร็จ");
+      return false;
+    } finally {
+      setAdminAccountBusy(false);
+    }
+  }
+
+  async function saveReplacementPassword(event: React.FormEvent) {
+    event.preventDefault();
+    if (!passwordAccountId) return;
+    if (replacementPassword !== replacementPasswordConfirm) {
+      setAdminAccountError("รหัสผ่านใหม่ทั้งสองช่องไม่ตรงกัน");
+      return;
+    }
+    const saved = await patchAdminAccount(passwordAccountId, { password: replacementPassword }, "เปลี่ยนรหัสผ่านแอดมินแล้ว");
+    if (saved) {
+      setPasswordAccountId(null);
+      setReplacementPassword("");
+      setReplacementPasswordConfirm("");
+    }
+  }
 
   async function discoverTelegram() {
     setTelegramBusy(true);
@@ -215,6 +342,89 @@ export default function AdminSettingsPage() {
       )}
 
       {status && <p className="text-xs text-white/30">ตรวจสอบล่าสุด {new Date(status.checkedAt).toLocaleString("th-TH")}</p>}
+
+      {adminSession?.role === "owner" && (
+        <Card className="border-vapor-violet/25 bg-vapor-violet/[0.04]">
+          <CardHeader className="flex flex-row items-start gap-3">
+            <UsersRound className="mt-0.5 h-5 w-5 text-vapor-violet" />
+            <div>
+              <CardTitle className="text-white">บัญชีแอดมินและสิทธิ์ทีมงาน</CardTitle>
+              <CardDescription className="mt-1 text-white/50">เฉพาะ Owner เท่านั้นที่เพิ่มบัญชี เปลี่ยนสิทธิ์ ปิดบัญชี และตั้งรหัสผ่านใหม่ได้</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <form onSubmit={saveNewAdminAccount} className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:p-5">
+              <div className="flex items-center gap-2 font-bold text-white"><UserPlus className="h-4 w-4 text-acid-lime" />เพิ่มบัญชีใหม่</div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm font-medium text-white/80">ชื่อที่แสดง
+                  <input required value={adminDisplayName} onChange={(event) => setAdminDisplayName(event.target.value)} maxLength={80} className="mt-2 w-full rounded-xl border border-white/15 bg-navy-deep px-4 py-3 text-white outline-none focus:border-vapor-violet" placeholder="เช่น GodOwner" />
+                </label>
+                <label className="block text-sm font-medium text-white/80">ชื่อผู้ใช้
+                  <input required value={adminUsername} onChange={(event) => setAdminUsername(event.target.value.toLowerCase())} autoComplete="username" maxLength={50} pattern="[a-z0-9._-]{3,50}" className="mt-2 w-full rounded-xl border border-white/15 bg-navy-deep px-4 py-3 text-white outline-none focus:border-vapor-violet" placeholder="เช่น godowner" />
+                </label>
+              </div>
+              <label className="block text-sm font-medium text-white/80">ระดับสิทธิ์
+                <select value={adminRole} onChange={(event) => setAdminRole(event.target.value as AdminRole)} className="mt-2 w-full rounded-xl border border-white/15 bg-navy-deep px-4 py-3 text-white outline-none focus:border-vapor-violet">
+                  {(Object.keys(ADMIN_ROLE_LABELS) as AdminRole[]).map((role) => <option key={role} value={role}>{ADMIN_ROLE_LABELS[role]}</option>)}
+                </select>
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm font-medium text-white/80">รหัสผ่าน
+                  <input required type="password" value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} autoComplete="new-password" minLength={12} maxLength={200} className="mt-2 w-full rounded-xl border border-white/15 bg-navy-deep px-4 py-3 text-white outline-none focus:border-vapor-violet" placeholder="อย่างน้อย 12 ตัวอักษร" />
+                </label>
+                <label className="block text-sm font-medium text-white/80">ยืนยันรหัสผ่าน
+                  <input required type="password" value={adminPasswordConfirm} onChange={(event) => setAdminPasswordConfirm(event.target.value)} autoComplete="new-password" minLength={12} maxLength={200} className="mt-2 w-full rounded-xl border border-white/15 bg-navy-deep px-4 py-3 text-white outline-none focus:border-vapor-violet" placeholder="กรอกซ้ำอีกครั้ง" />
+                </label>
+              </div>
+              <p className="text-xs leading-5 text-white/40">ระบบเก็บเฉพาะรหัสผ่านที่ผ่านการแฮชและจะไม่แสดงรหัสผ่านเดิมอีก</p>
+              <button type="submit" disabled={adminAccountBusy} className="btn-liquid-acid inline-flex min-h-12 items-center justify-center gap-2 px-5 py-3 font-bold text-navy-deep disabled:opacity-50">
+                {adminAccountBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                เพิ่มบัญชีแอดมิน
+              </button>
+            </form>
+
+            {adminAccounts === null && !adminAccountError ? (
+              <div className="flex items-center gap-2 py-4 text-sm text-white/50"><Loader2 className="h-4 w-4 animate-spin" />กำลังโหลดบัญชีแอดมิน...</div>
+            ) : adminAccounts && adminAccounts.length === 0 ? (
+              <p className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/50">ยังไม่มีบัญชีที่สร้างจากหน้าแอดมิน บัญชีเดิมจาก Vercel ยังเข้าใช้งานได้ตามปกติ</p>
+            ) : (
+              <div className="space-y-3">
+                {adminAccounts?.map((account) => (
+                  <div key={account.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2"><strong className="text-white">{account.displayName}</strong><code className="rounded bg-white/10 px-2 py-0.5 text-xs text-white/60">{account.username}</code><span className={`rounded-full px-2 py-0.5 text-xs font-bold ${account.active ? "bg-emerald-400/10 text-emerald-300" : "bg-red-400/10 text-red-300"}`}>{account.active ? "เปิดใช้งาน" : "ปิดใช้งาน"}</span></div>
+                        <p className="mt-1 text-xs text-white/40">{ADMIN_ROLE_LABELS[account.role]} · เข้าล่าสุด {account.lastLoginAt ? new Date(account.lastLoginAt).toLocaleString("th-TH") : "ยังไม่เคย"}</p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <select aria-label={`สิทธิ์ของ ${account.username}`} value={account.role} disabled={adminAccountBusy || account.id === adminSession.accountId} onChange={(event) => {
+                          const nextRole = event.target.value as AdminRole;
+                          if (window.confirm(`เปลี่ยนสิทธิ์ ${account.username} เป็น ${ADMIN_ROLE_LABELS[nextRole]} ใช่ไหม`)) void patchAdminAccount(account.id, { role: nextRole }, "เปลี่ยนสิทธิ์บัญชีแล้ว");
+                        }} className="min-h-10 rounded-xl border border-white/15 bg-navy-deep px-3 text-sm text-white disabled:opacity-40">
+                          {(Object.keys(ADMIN_ROLE_LABELS) as AdminRole[]).map((role) => <option key={role} value={role}>{ADMIN_ROLE_LABELS[role]}</option>)}
+                        </select>
+                        <button type="button" disabled={adminAccountBusy} onClick={() => setPasswordAccountId(passwordAccountId === account.id ? null : account.id)} className="btn-liquid-glass min-h-10 px-3 text-sm font-bold text-white disabled:opacity-40">เปลี่ยนรหัสผ่าน</button>
+                        <button type="button" disabled={adminAccountBusy || account.id === adminSession.accountId} onClick={() => {
+                          if (window.confirm(`${account.active ? "ปิด" : "เปิด"}บัญชี ${account.username} ใช่ไหม`)) void patchAdminAccount(account.id, { active: !account.active }, account.active ? "ปิดบัญชีแล้ว" : "เปิดบัญชีแล้ว");
+                        }} className={`min-h-10 rounded-xl border px-3 text-sm font-bold disabled:opacity-40 ${account.active ? "border-red-400/30 text-red-300" : "border-emerald-400/30 text-emerald-300"}`}>{account.active ? "ปิดบัญชี" : "เปิดบัญชี"}</button>
+                      </div>
+                    </div>
+                    {passwordAccountId === account.id && (
+                      <form onSubmit={saveReplacementPassword} className="mt-4 grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-[1fr_1fr_auto]">
+                        <input required type="password" value={replacementPassword} onChange={(event) => setReplacementPassword(event.target.value)} autoComplete="new-password" minLength={12} maxLength={200} className="rounded-xl border border-white/15 bg-navy-deep px-4 py-3 text-white outline-none focus:border-vapor-violet" placeholder="รหัสผ่านใหม่ 12 ตัวขึ้นไป" />
+                        <input required type="password" value={replacementPasswordConfirm} onChange={(event) => setReplacementPasswordConfirm(event.target.value)} autoComplete="new-password" minLength={12} maxLength={200} className="rounded-xl border border-white/15 bg-navy-deep px-4 py-3 text-white outline-none focus:border-vapor-violet" placeholder="ยืนยันรหัสผ่านใหม่" />
+                        <button type="submit" disabled={adminAccountBusy} className="btn-liquid-acid min-h-11 px-4 font-bold text-navy-deep disabled:opacity-50">บันทึกรหัสใหม่</button>
+                      </form>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {adminAccountError && <p role="alert" className="rounded-xl border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{adminAccountError}</p>}
+            {adminAccountMessage && <p role="status" className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-3 text-sm text-emerald-100">{adminAccountMessage}</p>}
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-sky-400/25 bg-sky-400/[0.04]">
         <CardHeader className="flex flex-row items-start gap-3">

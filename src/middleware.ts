@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ADMIN_COOKIE_NAME, getAdminSession } from '@/lib/admin-auth';
+import { ADMIN_COOKIE_NAME, getAdminSession } from '@/lib/admin-session';
 import { roleHasPermission, type AdminPermission } from '@/lib/admin-permissions';
 import { getWarehouseSession, WAREHOUSE_COOKIE_NAME } from '@/lib/warehouse-auth';
 

@@ -25,6 +25,7 @@ export const ADMIN_PERMISSIONS = [
   "stock.manage",
   "settings.view",
   "settings.manage",
+  "accounts.manage",
   "reviews.moderate",
 ] as const;
 
@@ -32,7 +33,7 @@ export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
 
 const ROLE_PERMISSIONS: Record<AdminRole, readonly AdminPermission[]> = {
   owner: ADMIN_PERMISSIONS,
-  manager: ADMIN_PERMISSIONS,
+  manager: ADMIN_PERMISSIONS.filter((permission) => permission !== "accounts.manage"),
   order_staff: [
     "dashboard.view",
     "orders.view",

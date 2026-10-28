@@ -23,13 +23,6 @@ export async function POST(request: NextRequest) {
   const password = typeof body.password === "string" ? body.password : "";
 
   const account = await authenticateAdmin(username, password);
-  if (!process.env.ADMIN_PASSWORD && !process.env.ADMIN_ACCOUNTS_JSON) {
-    return NextResponse.json({
-      success: false,
-      error: 'ยังไม่ได้ตั้งค่าระบบแอดมิน'
-    }, { status: 503 });
-  }
-
   if (!account) {
     return NextResponse.json({
       success: false,
