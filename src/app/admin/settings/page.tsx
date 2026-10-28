@@ -515,7 +515,7 @@ export default function AdminSettingsPage() {
               {warehouseAccount && (
                 <div className="min-w-0 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white/60">
                   <span className="block text-xs text-white/35">บัญชีปัจจุบัน</span>
-                  <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"><strong className="break-all font-mono text-white">{warehouseAccount.username || "ยังไม่ได้ตั้งค่า"}</strong><span className="text-xs text-white/35">{warehouseAccount.source === "admin" ? "จัดการจากหน้าแอมิน" : "ใช้ค่าตั้งต้นของระบบ"}</span></div>
+                  <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"><strong className="break-all font-mono text-white">{warehouseAccount.username || "ยังไม่ได้ตั้งค่า"}</strong><span className="text-xs text-white/35">{warehouseAccount.source === "admin" ? "จัดการจากหน้าแอดมิน" : "ใช้ค่าตั้งต้นของระบบ"}</span></div>
                 </div>
               )}
               <label className="block text-sm font-medium text-white/80">ชื่อผู้ใช้คลังสินค้า
