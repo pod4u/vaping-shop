@@ -8,6 +8,10 @@ export function includesAny(value: string, keywords: readonly string[]) {
   return keywords.some((keyword) => value.includes(keyword));
 }
 
+export function isLineAutoReplyEnabled(value = process.env.LINE_AUTO_REPLY_ENABLED) {
+  return value?.trim().toLowerCase() === 'true';
+}
+
 export { MEMBER_LIFF_URL };
 
 export function extractOrderConfirmationNumber(value: string): string | null {

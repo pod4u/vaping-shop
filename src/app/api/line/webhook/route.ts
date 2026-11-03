@@ -26,6 +26,7 @@ import {
   isExplicitProductOrder,
   isGenericMarboFamilyQuestion,
   isGreeting,
+  isLineAutoReplyEnabled,
   isOrderHelpQuestion,
   isPaymentQuestion,
   isProductAvailabilityQuestion,
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
           await handlePaymentSlip(event, destination);
         } else if (event.type === 'postback') {
           await handlePostback(event, destination, metadata);
-        } else if (event.type === 'follow') {
+        } else if (event.type === 'follow' && isLineAutoReplyEnabled()) {
           await replyWithAutomationMenu(event.replyToken);
         }
       }
@@ -190,6 +191,16 @@ async function handleMessage(
   const confirmationOrderNumber = extractOrderConfirmationNumber(message);
   if (confirmationOrderNumber) {
     await confirmLineOrderAndReply(event, destination, { orderNumber: confirmationOrderNumber });
+    return;
+  }
+
+  // Keep member linking and order intake working while handing ordinary chat
+  // to an admin without an automated response. The feature is intentionally
+  // off by default; set LINE_AUTO_REPLY_ENABLED=true to restore chat replies.
+  const isOperationalMessage = Boolean(extractLineLinkCode(message))
+    || message.trim().startsWith('รายการขอเช็กสินค้า Pod4U');
+  if (!isLineAutoReplyEnabled() && !isOperationalMessage) {
+    console.log('LINE automatic reply disabled; message handed off to admin');
     return;
   }
 
