@@ -56,6 +56,60 @@ function estimateReadingTime(content: string) {
   return Math.max(3, Math.ceil(content.replace(/[#*|\-]/g, "").length / 700));
 }
 
+function ProductSnapshotSection({ products }: { products: AggregatedProduct[] }) {
+  if (!products.length) return null;
+
+  return (
+    <section className="mt-12" aria-labelledby="live-product-data">
+      <div className="mb-5">
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-acid-lime">Updated from catalog</p>
+        <h2 id="live-product-data" className="text-2xl font-black text-white">ข้อมูลสินค้าล่าสุด</h2>
+        <p className="mt-2 text-sm leading-6 text-white/55">ชื่อรส ราคา และสถานะด้านล่างอัปเดตตามแคตตาล็อก จึงไม่ต้องยึดข้อมูลเก่าที่เขียนค้างไว้ในบทความ</p>
+      </div>
+      <div className="space-y-5">
+        {products.map((product) => {
+          const price = product.min_price === product.max_price
+            ? `฿${product.min_price.toLocaleString()}`
+            : `฿${product.min_price.toLocaleString()}–฿${product.max_price.toLocaleString()}`;
+          return (
+            <div key={product.slug} className="navy-card rounded-2xl border border-white/10 p-5 sm:p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 className="text-xl font-black text-white">{bilingualName(product.name, product.name_th)}</h3>
+                  <p className="mt-1 text-sm text-white/50">
+                    {formatPuffs(product.puff_count) ? `${formatPuffs(product.puff_count)} พัฟโดยประมาณ · ` : ""}
+                    {product.flavors.length} รสในรายการล่าสุด
+                  </p>
+                </div>
+                <div className="sm:text-right">
+                  <p className="text-lg font-black text-acid-lime">{price}</p>
+                  <p className={`text-xs font-semibold ${product.has_stock ? "text-emerald-400" : "text-white/45"}`}>
+                    {product.has_stock ? "มีตัวเลือกพร้อมส่ง" : "ตรวจสถานะกับร้านอีกครั้ง"}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {product.flavors.map((flavor) => {
+                  const label = bilingualPrimaryThai(flavor.name_th, flavor.name);
+                  return (
+                    <div key={`${product.slug}-${flavor.name}`} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
+                      <p className="text-sm font-semibold text-white/80">{label.primary}</p>
+                      {label.secondary && <p className="mt-0.5 text-xs text-white/40">{label.secondary}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+              <Link href={`/products/${product.slug}`} className="mt-5 inline-flex items-center text-sm font-bold text-acid-lime hover:underline">
+                ดูรายละเอียด ราคา และสต็อกของรุ่นนี้ →
+              </Link>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default async function BlogPostPage({ params }: { params: PageParams | Promise<PageParams> }) {
   const resolvedParams: PageParams = await Promise.resolve(params);
 
@@ -215,57 +269,11 @@ export default async function BlogPostPage({ params }: { params: PageParams | Pr
               />
             </figure>
 
+            {post.catalogFirst && <ProductSnapshotSection products={productSnapshots} />}
+
             {post.content ? renderContent(post.content) : <p className="text-white/50">ไม่มีเนื้อหา</p>}
 
-            {productSnapshots.length ? (
-              <section className="mt-12" aria-labelledby="live-product-data">
-                <div className="mb-5">
-                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-acid-lime">Updated from catalog</p>
-                  <h2 id="live-product-data" className="text-2xl font-black text-white">ข้อมูลสินค้าล่าสุด</h2>
-                  <p className="mt-2 text-sm leading-6 text-white/55">ชื่อรส ราคา และสถานะด้านล่างอัปเดตตามแคตตาล็อก จึงไม่ต้องยึดข้อมูลเก่าที่เขียนค้างไว้ในบทความ</p>
-                </div>
-                <div className="space-y-5">
-                  {productSnapshots.map((product) => {
-                    const price = product.min_price === product.max_price
-                      ? `฿${product.min_price.toLocaleString()}`
-                      : `฿${product.min_price.toLocaleString()}–฿${product.max_price.toLocaleString()}`;
-                    return (
-                      <div key={product.slug} className="navy-card rounded-2xl border border-white/10 p-5 sm:p-6">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <h3 className="text-xl font-black text-white">{bilingualName(product.name, product.name_th)}</h3>
-                            <p className="mt-1 text-sm text-white/50">
-                              {formatPuffs(product.puff_count) ? `${formatPuffs(product.puff_count)} พัฟโดยประมาณ · ` : ""}
-                              {product.flavors.length} รสในรายการล่าสุด
-                            </p>
-                          </div>
-                          <div className="sm:text-right">
-                            <p className="text-lg font-black text-acid-lime">{price}</p>
-                            <p className={`text-xs font-semibold ${product.has_stock ? "text-emerald-400" : "text-white/45"}`}>
-                              {product.has_stock ? "มีตัวเลือกพร้อมส่ง" : "ตรวจสถานะกับร้านอีกครั้ง"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          {product.flavors.map((flavor) => {
-                            const label = bilingualPrimaryThai(flavor.name_th, flavor.name);
-                            return (
-                              <div key={`${product.slug}-${flavor.name}`} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
-                                <p className="text-sm font-semibold text-white/80">{label.primary}</p>
-                                {label.secondary && <p className="mt-0.5 text-xs text-white/40">{label.secondary}</p>}
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <Link href={`/products/${product.slug}`} className="mt-5 inline-flex items-center text-sm font-bold text-acid-lime hover:underline">
-                          ดูรายละเอียด ราคา และสต็อกของรุ่นนี้ →
-                        </Link>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            ) : null}
+            {!post.catalogFirst && <ProductSnapshotSection products={productSnapshots} />}
 
             {post.faqs?.length ? (
               <section className="mt-10" aria-labelledby="article-faq">

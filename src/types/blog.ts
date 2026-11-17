@@ -13,4 +13,5 @@ export interface BlogPost {
   relatedLinks?: Array<{ href: string; label: string }>;
   faqs?: Array<{ question: string; answer: string }>;
   productSlugs?: string[];
+  catalogFirst?: boolean;
 }
